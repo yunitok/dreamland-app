@@ -1,0 +1,90 @@
+{
+    "common": {
+        "appName": "Dreamland App",
+        "dashboard": "Panel",
+        "projects": "Proyectos",
+        "departments": "Departamentos",
+        "teamPulse": "Pulso del Equipo",
+        "admin": "Admin",
+        "notifications": "Notificaciones",
+        "toggleTheme": "Cambiar tema"
+    },
+    "dashboard": {
+        "title": "Panel",
+        "description": "Resumen estratégico de proyectos e insights del equipo",
+        "totalProjects": "Total Proyectos",
+        "activeInPipeline": "Activos en pipeline",
+        "criticalProjects": "Proyectos Críticos",
+        "highPriorityItems": "Elementos de alta prioridad",
+        "mostStressed": "Más Estresado",
+        "score": "Puntuación",
+        "activeInitiatives": "Iniciativas Activas",
+        "currentlyInProgress": "Actualmente en progreso",
+        "recentActivity": "Actividad Reciente",
+        "teamSentimentOverview": "Resumen del Sentimiento del Equipo",
+        "stressLevel": "Nivel de Estrés"
+    },
+    "projects": {
+        "title": "Portafolio de Proyectos",
+        "titleLabel": "Título",
+        "headerDescription": "Gestiona y rastrea todas las iniciativas estratégicas",
+        "priority": "Prioridad",
+        "department": "Departamento",
+        "type": "Tipo",
+        "status": "Estado",
+        "actions": "Acciones",
+        "all": "Todos",
+        "high": "Alto",
+        "medium": "Medio",
+        "low": "Bajo",
+        "active": "Activo",
+        "pending": "Pendiente",
+        "done": "Completado",
+        "problem": "Problema",
+        "idea": "Idea",
+        "noProjectsMatch": "No hay proyectos que coincidan con los filtros seleccionados",
+        "description": "Descripción",
+        "created": "Creado"
+    },
+    "sentiment": {
+        "title": "Pulso del Equipo",
+        "description": "Monitorea el sentimiento y niveles de bienestar departamentales",
+        "companyAverage": "Promedio de la Empresa",
+        "overallWellnessScore": "Puntuación general de bienestar",
+        "criticalDepartments": "Departamentos Críticos",
+        "requireImmediateAttention": "Requieren atención inmediata",
+        "healthyDepartments": "Departamentos Saludables",
+        "scoreAbove70": "Puntuación superior al 70%",
+        "departmentWellnessScore": "Puntuación de Bienestar por Departamento",
+        "chartDescription": "Análisis de sentimiento por departamento (0 = Alto Estrés, 100 = Óptimo)",
+        "departmentInsights": "Insights Departamentales"
+    },
+    "departments": {
+        "title": "Departamentos",
+        "description": "Vista general de todos los departamentos y su estado actual",
+        "projectsCount": "{count} proyectos",
+        "sentiment": "Sentimiento",
+        "noDepartments": "No se encontraron departamentos"
+    },
+    "admin": {
+        "title": "Admin - Ingesta de Datos",
+        "description": "Importa y gestiona datos de fuentes externas",
+        "databaseStatus": "Estado de la Base de Datos",
+        "connected": "Conectado",
+        "totalProjects": "Total Proyectos",
+        "inDatabase": "En base de datos",
+        "teamMoods": "Estados de Ánimo",
+        "departmentsTracked": "Departamentos rastreados",
+        "importData": "Importar Datos desde NotebookLM",
+        "importDescription": "Pega tu JSON abajo para poblar la base de datos con proyectos y datos de ánimo del equipo.",
+        "import": "Importar Datos",
+        "importing": "Importando...",
+        "importSuccess": "¡Datos importados exitosamente!",
+        "jsonFormatReference": "Referencia de Formato JSON",
+        "jsonDescription": "La estructura JSON esperada debe contener arrays de proyectos y/o teamMoods."
+    },
+    "footer": {
+        "strategicPM": "PM Estratégico",
+        "enterprise": "Enterprise"
+    }
+}

@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  department  String
+  type        String   // "Problem" | "Idea"
+  priority    String   // "High" | "Medium" | "Low"
+  description String
+  status      String   // "Pending" | "Active" | "Done"
+  sourceQuote String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  risks       ProjectRisk[]
+}
+
+model TeamMood {
+  id              String   @id @default(cuid())
+  departmentName  String   @unique
+  sentimentScore  Int      // 0-100 (100 = very happy, 0 = very stressed)
+  dominantEmotion String
+  keyConcerns     String?
+  detectedAt      DateTime @default(now())
+}
+
+model ProjectRisk {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  riskLevel String  // "High" | "Medium" | "Low"
+  reason    String
+}
