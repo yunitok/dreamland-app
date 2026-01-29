@@ -19,7 +19,7 @@ export default async function middleware(request: NextRequest) {
   if (session) {
     try {
       user = await decrypt(session);
-    } catch (e) {
+    } catch {
       // Session might be expired or invalid
     }
   }
