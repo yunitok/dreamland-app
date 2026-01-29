@@ -1,7 +1,7 @@
 {
     "common": {
         "appName": "Dreamland App",
-        "dashboard": "Dashboard",
+        "dashboard": "Intelligence",
         "projects": "Projects",
         "departments": "Departments",
         "teamPulse": "Team Pulse",
@@ -10,8 +10,12 @@
         "toggleTheme": "Toggle theme"
     },
     "dashboard": {
-        "title": "Dashboard",
-        "description": "Strategic project overview and team insights",
+        "title": "Strategic Intelligence",
+        "description": "AI-powered analysis and portfolio overview",
+        "aiInsights": "AI Insights",
+        "aiAdvisor": "AI Strategic Advisor",
+        "predictiveAnalysis": "Predictive Analysis",
+        "riskWarning": "AI Detected Risk",
         "totalProjects": "Total Projects",
         "activeInPipeline": "Active in pipeline",
         "criticalProjects": "Critical Projects",

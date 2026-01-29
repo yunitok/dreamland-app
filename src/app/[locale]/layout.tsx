@@ -49,9 +49,9 @@ export default async function LocaleLayout({
           disableTransitionOnChange
         >
           <NextIntlClientProvider messages={messages}>
-            <div className="flex min-h-screen">
-              <Sidebar />
-              <main className="flex-1 ml-64">
+            <div className="relative flex min-h-screen w-full flex-col lg:flex-row">
+              <Sidebar className="hidden lg:block lg:w-64" />
+              <main className="flex-1 w-full overflow-x-hidden">
                 {children}
               </main>
             </div>

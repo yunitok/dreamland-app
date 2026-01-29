@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl"
 
 interface RecentActivityProps {
   projects: Project[]
+  className?: string
 }
 
 const priorityStyles = {
@@ -22,7 +23,7 @@ const statusStyles = {
   Done: "bg-emerald-500/10 text-emerald-500",
 }
 
-export function RecentActivity({ projects }: RecentActivityProps) {
+export function RecentActivity({ projects, className }: RecentActivityProps) {
   const t = useTranslations("dashboard")
   const tProjects = useTranslations("projects")
 
@@ -45,9 +46,9 @@ export function RecentActivity({ projects }: RecentActivityProps) {
   }
 
   return (
-    <Card>
+    <Card className={cn("premium-card rounded-xl", className)}>
       <CardHeader>
-        <CardTitle className="text-base">{t("recentActivity")}</CardTitle>
+        <CardTitle className="text-base sm:text-lg">{t("recentActivity")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {projects.map((project) => (

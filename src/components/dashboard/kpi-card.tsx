@@ -7,6 +7,7 @@ interface KPICardProps {
   value: string | number
   description?: string
   icon?: LucideIcon
+  className?: string
   trend?: {
     value: number
     isPositive: boolean
@@ -33,11 +34,12 @@ export function KPICard({
   value, 
   description, 
   icon: Icon,
+  className,
   trend,
   variant = "default" 
 }: KPICardProps) {
   return (
-    <Card className={cn("relative overflow-hidden", variantStyles[variant])}>
+    <Card className={cn("relative overflow-hidden", variantStyles[variant], className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
