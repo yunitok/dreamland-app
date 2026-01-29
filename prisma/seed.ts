@@ -17,7 +17,7 @@ async function main() {
   await prisma.teamMood.deleteMany();
 
   // Read real projects from file
-  const projectsFilePath = path.join(process.cwd(), 'dreamland - projects.txt');
+  const projectsFilePath = path.join(process.cwd(), 'data', 'reports', 'dreamland - projects.txt');
   let rawData;
   try {
     rawData = await fs.readFile(projectsFilePath, 'utf-8');
@@ -69,22 +69,64 @@ async function main() {
 
   console.log(`✅ Created ${seededProjects.length} projects`);
 
-  // Seed Team Moods for all unique departments
+  // Seed Team Moods based on the HR report (dreamland_feeling_projects.txt)
+  const sentimentMap: Record<string, { score: number; emotion: string; concerns: string }> = {
+    'RRHH': { 
+      score: 22, 
+      emotion: 'Frustración Crítica', 
+      concerns: 'Saturación por cambios constantes de jornada ("inhumano") y carga emocional por responsabilidad legal.' 
+    },
+    'Operaciones': { 
+      score: 28, 
+      emotion: 'Saturación Digital', 
+      concerns: 'Exceso de comunicaciones en Slack y trabajo manual de volcado de datos ("basura de data").' 
+    },
+    'Financiero': { 
+      score: 48, 
+      emotion: 'Estrés Resiliente', 
+      concerns: 'Montaña de burocracia manual (facturas, tickets) gestionada con humor pero alta carga de trabajo.' 
+    },
+    'Diseño': { 
+      score: 88, 
+      emotion: 'Optimismo Vital', 
+      concerns: 'Alta motivación por el uso de IA para eliminar tareas administrativas y acelerar el renderizado.' 
+    },
+    'Calidad / I+D': { 
+      score: 92, 
+      emotion: 'Obsesión Analítica', 
+      concerns: 'Enfoque racional en resolver el puzzle de los costes ocultos ("Sherlock"). Fuerte alineación con objetivos.' 
+    },
+    'Ventas': { 
+      score: 65, 
+      emotion: 'Preocupación Humana', 
+      concerns: 'Temor a perder el "toque humano" y el "mimo" al cliente por una automatización excesiva.' 
+    },
+    'Mantenimiento': { 
+      score: 70, 
+      emotion: 'Expectativa de Orden', 
+      concerns: 'Deseo de mayor trazabilidad y control preventivo para reducir la carga mental.' 
+    },
+    'Marketing': { 
+      score: 55, 
+      emotion: 'Saturación de Leads', 
+      concerns: 'Bandeja de entrada colapsada por CVs sin filtrar y necesidad de auditar datos manuales.' 
+    }
+  };
+
   const moods = await Promise.all(
     uniqueDepartments.map((deptName: any) => {
-      // Deterministic but varied scores
-      const hash = deptName.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
-      const score = 30 + (hash % 65); // 30-95
-      
-      const emotions = ['Entusiasmado', 'Optimista', 'Neutral', 'Preocupado', 'Sobrecargado', 'Frustrado', 'Agotado'];
-      const emotion = emotions[hash % emotions.length];
+      const data = sentimentMap[deptName] || {
+        score: 60,
+        emotion: 'Neutral / Adaptación',
+        concerns: `Procesos de cambio y estandarización en ${deptName}.`
+      };
 
       return prisma.teamMood.create({
         data: {
           departmentName: deptName,
-          sentimentScore: score,
-          dominantEmotion: emotion,
-          keyConcerns: `Retos específicos en la gestión de ${deptName.toLowerCase()}`,
+          sentimentScore: data.score,
+          dominantEmotion: data.emotion,
+          keyConcerns: data.concerns,
         },
       });
     })

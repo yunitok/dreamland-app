@@ -9,8 +9,12 @@ import {
   FolderKanban, 
   Heart, 
   Settings,
-  Zap
+  Zap,
+  Palette,
+  Languages
 } from "lucide-react"
+import { ThemeToggle } from "./theme-toggle"
+import { LanguageSwitcher } from "./language-switcher"
 
 const navItems = [
   { href: "/", labelKey: "dashboard", icon: LayoutDashboard },
@@ -31,15 +35,18 @@ export function SidebarContent() {
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-2 border-b border-border px-6">
+      <Link 
+        href="/" 
+        className="flex h-16 items-center gap-2 border-b border-border px-6 bg-sidebar cursor-pointer hover:bg-sidebar-accent/30 transition-colors"
+      >
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
           <Zap className="h-5 w-5 text-primary-foreground" />
         </div>
-        <span className="text-xl font-bold tracking-tight">Nexus</span>
-      </div>
+        <span className="text-xl font-bold tracking-tight text-white uppercase tracking-[0.2em] font-black">Dreamland</span>
+      </Link>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-4">
+      <nav className="flex-1 space-y-1 p-4 bg-sidebar">
         {navItems.map((item) => {
           const isActive = pathWithoutLocale === item.href || 
             (item.href !== "/" && pathWithoutLocale.startsWith(item.href))
@@ -49,21 +56,42 @@ export function SidebarContent() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
                 isActive 
                   ? "bg-sidebar-accent text-sidebar-accent-foreground" 
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
               )}
             >
-              <item.icon className="h-5 w-5" />
-              {t(item.labelKey)}
+              <item.icon className="h-5 w-5 shrink-0" />
+              <span className="truncate">{t(item.labelKey)}</span>
             </Link>
           )
         })}
       </nav>
 
+      {/* Preferences Section for Mobile/Sidebar */}
+      <div className="px-4 py-2 space-y-2 bg-sidebar border-t border-border/50">
+        <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+          {t("preferences")}
+        </p>
+        <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-sidebar-accent/30">
+          <div className="flex items-center gap-3">
+            <Palette className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{t("theme")}</span>
+          </div>
+          <ThemeToggle />
+        </div>
+        <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-sidebar-accent/30">
+          <div className="flex items-center gap-3">
+            <Languages className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{t("language")}</span>
+          </div>
+          <LanguageSwitcher />
+        </div>
+      </div>
+
       {/* Footer */}
-      <div className="border-t border-border p-4">
+      <div className="border-t border-border p-4 bg-sidebar">
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500" />
           <div className="flex-1 overflow-hidden">

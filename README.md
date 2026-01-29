@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dreamland Manager: Strategic Intelligence Platform
 
-## Getting Started
+Dreamland Manager is a premium, AI-first management platform designed to transform raw project data into **strategic intelligence**. This application prioritizes executive-level decision-making by blending operational metrics with team wellness analysis.
 
-First, run the development server:
+## 🚀 Business Pillars
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 1. Strategic AI Advisor (Intelligence-First)
+Unlike traditional dashboards that only show past events, Dreamland implements a **Predictive Strategy Layer**.
+- **Risk Mitigation**: Automatically identifies "High" priority bottlenecks and translates them into actionable business alerts.
+- **Contextual Insights**: Uses current data signals to suggest where to pivot resources or when to introduce innovation initiatives.
+- **Decision Support**: Provides a clean, executive interface that highlights *what matters now*, removing the noise of standard reporting.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Team Wellness & Sentiment Analysis
+We believe that sustainable execution is impossible without a healthy team. Dreamland integrates **Sentiment Monitoring** as a core KPI:
+- **Burnout Prevention**: Tracks department-level emotional trends to identify stress before it impacts delivery.
+- **Qualitative Data**: Captures the "why" behind the numbers (dominant emotions, key concerns) to provide a 360-degree view of organizational health.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Mobile-First Executive Experience
+Designed for the leader on the move.
+- **Zero Friction**: 100% responsive interface that ensures critical alerts are readable and actionable from any device, anytime.
+- **Premium Aesthetics**: High-end glassmorphism design (Dark Mode optimized) to match the quality of premium strategic tools.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠 Tech Stack
 
-## Learn More
+- **Framework**: Next.js 16 (App Router)
+- **Styling**: Tailwind CSS v4 (Custom Premium Utility Classes)
+- **Database**: Prisma + SQLite (Portable & Fast)
+- **I18n**: Internationalization support (EN/ES) for global teams.
 
-To learn more about Next.js, take a look at the following resources:
+## 🏃 Getting Started
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Setup Database**:
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
 
-## Deploy on Vercel
+3. **Run Development Server**:
+   ```bash
+   npm run dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Open [http://localhost:3000](http://localhost:3000) to access the strategic dashboard.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+*Nexus Manager - Turning data into direction.*

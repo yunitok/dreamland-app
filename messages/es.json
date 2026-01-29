@@ -7,7 +7,10 @@
         "teamPulse": "Pulso del Equipo",
         "admin": "Admin",
         "notifications": "Notificaciones",
-        "toggleTheme": "Cambiar tema"
+        "toggleTheme": "Cambiar tema",
+        "preferences": "Preferencias",
+        "theme": "Tema",
+        "language": "Idioma"
     },
     "dashboard": {
         "title": "Inteligencia Estratégica",
@@ -90,5 +93,15 @@
     "footer": {
         "strategicPM": "PM Estratégico",
         "enterprise": "Enterprise"
+    },
+    "login": {
+        "title": "Acceso al Sistema",
+        "description": "Panel de Inteligencia Estratégica",
+        "username": "Usuario",
+        "password": "Contraseña",
+        "signIn": "Iniciar Sesión",
+        "invalidCredentials": "Usuario o contraseña incorrectos",
+        "welcomeBack": "Bienvenido de nuevo",
+        "subTitle": "Identifícate para acceder al portal estratégico"
     }
 }

@@ -43,34 +43,38 @@ export function DepartmentCards({ departments }: DepartmentCardsProps) {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       {departments.map((dept) => (
-        <Card key={dept.name} className="overflow-hidden border-border/50 hover:border-border transition-colors">
+        <Card key={dept.name} className="overflow-hidden border-border/40 hover:border-primary/30 transition-all duration-300 premium-card group">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-bold">{dept.name}</CardTitle>
+            <CardTitle className="text-lg font-bold group-hover:text-primary transition-colors">{dept.name}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <FolderKanban className="h-4 w-4" />
-                <span>{t("projectsCount", { count: dept.projectCount })}</span>
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                  <FolderKanban className="h-4 w-4" />
+                </div>
+                <span className="font-medium">{t("projectsCount", { count: dept.projectCount })}</span>
               </div>
             </div>
 
             {dept.sentimentScore !== undefined && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Heart className="h-4 w-4" />
-                    <span>{t("sentiment")}</span>
+                    <div className={cn("p-2 rounded-lg", getSentimentBg(dept.sentimentScore))}>
+                      <Heart className={cn("h-4 w-4", getSentimentColor(dept.sentimentScore))} />
+                    </div>
+                    <span className="font-medium">{t("sentiment")}</span>
                   </div>
-                  <span className={cn("text-sm font-bold", getSentimentColor(dept.sentimentScore))}>
-                    {dept.sentimentScore}/100
+                  <span className={cn("text-xl font-black tabular-nums", getSentimentColor(dept.sentimentScore))}>
+                    {dept.sentimentScore}
                   </span>
                 </div>
-                <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary">
+                <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-secondary/50">
                    <div 
-                    className={cn("h-full transition-all", 
+                    className={cn("h-full transition-all duration-500 rounded-full", 
                       dept.sentimentScore < 40 ? "bg-red-500" : 
                       dept.sentimentScore < 60 ? "bg-amber-500" : 
                       dept.sentimentScore < 75 ? "bg-blue-500" : "bg-emerald-500"
@@ -79,7 +83,7 @@ export function DepartmentCards({ departments }: DepartmentCardsProps) {
                   />
                 </div>
                 {dept.dominantEmotion && (
-                  <p className="text-xs text-muted-foreground italic">
+                  <p className="text-[10px] text-muted-foreground italic bg-muted/30 p-2 rounded-md border border-border/20">
                     "{dept.dominantEmotion}"
                   </p>
                 )}

@@ -1,0 +1,54 @@
+Este es el informe de análisis psicosocial y organizacional basado en las interacciones registradas. Como experto en RRHH, he detectado una organización en un momento crítico de crecimiento ("dolores de crecimiento"), donde la cultura familiar y el esfuerzo manual están chocando con la necesidad imperiosa de escalabilidad.
+🌡️ Mapa de Calor Emocional
+Este mapa clasifica los departamentos según la intensidad de la carga emocional negativa (estrés/frustración) versus la positiva (optimismo/apertura).
+🔥 Zona Roja (Frustración Crítica y Saturación):
+• Recursos Humanos (RRHH): Es el departamento con mayor carga de angustia verbalizada. Se sienten desbordadas y víctimas de la ineficiencia de otros departamentos (Operaciones).
+    ◦ Indicadores: Uso de palabras como "inhumano", "mierda de las jornadas", "criminal". Laura expresa que la situación les "toca la moral" y les impide dormir por la responsabilidad.
+• Operaciones (Cocina/Sala): Existe una sensación de "esquizofrenia" digital debido a la saturación de comunicaciones.
+    ◦ Indicadores: Pedro menciona que tienes que estar abriendo mensajes todo el día y "acabas esquizofrénico". Robert describe su trabajo de datos como "a guarro" y "basura", denotando hastío por la baja calidad de su tarea.
+🟠 Zona Naranja (Estrés Resiliente):
+• Finanzas: Belén muestra un estrés alto pero lo gestiona con humor y resignación profesional.
+    ◦ Indicadores: Frases como "¿El secreto es el yoga? ¿Son las drogas?" o "Un lunes muy lunes". Hay una sensación de luchar contra una montaña de burocracia manual (los tickets, los excels).
+🟢 Zona Verde (Optimismo y Creatividad):
+• Diseño (Cristina): Es el departamento más vital y positivo. Ven la IA como un "fiel aliado". Cristina protege sus espacios creativos y muestra entusiasmo por eliminar tareas administrativas para diseñar más.
+• Calidad/I+D (Rubén y Pau): Enfoque muy racional y científico. No hay quejas emocionales, sino una obsesión analítica por encontrar el dato correcto. Ven los problemas como puzzles a resolver ("Sherlock").
+--------------------------------------------------------------------------------
+🚧 Resistencia al Cambio
+He identificado tres tipos de resistencia: Legalista, Por Miedo y Por Mala Experiencia Previa.
+1. Resistencia Legalista (La Barrera Normativa):
+    ◦ Protagonista: Laura (RRHH).
+    ◦ El momento: Cuando se le sugiere que la IA puede ayudar en procesos laborales, ella levanta un muro inmediato: "Es que la ley dice que son 30 días de vacaciones... Es que la IA ahí no me puede ayudar, quiero decirte. Es que no lo dice la IA, lo dice la legislación".
+    ◦ Análisis: Su identidad profesional está muy ligada al cumplimiento normativo ("somos graduados sociales, esto viene en la sangre"), lo que le hace escéptica ante soluciones tecnológicas en su área core.
+2. Resistencia por Miedo al Reemplazo:
+    ◦ Protagonista: Equipo de Contabilidad (citado por Belén).
+    ◦ El momento: Tras ver una demo de automatización de facturas, el equipo preguntó: "¿Ya no nos vas a necesitar?".
+    ◦ Análisis: Existe un temor latente en los perfiles administrativos puros de que la automatización elimine sus puestos de trabajo.
+3. Resistencia por Escepticismo/Experiencia Fallida:
+    ◦ Protagonista: Kevin (Area Manager).
+    ◦ El momento: "Una vez lo he intentado para hacer los horarios... me dio una respuesta de mierda... no lo he vuelto a usar".
+    ◦ Análisis: Un intento fallido previo ha generado una barrera de entrada. Necesita ver resultados inmediatos y perfectos para volver a confiar.
+4. Resistencia Cultural ("El Toque Humano"):
+    ◦ Protagonista: Vicente (Ventas) y Laura (RRHH).
+    ◦ El momento: Vicente menciona que automatizaron demasiado y "el ratio de conversión nos bajó una barbaridad" porque el cliente quiere hablar con alguien. Laura insiste en que "Pablo quiere el mimo, total, pleno y absoluto" y que un bot no puede preguntar por el embarazo de la mujer de un empleado,.
+--------------------------------------------------------------------------------
+🕵️ Líderes Ocultos
+Personas que no son los directores principales (como Robert, Belén o Laura) pero demuestran un alto conocimiento, influencia operativa o capacidad de propuesta.
+1. David (Area Manager):
+    ◦ Por qué: Aunque reporta a Robert, demuestra un dominio analítico superior. Él es quien explica la lógica de negocio profunda ("Clientes Hora" para medir eficiencia real sin el sesgo del ticket medio). Propone alertas proactivas y tiene sus propios sistemas de análisis de tendencias. Es un cerebro analítico desaprovechado en tareas manuales.
+2. Oriana (Compras/Finanzas):
+    ◦ Por qué: Es el nexo operativo real entre Finanzas, Diseño y Mantenimiento. Conoce los "dolores" físicos de la empresa (dónde se compra, cómo llega la vajilla, el stock real vs. teórico),. Su visión es transversal y pragmática.
+3. Pau Gea (Calidad):
+    ◦ Por qué: Es quien realmente "pica la piedra" de los datos para Rubén. Ha construido los Excels complejos de escandallos y conoce la realidad del dato sucio al milímetro.
+--------------------------------------------------------------------------------
+🚀 Motivadores (Palancas de Cambio)
+Temas que cambiaron el tono de la voz, generaron interrupciones de entusiasmo o frases de alivio ("Me harías madre", "Te pongo una casa").
+1. La Eliminación del "Trabajo Basura" (Data Entry):
+    ◦ El entusiasmo se dispara cuando se menciona dejar de copiar y pegar datos. Robert define su trabajo actual como gestionar "basura de data". La promesa de automatizar la ingesta de datos de Cover Manager o Agora es el mayor motivador para el equipo de Operaciones.
+2. Recuperación del Control (Orden):
+    ◦ Marta (Mantenimiento) se muestra muy motivada por tener control y trazabilidad. No quiere que se le escape cuándo va un técnico. Su motivación es la carga mental: "Me quitaría un poquito de carga mental".
+3. Dinero y Rentabilidad ("Sherlock"):
+    ◦ Para Rubén y Pedro, el motivador es el reto intelectual y económico: encontrar los 800.000€ perdidos en mermas y costes ocultos. Se nota orgullo profesional en este proyecto.
+4. Agilidad Creativa:
+    ◦ Cristina (Diseño) se entusiasma con la idea de generar 3.000 imágenes en una hora en lugar de esperar 40 minutos por un solo render. Su motivación es la velocidad de iteración.
+5. El "Registro Retributivo" (El Dolor Específico):
+    ◦ Para Laura (RRHH), automatizar el Excel del registro retributivo (un informe legal obligatorio y tedioso) es el punto de dolor específico que, si se resuelve, gana su confianza total: "Si nos unificara todos los datos y nos generara mensualmente el registro retributivo, ya eres nuestra... te pongo una casa en la Coruña".

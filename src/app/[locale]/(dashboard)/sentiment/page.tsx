@@ -39,48 +39,48 @@ export default async function SentimentPage({
         descriptionKey="sentiment.description"
       />
       
-      <div className="flex-1 p-6 space-y-6">
+      <div className="flex-1 p-4 md:p-8 space-y-8">
         {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-3">
-          <Card>
+          <Card className="premium-card rounded-xl">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {t("companyAverage")}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{avgScore}/100</div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <div className="text-4xl font-black">{avgScore}/100</div>
+              <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tight">
                 {t("overallWellnessScore")}
               </p>
             </CardContent>
           </Card>
           
-          <Card className="bg-red-500/5 border-red-500/10">
+          <Card className="premium-card rounded-xl bg-red-500/5 border-red-500/10">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {t("criticalDepartments")}
               </CardTitle>
               <AlertTriangle className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-red-500">{criticalDepts}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <div className="text-4xl font-black text-red-500">{criticalDepts}</div>
+              <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tight">
                 {t("requireImmediateAttention")}
               </p>
             </CardContent>
           </Card>
           
-          <Card className="bg-emerald-500/5 border-emerald-500/10">
+          <Card className="premium-card rounded-xl bg-emerald-500/5 border-emerald-500/10">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {t("healthyDepartments")}
               </CardTitle>
               <CheckCircle className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-emerald-500">{healthyDepts}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <div className="text-4xl font-black text-emerald-500">{healthyDepts}</div>
+              <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tight">
                 {t("scoreAbove70")}
               </p>
             </CardContent>

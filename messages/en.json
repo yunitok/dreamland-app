@@ -7,7 +7,10 @@
         "teamPulse": "Team Pulse",
         "admin": "Admin",
         "notifications": "Notifications",
-        "toggleTheme": "Toggle theme"
+        "toggleTheme": "Toggle theme",
+        "preferences": "Preferences",
+        "theme": "Theme",
+        "language": "Language"
     },
     "dashboard": {
         "title": "Strategic Intelligence",
@@ -90,5 +93,15 @@
     "footer": {
         "strategicPM": "Strategic PM",
         "enterprise": "Enterprise"
+    },
+    "login": {
+        "title": "System Access",
+        "description": "Strategic Intelligence Dashboard",
+        "username": "Username",
+        "password": "Password",
+        "signIn": "Sign In",
+        "invalidCredentials": "Invalid username or password",
+        "welcomeBack": "Welcome Back",
+        "subTitle": "Identify yourself to access the strategic portal"
     }
 }

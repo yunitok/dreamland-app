@@ -2,6 +2,7 @@
 
 import { Bar, BarChart, XAxis, YAxis, Cell, ResponsiveContainer, Tooltip } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { useTranslations } from "next-intl"
 import type { TeamMood } from "@/generated/prisma/client"
 
 interface SentimentChartProps {
@@ -16,6 +17,8 @@ const getBarColor = (score: number) => {
 }
 
 export function SentimentChart({ moods }: SentimentChartProps) {
+  const t = useTranslations("sentiment")
+  
   const chartData = moods.map(mood => ({
     name: mood.departmentName,
     score: mood.sentimentScore,
@@ -23,11 +26,11 @@ export function SentimentChart({ moods }: SentimentChartProps) {
   }))
 
   return (
-    <Card>
+    <Card className="premium-card rounded-xl">
       <CardHeader>
-        <CardTitle>Department Wellness Score</CardTitle>
+        <CardTitle className="text-lg font-bold">{t("departmentWellnessScore")}</CardTitle>
         <CardDescription>
-          Sentiment analysis by department (0 = High Stress, 100 = Optimal)
+          {t("chartDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent>

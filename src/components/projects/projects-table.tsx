@@ -87,81 +87,103 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
   return (
     <>
       {/* Filters */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">{t("priority")}:</span>
-          {["all", "High", "Medium", "Low"].map((priority) => (
-            <Button
-              key={priority}
-              variant={priorityFilter === priority ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setPriorityFilter(priority)}
-              className="h-7"
-            >
-              {priority === "all" ? t("all") : getPriorityLabel(priority)}
-            </Button>
-          ))}
+      <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mr-1">{t("priority")}:</span>
+          <div className="flex flex-wrap gap-1">
+            {["all", "High", "Medium", "Low"].map((priority) => (
+              <Button
+                key={priority}
+                variant={priorityFilter === priority ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setPriorityFilter(priority)}
+                className="h-8 text-xs px-3"
+              >
+                {priority === "all" ? t("all") : getPriorityLabel(priority)}
+              </Button>
+            ))}
+          </div>
         </div>
-        <div className="flex items-center gap-2 ml-4">
-          <span className="text-sm text-muted-foreground">{t("department")}:</span>
-          <Button
-            variant={departmentFilter === "all" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setDepartmentFilter("all")}
-            className="h-7"
-          >
-            {t("all")}
-          </Button>
-          {departments.map((dept) => (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mr-1">{t("department")}:</span>
+          <div className="flex flex-wrap gap-1">
             <Button
-              key={dept}
-              variant={departmentFilter === dept ? "secondary" : "ghost"}
+              variant={departmentFilter === "all" ? "secondary" : "ghost"}
               size="sm"
-              onClick={() => setDepartmentFilter(dept)}
-              className="h-7"
+              onClick={() => setDepartmentFilter("all")}
+              className="h-8 text-xs px-3"
             >
-              {dept}
+              {t("all")}
             </Button>
-          ))}
+            {departments.map((dept) => (
+              <Button
+                key={dept}
+                variant={departmentFilter === dept ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setDepartmentFilter(dept)}
+                className="h-8 text-xs px-3"
+              >
+                {dept}
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("titleLabel")}</TableHead>
-              <TableHead>{t("department")}</TableHead>
-              <TableHead>{t("type")}</TableHead>
-              <TableHead>{t("priority")}</TableHead>
-              <TableHead>{t("status")}</TableHead>
-              <TableHead className="w-[80px]">{t("actions")}</TableHead>
-            </TableRow>
-          </TableHeader>
+      <div className="rounded-xl border bg-card/50 backdrop-blur-sm overflow-hidden premium-card">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent border-border/50">
+                <TableHead className="font-bold">{t("titleLabel")}</TableHead>
+                <TableHead className="hidden md:table-cell font-bold">{t("department")}</TableHead>
+                <TableHead className="hidden sm:table-cell font-bold">{t("type")}</TableHead>
+                <TableHead className="hidden xs:table-cell font-bold">{t("priority")}</TableHead>
+                <TableHead className="font-bold">{t("status")}</TableHead>
+                <TableHead className="w-[60px] text-right font-bold">{t("actions")}</TableHead>
+              </TableRow>
+            </TableHeader>
           <TableBody>
             {filteredProjects.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                  {t("noProjectsMatch")}
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
+                  <div className="flex flex-col items-center gap-2">
+                    <p className="text-sm">{t("noProjectsMatch")}</p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
               filteredProjects.map((project) => (
-                <TableRow key={project.id} className="cursor-pointer hover:bg-muted/50">
-                  <TableCell className="font-medium max-w-[300px] truncate">
-                    {project.title}
+                <TableRow 
+                  key={project.id} 
+                  className="group cursor-pointer hover:bg-muted/30 border-border/40"
+                  onClick={() => setSelectedProject(project)}
+                >
+                  <TableCell className="font-semibold py-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="truncate max-w-[180px] xs:max-w-[250px] md:max-w-[400px]">
+                        {project.title}
+                      </span>
+                      <div className="flex md:hidden items-center gap-2 text-[10px] text-muted-foreground font-normal">
+                        <span>{project.department}</span>
+                        <span className="w-1 h-1 rounded-full bg-border" />
+                        <span>{getTypeLabel(project.type)}</span>
+                      </div>
+                    </div>
                   </TableCell>
-                  <TableCell>{project.department}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={cn("text-xs", typeStyles[project.type as keyof typeof typeStyles])}>
+                  <TableCell className="hidden md:table-cell text-muted-foreground">
+                    {project.department}
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    <Badge variant="outline" className={cn("text-[10px] px-2 py-0 h-5 font-bold uppercase tracking-tighter", typeStyles[project.type as keyof typeof typeStyles])}>
                       {getTypeLabel(project.type)}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden xs:table-cell">
                     <Badge 
                       variant="outline" 
-                      className={cn("text-xs", priorityStyles[project.priority as keyof typeof priorityStyles])}
+                      className={cn("text-[10px] px-2 py-0 h-5 font-bold uppercase tracking-tighter", priorityStyles[project.priority as keyof typeof priorityStyles])}
                     >
                       {getPriorityLabel(project.priority)}
                     </Badge>
@@ -169,17 +191,16 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
                   <TableCell>
                     <Badge 
                       variant="secondary"
-                      className={cn("text-xs", statusStyles[project.status as keyof typeof statusStyles])}
+                      className={cn("text-[10px] px-2 py-0 h-5 font-bold uppercase tracking-tighter", statusStyles[project.status as keyof typeof statusStyles])}
                     >
                       {getStatusLabel(project.status)}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-right">
                     <Button 
                       variant="ghost" 
                       size="icon"
-                      onClick={() => setSelectedProject(project)}
-                      className="h-8 w-8"
+                      className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -190,10 +211,12 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
           </TableBody>
         </Table>
       </div>
+    </div>
 
-      {/* Project Detail Sheet */}
-      <Sheet open={!!selectedProject} onOpenChange={() => setSelectedProject(null)}>
-        <SheetContent className="w-[500px] sm:max-w-[500px]">
+    {/* Project Detail Sheet */}
+    <Sheet open={!!selectedProject} onOpenChange={() => setSelectedProject(null)}>
+        <SheetContent className="w-full sm:max-w-xl p-0 overflow-y-auto">
+          <div className="p-6">
           {selectedProject && (
             <>
               <SheetHeader>
@@ -248,6 +271,7 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
               </div>
             </>
           )}
+          </div>
         </SheetContent>
       </Sheet>
     </>

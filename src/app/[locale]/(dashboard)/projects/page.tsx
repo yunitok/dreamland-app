@@ -34,7 +34,7 @@ export default async function ProjectsPage({
         descriptionKey="projects.headerDescription"
       />
       
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-4 md:p-8 space-y-8">
         <ProjectsTable projects={projects} departments={departments} />
       </div>
     </div>

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Sidebar } from "@/components/layout/sidebar";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -49,12 +48,7 @@ export default async function LocaleLayout({
           disableTransitionOnChange
         >
           <NextIntlClientProvider messages={messages}>
-            <div className="relative flex min-h-screen w-full flex-col lg:flex-row">
-              <Sidebar className="hidden lg:block lg:w-64" />
-              <main className="flex-1 w-full overflow-x-hidden">
-                {children}
-              </main>
-            </div>
+            {children}
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>
