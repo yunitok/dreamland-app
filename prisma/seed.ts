@@ -110,12 +110,40 @@ async function main() {
       score: 55, 
       emotion: 'Saturación de Leads', 
       concerns: 'Bandeja de entrada colapsada por CVs sin filtrar y necesidad de auditar datos manuales.' 
+    },
+    'Area Manager Sala': {
+      score: 52,
+      emotion: 'Analítico Saturado',
+      concerns: 'David demuestra un dominio analítico superior pero está atrapado en tareas manuales de reporteo.'
+    },
+    'Area Manager Cocina': {
+      score: 55,
+      emotion: 'Buscando Eficiencia',
+      concerns: 'Necesidad de buscador inteligente para la "Biblia" de cocina y automatización de pedidos forecast.'
+    },
+    'Cultura': {
+      score: 72,
+      emotion: 'Foco en Valores',
+      concerns: 'Detección de talento y clima mediante análisis de entrevistas 1:1 y recuento de reviews.'
+    },
+    'Vajilla/Almacén': {
+      score: 45,
+      emotion: 'Descontrol de Stock',
+      concerns: 'Conciliación manual agotadora entre Yurest y el físico. Pérdidas recurrentes sin trazabilidad.'
+    },
+    'Alvar': {
+      score: 69,
+      emotion: 'Humor Gen Z',
+      concerns: 'Curación de un diccionario de insultos para reuniones. Proyecto de baja prioridad pero alto impacto cultural.'
     }
   };
 
   const moods = await Promise.all(
     uniqueDepartments.map((deptName: any) => {
-      const data = sentimentMap[deptName] || {
+      // Clean department names that might have multiple sub-depts like "Finanzas / Ops"
+      const mainDept = deptName.split(' / ')[0].split(' /')[0];
+      
+      const data = sentimentMap[deptName] || sentimentMap[mainDept] || {
         score: 60,
         emotion: 'Neutral / Adaptación',
         concerns: `Procesos de cambio y estandarización en ${deptName}.`

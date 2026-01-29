@@ -5,8 +5,8 @@
     "departamento_origen": "Calidad / I+D",
     "tipo": "Problema",
     "prioridad_detectada": "Alta",
-    "descripcion_corta": "Detectar y corregir la diferencia entre coste teórico y real para recuperar margen.",
-    "fuente_cita": "el objetivo que nos ha puesto Álvarnos 70 700,000 € en este año... En teoría deberíamos haber gastado 12.000 € y hemos gastado 74.000 €"
+    "descripcion_corta": "Detectar desviación coste teórico vs real y consolidar márgenes por plato/local.",
+    "fuente_cita": "Análisis automático de desviaciones de coste por plato... Impacto: Muy Alto"
   },
   {
     "id": 2,
@@ -15,7 +15,7 @@
     "tipo": "Problema",
     "prioridad_detectada": "Alta",
     "descripcion_corta": "Cambios constantes de jornada que obligan a modificaciones contractuales masivas.",
-    "fuente_cita": "Te hablo de 20 cambios de jornada mensuales, no 200 en lo que llevamos de mes. Y es que el cierre de nómina será la semana que viene, con lo cual podemos llegar a hacer 400 cambios de jornada. Eso no se puede. Eso es inhumano."
+    "fuente_cita": "Te hablo de 20 cambios de jornada mensuales... Eso no se puede. Eso es inhumano."
   },
   {
     "id": 3,
@@ -23,8 +23,8 @@
     "departamento_origen": "Operaciones",
     "tipo": "Problema",
     "prioridad_detectada": "Alta",
-    "descripcion_corta": "Volcado manual de datos de diversas apps a un Excel maestro ('archivo basura').",
-    "fuente_cita": "mi equipo también... se encarga de meter toda la parte de data... a guarro, por así decirlo, a formato Excel."
+    "descripcion_corta": "Rellenado automático de documentos operativos extraídos de Cover y Ágora.",
+    "fuente_cita": "Rellenado automático de documentos operativos extraídos de Cover Manager y Ágora... Impacto alto"
   },
   {
     "id": 4,
@@ -32,17 +32,17 @@
     "departamento_origen": "Financiero",
     "tipo": "Oportunidad",
     "prioridad_detectada": "Alta",
-    "descripcion_corta": "Automatizar la posición bancaria diaria y previsión de caja.",
-    "fuente_cita": "Yo para ver la posición bancaria todos los días 20 minutos, media hora... Confírmame en el móvil a que el token, el no sé qué es un coñazo."
+    "descripcion_corta": "Control tiempo real saldos, Cash Flow y previsión a 12 meses (reemplazo Embat).",
+    "fuente_cita": "Gestión de Tesorería del Grupo... generación automática de un cash flow con previsión... Impacto: Alto"
   },
   {
     "id": 5,
     "titulo_proyecto": "Chatbot Atención al Cliente",
-    "departamento_origen": "Operaciones / Calidad",
+    "departamento_origen": "Operaciones / Ventas",
     "tipo": "Idea",
     "prioridad_detectada": "Alta",
-    "descripcion_corta": "IA para responder preguntas frecuentes y filtrar consultas antes de llegar a humanos.",
-    "fuente_cita": "automatizar el tema de la atención al cliente... porque nos contacta mucha gente incluso por el chat... para el tema de un poco quitar ATC el tema de la gestión de grupos"
+    "descripcion_corta": "Chatbot/Autorespuestas para gestión de reservas y dudas frecuentes.",
+    "fuente_cita": "Chatbot/Autorespuestas en la gestión de las reservas automatizadas del cliente. Impacto: Alto"
   },
   {
     "id": 6,
@@ -50,26 +50,26 @@
     "departamento_origen": "RRHH",
     "tipo": "Idea",
     "prioridad_detectada": "Alta",
-    "descripcion_corta": "Herramienta para filtrar automáticamente cientos de currículums.",
-    "fuente_cita": "automatizar con IA el tema de la selección, porque creo que me ahorraría muchísimo trabajo... a lo mejor te inscriben en una oferta 1000 personas y te valen 10."
+    "descripcion_corta": "Herramienta para filtrar candidatos en base a ítems establecidos.",
+    "fuente_cita": "disponer de una herramienta que tenga la capacidad de hacer la criba de los candidatos... Impacto: Alto"
   },
   {
     "id": 7,
     "titulo_proyecto": "Saturación Slack",
-    "departamento_origen": "Transversal (Ops/Cocina)",
+    "departamento_origen": "Transversal",
     "tipo": "Problema",
     "prioridad_detectada": "Alta",
-    "descripcion_corta": "Exceso de mensajes y grupos que ocultan información crítica.",
-    "fuente_cita": "tienes que estar continuamente abriendo mensajes absolutamente todo el día y acabas esquizofrénico... hay 3000 grupos"
+    "descripcion_corta": "Exceso de mensajes; se requiere análisis automático y agrupación de incidencias.",
+    "fuente_cita": "Análisis automático de Slack (lee y resume lo importante... detecta patrones) Impacto medio-alto"
   },
   {
     "id": 8,
-    "titulo_proyecto": "Integración Payhawk - ERP",
+    "titulo_proyecto": "Control Gastos Payhawk/Travelperk",
     "departamento_origen": "Financiero",
     "tipo": "Problema",
     "prioridad_detectada": "Media",
-    "descripcion_corta": "Subida manual de facturas a dos sistemas desconectados.",
-    "fuente_cita": "ella tiene que ir descargando las facturas de Amazon o de Temu... la sube aquí y de aquí las tiene que volver a enviar a Business Central porque tampoco está conectada."
+    "descripcion_corta": "Volcado automático y clasificación de gastos de empleados en Excel estructurado.",
+    "fuente_cita": "control, clasificación y análisis de los gastos realizados por los empleados... Impacto: Alto"
   },
   {
     "id": 9,
@@ -77,8 +77,8 @@
     "departamento_origen": "Financiero",
     "tipo": "Problema",
     "prioridad_detectada": "Media",
-    "descripcion_corta": "Reclamar a empleados que no justifican gastos de tarjeta de empresa.",
-    "fuente_cita": "tengo que ir un poco de perro guardián... Oye, Mengano, ¿te falta por subir o justificar los gastos de tal?"
+    "descripcion_corta": "Reclamar a empleados que no justifican gastos (detectar gastos sin factura).",
+    "fuente_cita": "detectar gastos sin factura o fuera de política"
   },
   {
     "id": 10,
@@ -86,17 +86,17 @@
     "departamento_origen": "Calidad / I+D",
     "tipo": "Idea",
     "prioridad_detectada": "Alta",
-    "descripcion_corta": "Sistema para consultar alérgenos y trazas de forma rápida y segura.",
-    "fuente_cita": "Sistema inteligente para la gestión de alérgenos, intolerancias y creencias alimentarias que permita responder de forma segura"
+    "descripcion_corta": "Sistema para responder consultas de intolerancias de forma segura y rápida.",
+    "fuente_cita": "Sistema inteligente para la gestión de alérgenos... Impacto: Muy Alto"
   },
   {
     "id": 11,
     "titulo_proyecto": "Generación Fichas Técnicas",
     "departamento_origen": "Calidad / I+D",
     "tipo": "Idea",
-    "prioridad_detectada": "Media",
-    "descripcion_corta": "Automatizar la creación de fichas de cocina con fotos y pasos.",
-    "fuente_cita": "Generación de las fichas técnicas de cocina que incluye automática (vajilla, fotografía, ingredientes, cantidades y resumen de pasos)"
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Generación auto de fichas (fotos, pasos) coherentes con la oficial.",
+    "fuente_cita": "Generación de las fichas técnicas de cocina que incluye automática... Impacto: Alto"
   },
   {
     "id": 12,
@@ -104,8 +104,8 @@
     "departamento_origen": "Calidad / I+D",
     "tipo": "Idea",
     "prioridad_detectada": "Alta",
-    "descripcion_corta": "Detectar subidas de precio en albaranes y recalcular márgenes.",
-    "fuente_cita": "Monitoreo en tiempo real de los precios de proveedores y detección automática de cualquier aumento que afecte a los ingredientes."
+    "descripcion_corta": "Monitoreo real de precios y actualización automática de escandallos.",
+    "fuente_cita": "Monitoreo en tiempo real de los precios de proveedores... Impacto: Muy Alto"
   },
   {
     "id": 13,
@@ -114,7 +114,7 @@
     "tipo": "Idea",
     "prioridad_detectada": "Baja",
     "descripcion_corta": "Automatizar redacción de correos en inglés para confirmar reservas.",
-    "fuente_cita": "reservas que están sin confirmar que son extranjeros, no los podemos llamar por teléfono... les mandamos un correo. Ese correo siempre es el mismo"
+    "fuente_cita": "reservas que están sin confirmar que son extranjeros... les mandamos un correo."
   },
   {
     "id": 14,
@@ -123,34 +123,34 @@
     "tipo": "Problema",
     "prioridad_detectada": "Media",
     "descripcion_corta": "Llamadas manuales para confirmar asistencia y liberar mesas.",
-    "fuente_cita": "se invierte a lo mejor entre una y dos horas en llamar a las reservas para reconfirmar las reservas"
+    "fuente_cita": "se invierte a lo mejor entre una y dos horas en llamar a las reservas"
   },
   {
     "id": 15,
     "titulo_proyecto": "Análisis Reviews Cover",
     "departamento_origen": "Operaciones Sala",
     "tipo": "Problema",
-    "prioridad_detectada": "Media",
-    "descripcion_corta": "Copia y pega manual de reseñas para análisis de satisfacción.",
-    "fuente_cita": "es copiar y pegar, copiar y pegar, copiar y pegar de 140 platos... muy manual, muy manual pisarlo y muy manual después detectar el por qué"
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Análisis automático de notas para detectar patrones por turno/camarero.",
+    "fuente_cita": "Notas de cover... Informes con la media de los turnos... Impacto: Alto"
   },
   {
     "id": 16,
     "titulo_proyecto": "Alertas Staffing (Turnos)",
     "departamento_origen": "Operaciones Sala",
     "tipo": "Idea",
-    "prioridad_detectada": "Media",
-    "descripcion_corta": "Avisos automáticos si faltan camareros según ratio de reservas.",
-    "fuente_cita": "Si yo tengo para esta noche 20 comensales... que me salase una alerta de, oye, te está sobrando un camarero."
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Alertas predictivas de coste personal vs facturación.",
+    "fuente_cita": "Alertas predictivas de coste de personal (Simular escenarios... avisar al superar límite) Impacto alto"
   },
   {
     "id": 17,
     "titulo_proyecto": "Migración Yurest a G-Stock",
-    "departamento_origen": "Transversal (Ops/Finanzas)",
+    "departamento_origen": "Transversal",
     "tipo": "Oportunidad",
     "prioridad_detectada": "Alta",
-    "descripcion_corta": "Cambio de software de inventario por fiabilidad del dato.",
-    "fuente_cita": "Yurest no funciona bien... inventaria hoy 20 y mañana de repente sin tocarlo no aparecen 20... ya no me fío."
+    "descripcion_corta": "Evaluar cambio o mejora de software de inventario (Stock mínimo y conciliación).",
+    "fuente_cita": "Conciliación automática entre inventarios de Yurest, compras y stock teórico... Impacto: Muy Alto"
   },
   {
     "id": 18,
@@ -159,7 +159,7 @@
     "tipo": "Idea",
     "prioridad_detectada": "Media",
     "descripcion_corta": "Sustituir renders lentos por generación de imágenes IA.",
-    "fuente_cita": "para qué nos vamos a gastar... en una persona únicamente para renderizar cuando la propia interiorista... puede generar imágenes"
+    "fuente_cita": "para qué nos vamos a gastar... en una persona únicamente para renderizar"
   },
   {
     "id": 19,
@@ -176,44 +176,44 @@
     "departamento_origen": "Financiero",
     "tipo": "Problema",
     "prioridad_detectada": "Media",
-    "descripcion_corta": "Descarga manual de informes de Stripe, Apple, Google para cuadrar Dots.",
+    "descripcion_corta": "Descarga manual de informes de Stripe, Apple, Google.",
     "fuente_cita": "tengo que ir a 17 sitios distintos, cambiarme el filtro... Apple, Google y Stripe."
   },
   {
     "id": 21,
     "titulo_proyecto": "Arqueos de Caja Unificados",
-    "departamento_origen": "Operaciones / Finanzas",
+    "departamento_origen": "Finanzas / Ops",
     "tipo": "Problema",
     "prioridad_detectada": "Media",
-    "descripcion_corta": "Revisión visual de dobles pantallas para cuadrar efectivo vs tarjeta.",
-    "fuente_cita": "el hecho de revisar que las cajas estén bien... nos ponemos a doble pantalla"
+    "descripcion_corta": "Detección automática de descuadres y generación de informes de control.",
+    "fuente_cita": "Análisis de diferencias de caja... detección automática de descuadres... Impacto: Medio"
   },
   {
     "id": 22,
     "titulo_proyecto": "Dashboard KPIs RRHH",
     "departamento_origen": "RRHH",
     "tipo": "Idea",
-    "prioridad_detectada": "Media",
-    "descripcion_corta": "Visualización automática de rotación, absentismo y antigüedad.",
-    "fuente_cita": "Saar un listado de personal... dime la edad media... cuál ha sido el índice de rotación"
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Facilitar datos de plantilla en todos los KPIs (rotación, edad, etc).",
+    "fuente_cita": "disponer de una herramienta que tenga la capacidad de facilitarnos los datos de la plantilla... Impacto: Alto"
   },
   {
     "id": 23,
     "titulo_proyecto": "Chef Creativo (Food Pairing)",
     "departamento_origen": "Calidad / I+D",
     "tipo": "Idea",
-    "prioridad_detectada": "Baja",
-    "descripcion_corta": "IA que sugiera recetas basadas en stock sobrante.",
-    "fuente_cita": "genera propuestas de platos creativos que respeten un coste objetivo por unidad y encajen con la línea gastronómica"
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "IA que sugiera recetas creativas basadas en ingredientes y coste objetivo.",
+    "fuente_cita": "genera propuestas de platos creativos que respeten un coste objetivo... Impacto: Muy Alto"
   },
   {
     "id": 24,
     "titulo_proyecto": "Market Intelligence",
     "departamento_origen": "Calidad / I+D",
     "tipo": "Idea",
-    "prioridad_detectada": "Baja",
-    "descripcion_corta": "Análisis de competidores y tendencias.",
-    "fuente_cita": "analiza automáticamente menús, precios, promociones y tendencias de potenciales competidores"
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Análisis automático de menús y precios de competidores.",
+    "fuente_cita": "analiza automáticamente menús, precios, promociones y tendencias... Impacto: Muy Alto"
   },
   {
     "id": 25,
@@ -231,16 +231,16 @@
     "tipo": "Problema",
     "prioridad_detectada": "Media",
     "descripcion_corta": "Auditoría manual de datos de reservas introducidos por Operaciones.",
-    "fuente_cita": "los macros... nos los meten ellos, pero luego yo lo que hago es revisarlos porque... hay algún error."
+    "fuente_cita": "los macros... nos los meten ellos, pero luego yo lo que hago es revisarlos"
   },
   {
     "id": 27,
     "titulo_proyecto": "Reporte Turnos por Voz",
-    "departamento_origen": "Operaciones / Cocina",
+    "departamento_origen": "Operaciones",
     "tipo": "Idea",
     "prioridad_detectada": "Baja",
     "descripcion_corta": "Sustituir texto en Slack por notas de voz transcritas.",
-    "fuente_cita": "si se pudieran apuntar por voz... habría más registros de los que tenemos a día de hoy."
+    "fuente_cita": "si se pudieran apuntar por voz... habría más registros"
   },
   {
     "id": 28,
@@ -248,8 +248,8 @@
     "departamento_origen": "Mantenimiento",
     "tipo": "Problema",
     "prioridad_detectada": "Media",
-    "descripcion_corta": "Control manual de stock de bombillas/grifos.",
-    "fuente_cita": "sobre todo por los avisos de mínimos... que a veces nos quedamos más atados a los tiempos de, ostras, he mirado y no queda"
+    "descripcion_corta": "Alertas automáticas por stock mínimo de material.",
+    "fuente_cita": "Gestión de stock... alertas automáticas por stock mínimo."
   },
   {
     "id": 29,
@@ -258,7 +258,7 @@
     "tipo": "Idea",
     "prioridad_detectada": "Baja",
     "descripcion_corta": "Envío manual de códigos de descuento por cumpleaños.",
-    "fuente_cita": "no tener que estar manualmente haciendo los correos, programando... tema de vuelta cumples"
+    "fuente_cita": "no tener que estar manualmente haciendo los correos... vuelta cumples"
   },
   {
     "id": 30,
@@ -267,43 +267,43 @@
     "tipo": "Problema",
     "prioridad_detectada": "Baja",
     "descripcion_corta": "Altas y bajas manuales en seguros y gimnasios.",
-    "fuente_cita": "Adeslas nosotros cogemos todos los meses, toda la gente que ha sido baja... cancélame los de la póliza"
+    "fuente_cita": "Adeslas nosotros cogemos todos los meses... cancélame los de la póliza"
   },
   {
     "id": 31,
     "titulo_proyecto": "Catálogo Vajilla Activo",
-    "departamento_origen": "Diseño",
+    "departamento_origen": "Vajilla/Almacén",
     "tipo": "Problema",
-    "prioridad_detectada": "Baja",
-    "descripcion_corta": "Excel estático de vajilla donde se borra el histórico.",
-    "fuente_cita": "Todo lo que esté en el Excel... debe estar en el local... Este plato igual no existe. (Problema de borrar histórico)"
+    "prioridad_detectada": "Media",
+    "descripcion_corta": "Alta, baja y actualización catálogo con carga en Yurest.",
+    "fuente_cita": "Alta, baja y actualización del catálogo de vajilla... Impacto: Medio–Alto"
   },
   {
     "id": 32,
     "titulo_proyecto": "Automatización Reuniones I+D",
     "departamento_origen": "Calidad / I+D",
     "tipo": "Idea",
-    "prioridad_detectada": "Baja",
-    "descripcion_corta": "Transcribir reunión y pasar tareas a Sheet.",
-    "fuente_cita": "Descargar todas las tareas que se dicen en la reunión de los viernes... y pasarlas directamente a la pestaña de tareas"
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Transcribir reunión viernes y pasar tareas a Sheet automáticamente.",
+    "fuente_cita": "Descargar todas las tareas... pasarlas directamente a la pestaña de tareas... Impacto: Alto"
   },
   {
     "id": 33,
-    "titulo_proyecto": "P&L Automatizado",
+    "titulo_proyecto": "Reporte Mensual P&L",
     "departamento_origen": "Financiero",
-    "tipo": "Idea",
+    "tipo": "Problema",
     "prioridad_detectada": "Media",
-    "descripcion_corta": "Generar cuenta de resultados desde Business Central automáticamente.",
-    "fuente_cita": "sacar de Business Central directamente pues el cierre de mes... en lugar de descargar el informe cada vez"
+    "descripcion_corta": "Cierre mensual contabilidad y reporting financiero automático.",
+    "fuente_cita": "Reporte mensual P&L... generación automática de P&L y balance... Impacto: Medio"
   },
   {
     "id": 34,
     "titulo_proyecto": "Gestión Solicitudes Eventos",
     "departamento_origen": "Ventas",
     "tipo": "Idea",
-    "prioridad_detectada": "Media",
-    "descripcion_corta": "Chatbot o formulario web para captar leads de eventos.",
-    "fuente_cita": "tener en alguna parte de la web un enlace que sea un chatbot... y eso se pase luego al SIT."
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Gestión de reservas grupos/eventos desde Sherlock.",
+    "fuente_cita": "Gestión de las reservas de grupos y eventos... Impacto: Muy Alto"
   },
   {
     "id": 35,
@@ -311,43 +311,232 @@
     "departamento_origen": "Ventas",
     "tipo": "Problema",
     "prioridad_detectada": "Media",
-    "descripcion_corta": "Falta de integración automática de pagos de eventos con reservas.",
-    "fuente_cita": "una cosa que no tenemos nada automatizada es el tema de la pasarela de pago de Redis."
+    "descripcion_corta": "Falta de integración automática de pagos de eventos.",
+    "fuente_cita": "una cosa que no tenemos nada automatizada es el tema de la pasarela de pago"
   },
   {
     "id": 36,
-    "titulo_proyecto": "Gestión de facturas mantenimiento",
+    "titulo_proyecto": "Validación Facturas Mantenimiento",
     "departamento_origen": "Mantenimiento",
     "tipo": "Problema",
     "prioridad_detectada": "Media",
-    "descripcion_corta": "Gestión manual de facturas y partes recibidos por email.",
-    "fuente_cita": "recibo un mail... si yo no lo guardo en el momento... después alguien sanidad lo reclama"
+    "descripcion_corta": "Factura obligatoriamente vinculada a presupuesto aprobado y OT cerrada.",
+    "fuente_cita": "Facturas asociadas a presupuestos y OTs... Impact: Evita errores de pago"
   },
   {
     "id": 37,
-    "titulo_proyecto": "Avisos Preventivos Mantenimiento",
+    "titulo_proyecto": "Renovación Contratos Mantenimiento",
     "departamento_origen": "Mantenimiento",
     "tipo": "Idea",
     "prioridad_detectada": "Media",
-    "descripcion_corta": "Alertas automáticas para visitas de mantenimiento preventivo.",
-    "fuente_cita": "esa alerta que tú mides o esa creación en un calendario para de verdad verlos"
+    "descripcion_corta": "Control vencimiento contratos con alertas y OT revisión.",
+    "fuente_cita": "Renovación automática de contratos... Impact: Evita renovaciones por inercia"
   },
   {
     "id": 38,
-    "titulo_proyecto": "Automatización formación cocina",
+    "titulo_proyecto": "Automatización Formación Cocina",
     "departamento_origen": "Calidad / I+D",
     "tipo": "Idea",
-    "prioridad_detectada": "Media",
-    "descripcion_corta": "Estandarización del proceso de formación de nuevos platos.",
-    "fuente_cita": "Estandarización y automatización del proceso de formación de nuevos platos en locales multisede"
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Generación material formativo y asistencia contextual.",
+    "fuente_cita": "Estandarización y automatización del proceso de formación... Impacto: Alto"
   },
   {
     "id": 39,
     "titulo_proyecto": "Informes No Conformidades",
     "departamento_origen": "Calidad / I+D",
     "tipo": "Idea",
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Análisis y generación informes no conformidades y auditorías.",
+    "fuente_cita": "Análisis y generación automática de informes de no conformidades... Impacto: Medio-Alto"
+  },
+  {
+    "id": 40,
+    "titulo_proyecto": "Diccionario Insultos Gen Z",
+    "departamento_origen": "Alvar",
+    "tipo": "Idea",
+    "prioridad_detectada": "Baja",
+    "descripcion_corta": "Crear un diccionario de insultos basados en la Gen Z.",
+    "fuente_cita": "Alvar: Proceso o cosa a automatizar: los insultos en las reuniones"
+  },
+  {
+    "id": 41,
+    "titulo_proyecto": "Evaluación Desempeño IA",
+    "departamento_origen": "RRHH",
+    "tipo": "Idea",
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Feedback continuo automatizado, análisis objetivos y detección talento.",
+    "fuente_cita": "Para la evaluación del desempeño disponer de una herramienta... Impacto: Alto"
+  },
+  {
+    "id": 42,
+    "titulo_proyecto": "Presupuestos vinculados a OT",
+    "departamento_origen": "Mantenimiento",
+    "tipo": "Problema",
     "prioridad_detectada": "Media",
-    "descripcion_corta": "Análisis y generación automática de informes de no conformidades.",
-    "fuente_cita": "Análisis y generación automática de informes de no conformidades y auditorías internas"
+    "descripcion_corta": "Aprobación de presupuestos con reglas automáticas según importe.",
+    "fuente_cita": "Presupuestos asociados a OT con reglas automáticas... Impact: Mejora control"
+  },
+  {
+    "id": 43,
+    "titulo_proyecto": "Dashboard Económico Mantenimiento",
+    "departamento_origen": "Mantenimiento",
+    "tipo": "Idea",
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Cuadro de mando costes y rendimiento (Infraespeak).",
+    "fuente_cita": "Análisis de costes y rendimiento... Cuadro de mando automático... Impact: Facilita decisiones"
+  },
+  {
+    "id": 44,
+    "titulo_proyecto": "Alertas Stock Vajilla Yurest",
+    "departamento_origen": "Vajilla/Almacén",
+    "tipo": "Idea",
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Alertas automáticas stock mínimo en Yurest para vajilla.",
+    "fuente_cita": "Sistema de alertas automáticas de stock mínimo en Yurest... Impacto: Muy Alto"
+  },
+  {
+    "id": 45,
+    "titulo_proyecto": "Conciliación Inventarios Vajilla",
+    "departamento_origen": "Vajilla/Almacén",
+    "tipo": "Problema",
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Detectar desviaciones entre Yurest, compras y stock teórico.",
+    "fuente_cita": "Conciliación automática entre inventarios de Yurest, compras... Impacto: Muy Alto"
+  },
+  {
+    "id": 46,
+    "titulo_proyecto": "Análisis Rotación Vajilla",
+    "departamento_origen": "Vajilla/Almacén",
+    "tipo": "Idea",
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Análisis pérdidas y sobrestock por local/plato.",
+    "fuente_cita": "Análisis de rotación, pérdidas y sobrestock de vajilla... Impacto: Muy Alto"
+  },
+  {
+    "id": 47,
+    "titulo_proyecto": "Creación OS Eventos",
+    "departamento_origen": "Ventas",
+    "tipo": "Problema",
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Automatización en la creación de Órdenes de Servicio.",
+    "fuente_cita": "Creación de las OS de los eventos. Impacto: Muy Alto"
+  },
+  {
+    "id": 48,
+    "titulo_proyecto": "Recuento Pichichis (Reviews)",
+    "departamento_origen": "Cultura",
+    "tipo": "Problema",
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Recuento automático de reviews filtrando nombre camarero.",
+    "fuente_cita": "Recuento de reviews de Google filtrando nombre del camarero... Impacto: Alto"
+  },
+  {
+    "id": 49,
+    "titulo_proyecto": "Análisis Entrevistas y Clima",
+    "departamento_origen": "Cultura",
+    "tipo": "Idea",
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Transcripción y análisis de entrevistas 1:1 y encuestas clima.",
+    "fuente_cita": "Transcripción, análisis y síntesis de entrevistas individuales... Impacto: Alto"
+  },
+  {
+    "id": 50,
+    "titulo_proyecto": "Índice de Cultura",
+    "departamento_origen": "Cultura",
+    "tipo": "Idea",
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Creación índice cultura por local (rotación, bajas, feedback).",
+    "fuente_cita": "Creación de un “índice de cultura” por local... Impacto: Muy alto"
+  },
+  {
+    "id": 51,
+    "titulo_proyecto": "Conciliación Bancaria BC",
+    "departamento_origen": "Financiero",
+    "tipo": "Problema",
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Cruce automático movimientos bancos con facturas Business Central.",
+    "fuente_cita": "conciliación automática de los movimientos bancarios con las facturas... Impacto: Alto"
+  },
+  {
+    "id": 52,
+    "titulo_proyecto": "Integración One Burger",
+    "departamento_origen": "Financiero",
+    "tipo": "Problema",
+    "prioridad_detectada": "Baja",
+    "descripcion_corta": "Registro automático ventas One Burger (Camarero 10) en BC.",
+    "fuente_cita": "registro automático de las ventas del local One Burger... Impacto: Bajo"
+  },
+  {
+    "id": 53,
+    "titulo_proyecto": "Modelos AEAT 349/390",
+    "departamento_origen": "Financiero",
+    "tipo": "Problema",
+    "prioridad_detectada": "Media",
+    "descripcion_corta": "Generación automática modelos impuestos desde BC.",
+    "fuente_cita": "generación automática del Modelo 349 y 390... Impacto: Medio"
+  },
+  {
+    "id": 54,
+    "titulo_proyecto": "Reporte Albaranes Pendientes",
+    "departamento_origen": "Financiero",
+    "tipo": "Problema",
+    "prioridad_detectada": "Media",
+    "descripcion_corta": "Detectar mercancía servida (Yurest) vs facturada (BC).",
+    "fuente_cita": "detección de diferencias entre mercancía/facturada y servida. Impacto: Medio"
+  },
+  {
+    "id": 55,
+    "titulo_proyecto": "Movimiento Inmovilizado",
+    "departamento_origen": "Financiero",
+    "tipo": "Problema",
+    "prioridad_detectada": "Baja",
+    "descripcion_corta": "Generación del movimiento de inmovilizado mensual.",
+    "fuente_cita": "Generación del movimiento de inmovilizado mensual... Impacto: Bajo"
+  },
+  {
+    "id": 56,
+    "titulo_proyecto": "Reporte Proveedores Pendientes",
+    "departamento_origen": "Financiero",
+    "tipo": "Problema",
+    "prioridad_detectada": "Baja",
+    "descripcion_corta": "Análisis proveedores con pagos realizados pero sin factura.",
+    "fuente_cita": "proveedores que tienen pagos realizadas pero de los que falta recibir factura"
+  },
+  {
+    "id": 57,
+    "titulo_proyecto": "Informes Ventas Sala",
+    "departamento_origen": "Area Manager Sala",
+    "tipo": "Idea",
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Informe cruce ventas/tickets/upselling por camarero y día.",
+    "fuente_cita": "Informes diarios/semanales de ventas... Impacto: Alto"
+  },
+  {
+    "id": 58,
+    "titulo_proyecto": "Inventario por Foto",
+    "departamento_origen": "Area Manager Sala",
+    "tipo": "Idea",
+    "prioridad_detectada": "Media",
+    "descripcion_corta": "Realización inventario almacén mediante foto.",
+    "fuente_cita": "Realización inventario por foto de almacén... Impacto: medio"
+  },
+  {
+    "id": 59,
+    "titulo_proyecto": "Buscador Biblia Dreamland",
+    "departamento_origen": "Area Manager Cocina",
+    "tipo": "Idea",
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Buscador lenguaje natural sobre documentación operativa.",
+    "fuente_cita": "Buscador inteligente de documentación en Biblia del restaurante... Impacto: Alto"
+  },
+  {
+    "id": 60,
+    "titulo_proyecto": "Generación Inteligente Pedidos",
+    "departamento_origen": "Area Manager Cocina",
+    "tipo": "Oportunidad",
+    "prioridad_detectada": "Alta",
+    "descripcion_corta": "Pedido óptimo cruzando forecast + stock + mermas.",
+    "fuente_cita": "Generación inteligente y automatizada de pedidos (forecast + stock)... Impacto: Muy Alto"
   }
 ]
