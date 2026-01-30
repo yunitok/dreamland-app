@@ -48,10 +48,9 @@ async function main() {
         'Oportunidad': 'Idea'
       };
 
-      // Random status for variety
-      let status = 'Pending';
-      if (index % 5 === 0) status = 'Active';
-      if (index % 12 === 0) status = 'Done';
+
+      // All projects are proposals pending approval
+      const status = 'Pending';
 
       return prisma.project.create({
         data: {
@@ -69,81 +68,97 @@ async function main() {
 
   console.log(`✅ Created ${seededProjects.length} projects`);
 
-  // Seed Team Moods based on the HR report (dreamland_feeling_projects.txt)
+  // Seed Team Moods based on the new department taxonomy (Opción A)
+  // Aligned with organizational chart and HR sentiment report
   const sentimentMap: Record<string, { score: number; emotion: string; concerns: string }> = {
+    // Finanzas (CFO - Belén) - 12 projects
+    'Finanzas': { 
+      score: 48, 
+      emotion: 'Estrés Resiliente', 
+      concerns: 'Montaña de burocracia manual (facturas, tickets, conciliaciones) gestionada con humor pero alta carga.' 
+    },
+    
+    // Personas & Cultura - 10 projects total
     'RRHH': { 
       score: 22, 
       emotion: 'Frustración Crítica', 
       concerns: 'Saturación por cambios constantes de jornada ("inhumano") y carga emocional por responsabilidad legal.' 
     },
+    'Cultura': { 
+      score: 72, 
+      emotion: 'Foco en Valores', 
+      concerns: 'Detección de talento y clima mediante análisis de entrevistas 1:1 y recuento de reviews.' 
+    },
+    
+    // Operaciones - Various sub-areas
     'Operaciones': { 
       score: 28, 
       emotion: 'Saturación Digital', 
       concerns: 'Exceso de comunicaciones en Slack y trabajo manual de volcado de datos ("basura de data").' 
     },
-    'Financiero': { 
-      score: 48, 
-      emotion: 'Estrés Resiliente', 
-      concerns: 'Montaña de burocracia manual (facturas, tickets) gestionada con humor pero alta carga de trabajo.' 
+    'Operaciones - Sala': { 
+      score: 52, 
+      emotion: 'Analítico Saturado', 
+      concerns: 'Dominio analítico superior pero atrapados en tareas manuales de reporteo y staffing.' 
     },
-    'Diseño': { 
-      score: 88, 
-      emotion: 'Optimismo Vital', 
-      concerns: 'Alta motivación por el uso de IA para eliminar tareas administrativas y acelerar el renderizado.' 
+    'Operaciones - Cocina': { 
+      score: 55, 
+      emotion: 'Buscando Eficiencia', 
+      concerns: 'Necesidad de buscador inteligente para la "Biblia" de cocina y automatización de pedidos forecast.' 
     },
-    'Calidad / I+D': { 
+    'Operaciones - ATC': { 
+      score: 60, 
+      emotion: 'Pendiente de Automatización', 
+      concerns: 'Gestión manual de reservas y comunicación en múltiples idiomas.' 
+    },
+    
+    // I+D & Calidad (Miguel Ángel) - 14 projects total
+    'I+D': { 
       score: 92, 
       emotion: 'Obsesión Analítica', 
       concerns: 'Enfoque racional en resolver el puzzle de los costes ocultos ("Sherlock"). Fuerte alineación con objetivos.' 
     },
-    'Ventas': { 
+    'I+D - Interiorismo': { 
+      score: 45, 
+      emotion: 'Descontrol de Stock', 
+      concerns: 'Conciliación manual agotadora entre Yurest y el físico. Pérdidas recurrentes de vajilla sin trazabilidad.' 
+    },
+    'I+D - Diseño': { 
+      score: 88, 
+      emotion: 'Optimismo Vital', 
+      concerns: 'Alta motivación por el uso de IA para eliminar tareas administrativas y acelerar el renderizado.' 
+    },
+    
+    // Comercial - 5 projects total
+    'Comercial - Ventas': { 
       score: 65, 
       emotion: 'Preocupación Humana', 
       concerns: 'Temor a perder el "toque humano" y el "mimo" al cliente por una automatización excesiva.' 
     },
+    'Comercial - Marketing': { 
+      score: 55, 
+      emotion: 'Saturación de Leads', 
+      concerns: 'Bandeja de entrada colapsada por CVs sin filtrar y necesidad de auditar datos manuales de reservas.' 
+    },
+    
+    // Mantenimiento (Marta) - 5 projects
     'Mantenimiento': { 
       score: 70, 
       emotion: 'Expectativa de Orden', 
       concerns: 'Deseo de mayor trazabilidad y control preventivo para reducir la carga mental.' 
     },
-    'Marketing': { 
-      score: 55, 
-      emotion: 'Saturación de Leads', 
-      concerns: 'Bandeja de entrada colapsada por CVs sin filtrar y necesidad de auditar datos manuales.' 
+    
+    // Tech & Innovación (Alvar/Andrea) - 3 projects
+    'Tech & Innovación': { 
+      score: 75, 
+      emotion: 'Pioneros Digitales', 
+      concerns: 'Proyectos transversales de migración y análisis automático de comunicaciones.' 
     },
-    'Area Manager Sala': {
-      score: 52,
-      emotion: 'Analítico Saturado',
-      concerns: 'David demuestra un dominio analítico superior pero está atrapado en tareas manuales de reporteo.'
-    },
-    'Area Manager Cocina': {
-      score: 55,
-      emotion: 'Buscando Eficiencia',
-      concerns: 'Necesidad de buscador inteligente para la "Biblia" de cocina y automatización de pedidos forecast.'
-    },
-    'Cultura': {
-      score: 72,
-      emotion: 'Foco en Valores',
-      concerns: 'Detección de talento y clima mediante análisis de entrevistas 1:1 y recuento de reviews.'
-    },
-    'Vajilla/Almacén': {
-      score: 45,
-      emotion: 'Descontrol de Stock',
-      concerns: 'Conciliación manual agotadora entre Yurest y el físico. Pérdidas recurrentes sin trazabilidad.'
-    },
-    'Alvar': {
-      score: 69,
-      emotion: 'Humor Gen Z',
-      concerns: 'Curación de un diccionario de insultos para reuniones. Proyecto de baja prioridad pero alto impacto cultural.'
-    }
   };
 
   const moods = await Promise.all(
-    uniqueDepartments.map((deptName: any) => {
-      // Clean department names that might have multiple sub-depts like "Finanzas / Ops"
-      const mainDept = deptName.split(' / ')[0].split(' /')[0];
-      
-      const data = sentimentMap[deptName] || sentimentMap[mainDept] || {
+    (uniqueDepartments as string[]).map((deptName) => {
+      const data = sentimentMap[deptName] || {
         score: 60,
         emotion: 'Neutral / Adaptación',
         concerns: `Procesos de cambio y estandarización en ${deptName}.`
@@ -159,6 +174,7 @@ async function main() {
       });
     })
   );
+
 
   console.log(`✅ Created ${moods.length} team mood records`);
   console.log('🎉 Seeding completed!');

@@ -1,94 +1,109 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import type { TeamMood } from "@/generated/prisma/client"
 import { 
   Smile, 
   Meh, 
-  Frown, 
-  AlertCircle,
-  TrendingUp,
-  TrendingDown
+  AlertTriangle,
+  ThumbsUp,
+  FolderKanban,
+  Zap
 } from "lucide-react"
 
 interface EmotionCardsProps {
   moods: TeamMood[]
 }
 
-const getEmotionIcon = (score: number) => {
-  if (score < 40) return Frown
-  if (score < 60) return AlertCircle
-  if (score < 75) return Meh
-  return Smile
-}
-
-const getEmotionColor = (score: number) => {
-  if (score < 40) return "text-red-500"
-  if (score < 60) return "text-amber-500"
-  if (score < 75) return "text-blue-500"
-  return "text-emerald-500"
-}
-
-const getEmotionBg = (score: number) => {
-  if (score < 40) return "bg-red-500/10"
-  if (score < 60) return "bg-amber-500/10"
-  if (score < 75) return "bg-blue-500/10"
-  return "bg-emerald-500/10"
+const getSentimentConfig = (score: number) => {
+  if (score < 50) return {
+    color: "text-red-400",
+    bg: "bg-[radial-gradient(ellipse_at_top_left,_rgba(239,68,68,0.15)_0%,_transparent_50%)]",
+    border: "border-red-500/30",
+    glow: "shadow-red-500/10",
+    icon: AlertTriangle,
+    bar: "bg-red-500"
+  }
+  if (score < 75) return {
+    color: "text-blue-400",
+    bg: "bg-[radial-gradient(ellipse_at_top_left,_rgba(59,130,246,0.15)_0%,_transparent_50%)]",
+    border: "border-blue-500/30",
+    glow: "shadow-blue-500/10",
+    icon: Meh,
+    bar: "bg-blue-500"
+  }
+  return {
+    color: "text-emerald-400",
+    bg: "bg-[radial-gradient(ellipse_at_top_left,_rgba(16,185,129,0.15)_0%,_transparent_50%)]",
+    border: "border-emerald-500/30",
+    glow: "shadow-emerald-500/10",
+    icon: ThumbsUp,
+    bar: "bg-emerald-500"
+  }
 }
 
 export function EmotionCards({ moods }: EmotionCardsProps) {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {moods.map((mood) => {
-        const Icon = getEmotionIcon(mood.sentimentScore)
-        const colorClass = getEmotionColor(mood.sentimentScore)
-        const bgClass = getEmotionBg(mood.sentimentScore)
-        const isStressed = mood.sentimentScore < 50
+        const config = getSentimentConfig(mood.sentimentScore)
 
         return (
-          <Card key={mood.id} className={cn("relative overflow-hidden", bgClass)}>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">{mood.departmentName}</CardTitle>
-                <div className={cn("p-2 rounded-full", bgClass)}>
-                  <Icon className={cn("h-5 w-5", colorClass)} />
+          <Card 
+            key={mood.id} 
+            className={cn(
+              "group relative overflow-hidden border border-border/40 bg-card/60 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-xl flex flex-col h-full",
+              config.border
+            )}
+          >
+            {/* Gradient overlay based on sentiment */}
+            <div className={cn("absolute inset-0 opacity-40 transition-opacity duration-500 group-hover:opacity-70", config.bg)} />
+
+            <div className="relative p-5 flex flex-col gap-4 flex-1">
+              {/* Header: Name + Status Icon */}
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="text-sm font-bold leading-tight group-hover:text-primary transition-colors flex-1">
+                  {mood.departmentName}
+                </h3>
+                <div className={cn(
+                  "p-1.5 rounded-lg border bg-background/50 transition-all duration-300 group-hover:scale-110 shrink-0",
+                  config.border
+                )}>
+                  <config.icon className={cn("h-4 w-4", config.color)} />
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-baseline gap-2">
-                <span className={cn("text-3xl font-bold", colorClass)}>
-                  {mood.sentimentScore}
-                </span>
-                <span className="text-sm text-muted-foreground">/100</span>
-                {isStressed ? (
-                  <TrendingDown className="h-4 w-4 text-red-500 ml-auto" />
-                ) : (
-                  <TrendingUp className="h-4 w-4 text-emerald-500 ml-auto" />
-                )}
+
+              {/* Metrics Row */}
+              <div className="flex items-center gap-4">
+                <div className="flex-1">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className={cn("text-3xl font-black tabular-nums tracking-tight", config.color)}>
+                      {mood.sentimentScore}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Score</span>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="mt-2 h-1 w-full rounded-full bg-secondary/30 overflow-hidden">
+                    <div 
+                      className={cn("h-full rounded-full transition-all duration-700 ease-out", config.bar)}
+                      style={{ width: `${mood.sentimentScore}%` }}
+                    />
+                  </div>
+                </div>
               </div>
-              
-              <div className="mt-3 space-y-1">
-                <p className="text-sm font-medium">{mood.dominantEmotion}</p>
+
+              {/* Dominant Emotion & Key Concerns */}
+              <div className="space-y-2 mt-auto">
+                <div className="flex items-center gap-2 text-[11px] font-bold text-foreground/80">
+                  <Zap className="h-3 w-3 text-primary" />
+                  {mood.dominantEmotion}
+                </div>
                 {mood.keyConcerns && (
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {mood.keyConcerns}
+                  <p className="text-xs text-muted-foreground/80 italic border-l-2 border-border/60 pl-3 py-1 line-clamp-2 leading-relaxed">
+                    "{mood.keyConcerns}"
                   </p>
                 )}
               </div>
-
-              {/* Progress bar */}
-              <div className="mt-4 h-2 rounded-full bg-background/50 overflow-hidden">
-                <div 
-                  className={cn("h-full rounded-full transition-all", {
-                    "bg-red-500": mood.sentimentScore < 40,
-                    "bg-amber-500": mood.sentimentScore >= 40 && mood.sentimentScore < 60,
-                    "bg-blue-500": mood.sentimentScore >= 60 && mood.sentimentScore < 75,
-                    "bg-emerald-500": mood.sentimentScore >= 75,
-                  })}
-                  style={{ width: `${mood.sentimentScore}%` }}
-                />
-              </div>
-            </CardContent>
+            </div>
           </Card>
         )
       })}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -18,15 +18,34 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import type { Project } from "@/generated/prisma/client"
-import { Eye, Quote } from "lucide-react"
+import { Eye, Quote, Pencil, ChevronLeft, ChevronRight } from "lucide-react"
 import { useTranslations, useLocale } from "next-intl"
+import { ProjectFilters } from "./project-filters"
+import { ProjectEditForm } from "./project-edit-form"
 
 interface ProjectsTableProps {
   projects: Project[]
   departments: string[]
 }
+
+interface FilterState {
+  search: string
+  department: string
+  priority: string
+  type: string
+  status: string
+}
+
+const PAGE_SIZES = [10, 25, 50] as const
 
 const priorityStyles = {
   High: "bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20",
@@ -47,16 +66,57 @@ const typeStyles = {
 
 export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const [priorityFilter, setPriorityFilter] = useState<string>("all")
-  const [departmentFilter, setDepartmentFilter] = useState<string>("all")
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [formMode, setFormMode] = useState<"create" | "edit">("create")
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [filters, setFilters] = useState<FilterState>({
+    search: "",
+    department: "all",
+    priority: "all",
+    type: "all",
+    status: "all",
+  })
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState<number>(25)
   const t = useTranslations("projects")
   const locale = useLocale()
 
-  const filteredProjects = projects.filter((project) => {
-    if (priorityFilter !== "all" && project.priority !== priorityFilter) return false
-    if (departmentFilter !== "all" && project.department !== departmentFilter) return false
-    return true
-  })
+  // Reset page when filters change
+  const handleFiltersChange = (newFilters: FilterState) => {
+    setFilters(newFilters)
+    setCurrentPage(1)
+  }
+
+  const filteredProjects = useMemo(() => {
+    return projects.filter((project) => {
+      // Search filter
+      if (filters.search !== "") {
+        const searchLower = filters.search.toLowerCase()
+        const matchesSearch = 
+          project.title.toLowerCase().includes(searchLower) ||
+          project.description.toLowerCase().includes(searchLower)
+        if (!matchesSearch) return false
+      }
+      // Other filters
+      if (filters.priority !== "all" && project.priority !== filters.priority) return false
+      if (filters.department !== "all" && project.department !== filters.department) return false
+      if (filters.type !== "all" && project.type !== filters.type) return false
+      if (filters.status !== "all" && project.status !== filters.status) return false
+      return true
+    })
+  }, [projects, filters])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredProjects.length / pageSize)
+  const paginatedProjects = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredProjects.slice(start, start + pageSize)
+  }, [filteredProjects, currentPage, pageSize])
+
+  const handlePageSizeChange = (newSize: string) => {
+    setPageSize(Number(newSize))
+    setCurrentPage(1)
+  }
 
   const getPriorityLabel = (priority: string) => {
     const labels: Record<string, string> = {
@@ -84,54 +144,32 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
     return labels[type] || type
   }
 
+  const handleEditClick = (e: React.MouseEvent, project: Project) => {
+    e.stopPropagation()
+    setEditingProject(project)
+    setFormMode("edit")
+    setIsFormOpen(true)
+  }
+
+  const handleCreateClick = () => {
+    setEditingProject(null)
+    setFormMode("create")
+    setIsFormOpen(true)
+  }
+
   return (
     <>
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-6">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mr-1">{t("priority")}:</span>
-          <div className="flex flex-wrap gap-1">
-            {["all", "High", "Medium", "Low"].map((priority) => (
-              <Button
-                key={priority}
-                variant={priorityFilter === priority ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setPriorityFilter(priority)}
-                className="h-8 text-xs px-3"
-              >
-                {priority === "all" ? t("all") : getPriorityLabel(priority)}
-              </Button>
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mr-1">{t("department")}:</span>
-          <div className="flex flex-wrap gap-1">
-            <Button
-              variant={departmentFilter === "all" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setDepartmentFilter("all")}
-              className="h-8 text-xs px-3"
-            >
-              {t("all")}
-            </Button>
-            {departments.map((dept) => (
-              <Button
-                key={dept}
-                variant={departmentFilter === dept ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setDepartmentFilter(dept)}
-                className="h-8 text-xs px-3"
-              >
-                {dept}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </div>
+      <ProjectFilters
+        departments={departments}
+        onFiltersChange={handleFiltersChange}
+        onCreateClick={handleCreateClick}
+        totalCount={projects.length}
+        filteredCount={filteredProjects.length}
+      />
 
       {/* Table */}
-      <div className="rounded-xl border bg-card/50 backdrop-blur-sm overflow-hidden premium-card">
+      <div className="rounded-xl border bg-card/50 backdrop-blur-sm overflow-hidden premium-card mt-6">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -141,11 +179,11 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
                 <TableHead className="hidden sm:table-cell font-bold">{t("type")}</TableHead>
                 <TableHead className="hidden xs:table-cell font-bold">{t("priority")}</TableHead>
                 <TableHead className="font-bold">{t("status")}</TableHead>
-                <TableHead className="w-[60px] text-right font-bold">{t("actions")}</TableHead>
+                <TableHead className="w-[80px] text-right font-bold">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
           <TableBody>
-            {filteredProjects.length === 0 ? (
+            {paginatedProjects.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
                   <div className="flex flex-col items-center gap-2">
@@ -154,7 +192,7 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredProjects.map((project) => (
+              paginatedProjects.map((project) => (
                 <TableRow 
                   key={project.id} 
                   className="group cursor-pointer hover:bg-muted/30 border-border/40"
@@ -197,13 +235,23 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-8 w-8 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => handleEditClick(e, project)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-8 w-8 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -211,6 +259,66 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {filteredProjects.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 border-t">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>{t("showing")}</span>
+            <span className="font-medium text-foreground">
+              {(currentPage - 1) * pageSize + 1}
+            </span>
+            <span>{t("to")}</span>
+            <span className="font-medium text-foreground">
+              {Math.min(currentPage * pageSize, filteredProjects.length)}
+            </span>
+            <span>{t("of")}</span>
+            <span className="font-medium text-foreground">{filteredProjects.length}</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAGE_SIZES.map((size) => (
+                    <SelectItem key={size} value={String(size)}>
+                      {size}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="text-sm text-muted-foreground">{t("perPage")}</span>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(currentPage - 1)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm px-2">
+                {t("page")} {currentPage} {t("of")} {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
 
     {/* Project Detail Sheet */}
@@ -259,7 +367,7 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
                   </div>
                 )}
 
-                <div className="pt-4 border-t">
+                <div className="pt-4 border-t flex items-center justify-between">
                   <p className="text-xs text-muted-foreground">
                     {t("created")}: {new Date(selectedProject.createdAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', {
                       year: 'numeric',
@@ -267,6 +375,18 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
                       day: 'numeric'
                     })}
                   </p>
+                  <Button 
+                    size="sm" 
+                    onClick={() => {
+                      setEditingProject(selectedProject)
+                      setFormMode("edit")
+                      setIsFormOpen(true)
+                      setSelectedProject(null)
+                    }}
+                  >
+                    <Pencil className="h-3 w-3 mr-1" />
+                    {t("editProject")}
+                  </Button>
                 </div>
               </div>
             </>
@@ -274,6 +394,15 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Edit Form */}
+      <ProjectEditForm
+        project={editingProject}
+        departments={departments}
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        mode={formMode}
+      />
     </>
   )
 }

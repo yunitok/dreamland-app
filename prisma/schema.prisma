@@ -26,7 +26,7 @@ model Project {
 
 model TeamMood {
   id              String   @id @default(cuid())
-  departmentName  String   @unique
+  departmentName  String
   sentimentScore  Int      // 0-100 (100 = very happy, 0 = very stressed)
   dominantEmotion String
   keyConcerns     String?

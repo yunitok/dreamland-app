@@ -10,26 +10,25 @@ async function getDepartmentsData() {
     }
   })
 
-  const moods = await prisma.teamMood.findMany()
+  const moods = await prisma.teamMood.findMany({
+    orderBy: { departmentName: "asc" }
+  })
 
-  // Aggregate data
+  // Count projects per department
   const deptCounts = projects.reduce((acc, p) => {
     acc[p.department] = (acc[p.department] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
-  const departments = Object.keys(deptCounts).map(name => {
-    const mood = moods.find(m => m.departmentName === name)
-    return {
-      name,
-      projectCount: deptCounts[name],
-      sentimentScore: mood?.sentimentScore,
-      dominantEmotion: mood?.dominantEmotion
-    }
-  })
-
-  // Sort by project count descending
-  return departments.sort((a, b) => b.projectCount - a.projectCount)
+  // Map moods to departments with project counts
+  return moods.map(mood => ({
+    id: mood.id,
+    departmentName: mood.departmentName,
+    sentimentScore: mood.sentimentScore,
+    dominantEmotion: mood.dominantEmotion,
+    keyConcerns: mood.keyConcerns,
+    projectCount: deptCounts[mood.departmentName] || 0
+  }))
 }
 
 export default async function DepartmentsPage({
