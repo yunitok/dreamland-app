@@ -4,6 +4,7 @@
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -39,4 +40,40 @@ model ProjectRisk {
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   riskLevel String  // "High" | "Medium" | "Low"
   reason    String
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  username      String    @unique
+  email         String?   @unique
+  password      String
+  image         String?
+  roleId        String
+  role          Role      @relation(fields: [roleId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Role {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  description String?
+  isSystem    Boolean      @default(false)
+  users       User[]
+  permissions Permission[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  action      String
+  resource    String
+  description String?
+  roles       Role[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([action, resource])
 }

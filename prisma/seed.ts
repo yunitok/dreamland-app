@@ -2,6 +2,7 @@ import { PrismaClient } from '../src/generated/prisma/client.js';
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import path from 'path';
 import fs from 'fs/promises';
+import { hash } from 'bcryptjs';
 
 // Use prisma/dev.db as per Prisma documentation
 const dbPath = path.join(process.cwd(), 'prisma', 'dev.db');
@@ -9,13 +10,148 @@ const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('🌱 Seeding database with real projects...');
+  console.log('🌱 Seeding database...');
 
   // Clear existing data
+  console.log('🗑️  Clearing ProjectRisk...');
   await prisma.projectRisk.deleteMany();
+  console.log('🗑️  Clearing Project...');
   await prisma.project.deleteMany();
+  console.log('🗑️  Clearing TeamMood...');
   await prisma.teamMood.deleteMany();
+  console.log('🗑️  Clearing User...');
+  await prisma.user.deleteMany();
+  console.log('🗑️  Clearing Permission...');
+  await prisma.permission.deleteMany();
+  console.log('🗑️  Clearing Role...');
+  await prisma.role.deleteMany();
+  console.log('✨ Data cleared.');
 
+  // --- RBAC SEEDING ---
+  console.log('🔒 Seeding RBAC system...');
+  
+  // 1. Create Permissions
+  // Define all Resources and Actions
+  const resources = ['projects', 'users', 'roles', 'departments', 'sentiment', 'admin'];
+  const actions = ['view', 'create', 'edit', 'delete', 'manage'];
+
+  const permissionsList: any[] = [];
+  
+  // Create all cartesian product permissions
+  for (const resource of resources) {
+    for (const action of actions) {
+        const p = await prisma.permission.upsert({
+            where: { action_resource: { action, resource } },
+            update: {}, // No update needed if exists
+            create: {
+                action,
+                resource,
+                description: `Can ${action} ${resource}`
+            }
+        });
+        permissionsList.push(p);
+    }
+  }
+
+  // Helper to get permission IDs by filters
+  const getPerms = (res: string, acts: string[] = []) => {
+      return permissionsList
+        .filter(p => p.resource === res && (acts.length === 0 || acts.includes(p.action)))
+        .map(p => ({ id: p.id }));
+  };
+
+  // 2. Create Roles
+
+  // SUPER ADMIN (System)
+  const superAdminRole = await prisma.role.upsert({
+    where: { name: 'Super Admin' },
+    update: {},
+    create: {
+      name: 'Super Admin',
+      description: 'Full system access',
+      isSystem: true,
+      permissions: {
+        connect: permissionsList.map(p => ({ id: p.id }))
+      }
+    }
+  });
+
+  // STRATEGIC PM (Project Manager)
+  await prisma.role.upsert({
+      where: { name: 'Strategic PM' },
+      update: {},
+      create: {
+        name: 'Strategic PM',
+        description: 'Manages roadmap and projects',
+        isSystem: false,
+        permissions: {
+            connect: [
+                ...getPerms('projects'), // Full project access
+                ...getPerms('departments', ['view']),
+                ...getPerms('sentiment', ['view']),
+                ...getPerms('admin', ['view']) // Needs admin access to view dashboard
+            ]
+        }
+      }
+  });
+
+  // HR / PEOPLE LEAD
+  await prisma.role.upsert({
+      where: { name: 'People & Culture Lead' },
+      update: {},
+      create: {
+        name: 'People & Culture Lead',
+        description: 'Manages team sentiment and departments',
+        isSystem: false,
+        permissions: {
+            connect: [
+                ...getPerms('sentiment'), // Full sentiment access
+                ...getPerms('departments'), // Full department access
+                ...getPerms('projects', ['view']),
+                ...getPerms('admin', ['view'])
+            ]
+        }
+      }
+  });
+
+  // STAKEHOLDER (Viewer)
+  await prisma.role.upsert({
+      where: { name: 'Stakeholder' },
+      update: {},
+      create: {
+        name: 'Stakeholder',
+        description: 'Read-only access to insights',
+        isSystem: false,
+        permissions: {
+            connect: [
+                ...getPerms('projects', ['view']),
+                ...getPerms('sentiment', ['view']),
+                ...getPerms('departments', ['view']),
+                ...getPerms('admin', ['view'])
+            ]
+        }
+      }
+  });
+
+  // 3. Create Users
+  const hashedPassword = await hash('admin', 10);
+  
+  await prisma.user.upsert({
+    where: { username: 'admin' },
+    update: { roleId: superAdminRole.id }, // Ensure admin always has super admin role
+    create: {
+      name: 'Super Administrator',
+      username: 'admin',
+      email: 'admin@dreamland.app',
+      password: hashedPassword,
+      roleId: superAdminRole.id,
+    }
+  });
+
+  console.log('✅ RBAC seeded: Standard roles created');
+
+  // --- PROJECTS & MOODS SEEDING ---
+  
   // Read real projects from file
   const projectsFilePath = path.join(process.cwd(), 'data', 'reports', 'dreamland - projects.txt');
   let rawData;
@@ -23,141 +159,74 @@ async function main() {
     rawData = await fs.readFile(projectsFilePath, 'utf-8');
   } catch (error) {
     console.error(`❌ Error reading file at ${projectsFilePath}:`, error);
-    process.exit(1);
+    // Don't exit, just skip projects if file missing
   }
 
-  const projectsData = JSON.parse(rawData);
+  if (rawData) {
+    const projectsData = JSON.parse(rawData);
 
-  // Extract unique departments
-  const uniqueDepartments = Array.from(new Set(projectsData.map((p: any) => p.departamento_origen)));
+    // Seed Projects
+    const seededProjects = await Promise.all(
+      projectsData.map((project: any, index: number) => {
+        // Map priority
+        const priorityMap: Record<string, string> = {
+          'Alta': 'High',
+          'Media': 'Medium',
+          'Baja': 'Low'
+        };
 
-  // Seed Projects
-  const seededProjects = await Promise.all(
-    projectsData.map((project: any, index: number) => {
-      // Map priority
-      const priorityMap: Record<string, string> = {
-        'Alta': 'High',
-        'Media': 'Medium',
-        'Baja': 'Low'
-      };
+        // Map type
+        const typeMap: Record<string, string> = {
+          'Problema': 'Problem',
+          'Idea': 'Idea',
+          'Oportunidad': 'Idea'
+        };
 
-      // Map type
-      const typeMap: Record<string, string> = {
-        'Problema': 'Problem',
-        'Idea': 'Idea',
-        'Oportunidad': 'Idea'
-      };
+        const status = 'Pending';
 
+        return prisma.project.create({
+          data: {
+            title: project.titulo_proyecto,
+            department: project.departamento_origen,
+            type: typeMap[project.tipo] || 'Idea',
+            priority: priorityMap[project.prioridad_detectada] || 'Medium',
+            description: project.descripcion_corta,
+            status: status,
+            sourceQuote: project.fuente_cita,
+          },
+        });
+      })
+    );
+    console.log(`✅ Created ${seededProjects.length} projects`);
+  }
 
-      // All projects are proposals pending approval
-      const status = 'Pending';
+  // Seed Team Moods
+  const uniqueDepartments = [
+    'Finanzas', 'RRHH', 'Cultura', 'Operaciones', 'Operaciones - Sala', 
+    'Operaciones - Cocina', 'Operaciones - ATC', 'I+D', 'I+D - Interiorismo', 
+    'I+D - Diseño', 'Comercial - Ventas', 'Comercial - Marketing', 
+    'Mantenimiento', 'Tech & Innovación'
+  ];
 
-      return prisma.project.create({
-        data: {
-          title: project.titulo_proyecto,
-          department: project.departamento_origen,
-          type: typeMap[project.tipo] || 'Idea',
-          priority: priorityMap[project.prioridad_detectada] || 'Medium',
-          description: project.descripcion_corta,
-          status: status,
-          sourceQuote: project.fuente_cita,
-        },
-      });
-    })
-  );
-
-  console.log(`✅ Created ${seededProjects.length} projects`);
-
-  // Seed Team Moods based on the new department taxonomy (Opción A)
-  // Aligned with organizational chart and HR sentiment report
   const sentimentMap: Record<string, { score: number; emotion: string; concerns: string }> = {
-    // Finanzas (CFO - Belén) - 12 projects
-    'Finanzas': { 
-      score: 48, 
-      emotion: 'Estrés Resiliente', 
-      concerns: 'Montaña de burocracia manual (facturas, tickets, conciliaciones) gestionada con humor pero alta carga.' 
-    },
-    
-    // Personas & Cultura - 10 projects total
-    'RRHH': { 
-      score: 22, 
-      emotion: 'Frustración Crítica', 
-      concerns: 'Saturación por cambios constantes de jornada ("inhumano") y carga emocional por responsabilidad legal.' 
-    },
-    'Cultura': { 
-      score: 72, 
-      emotion: 'Foco en Valores', 
-      concerns: 'Detección de talento y clima mediante análisis de entrevistas 1:1 y recuento de reviews.' 
-    },
-    
-    // Operaciones - Various sub-areas
-    'Operaciones': { 
-      score: 28, 
-      emotion: 'Saturación Digital', 
-      concerns: 'Exceso de comunicaciones en Slack y trabajo manual de volcado de datos ("basura de data").' 
-    },
-    'Operaciones - Sala': { 
-      score: 52, 
-      emotion: 'Analítico Saturado', 
-      concerns: 'Dominio analítico superior pero atrapados en tareas manuales de reporteo y staffing.' 
-    },
-    'Operaciones - Cocina': { 
-      score: 55, 
-      emotion: 'Buscando Eficiencia', 
-      concerns: 'Necesidad de buscador inteligente para la "Biblia" de cocina y automatización de pedidos forecast.' 
-    },
-    'Operaciones - ATC': { 
-      score: 60, 
-      emotion: 'Pendiente de Automatización', 
-      concerns: 'Gestión manual de reservas y comunicación en múltiples idiomas.' 
-    },
-    
-    // I+D & Calidad (Miguel Ángel) - 14 projects total
-    'I+D': { 
-      score: 92, 
-      emotion: 'Obsesión Analítica', 
-      concerns: 'Enfoque racional en resolver el puzzle de los costes ocultos ("Sherlock"). Fuerte alineación con objetivos.' 
-    },
-    'I+D - Interiorismo': { 
-      score: 45, 
-      emotion: 'Descontrol de Stock', 
-      concerns: 'Conciliación manual agotadora entre Yurest y el físico. Pérdidas recurrentes de vajilla sin trazabilidad.' 
-    },
-    'I+D - Diseño': { 
-      score: 88, 
-      emotion: 'Optimismo Vital', 
-      concerns: 'Alta motivación por el uso de IA para eliminar tareas administrativas y acelerar el renderizado.' 
-    },
-    
-    // Comercial - 5 projects total
-    'Comercial - Ventas': { 
-      score: 65, 
-      emotion: 'Preocupación Humana', 
-      concerns: 'Temor a perder el "toque humano" y el "mimo" al cliente por una automatización excesiva.' 
-    },
-    'Comercial - Marketing': { 
-      score: 55, 
-      emotion: 'Saturación de Leads', 
-      concerns: 'Bandeja de entrada colapsada por CVs sin filtrar y necesidad de auditar datos manuales de reservas.' 
-    },
-    
-    // Mantenimiento (Marta) - 5 projects
-    'Mantenimiento': { 
-      score: 70, 
-      emotion: 'Expectativa de Orden', 
-      concerns: 'Deseo de mayor trazabilidad y control preventivo para reducir la carga mental.' 
-    },
-    
-    // Tech & Innovación (Alvar/Andrea) - 3 projects
-    'Tech & Innovación': { 
-      score: 75, 
-      emotion: 'Pioneros Digitales', 
-      concerns: 'Proyectos transversales de migración y análisis automático de comunicaciones.' 
-    },
+    'Finanzas': { score: 48, emotion: 'Estrés Resiliente', concerns: 'Montaña de burocracia manual...' },
+    'RRHH': { score: 22, emotion: 'Frustración Crítica', concerns: 'Saturación por cambios constantes...' },
+    'Cultura': { score: 72, emotion: 'Foco en Valores', concerns: 'Detección de talento y clima...' },
+    'Operaciones': { score: 28, emotion: 'Saturación Digital', concerns: 'Exceso de comunicaciones...' },
+    'Operaciones - Sala': { score: 52, emotion: 'Analítico Saturado', concerns: 'Dominio analítico superior...' },
+    'Operaciones - Cocina': { score: 55, emotion: 'Buscando Eficiencia', concerns: 'Necesidad de buscador inteligente...' },
+    'Operaciones - ATC': { score: 60, emotion: 'Pendiente de Automatización', concerns: 'Gestión manual de reservas...' },
+    'I+D': { score: 92, emotion: 'Obsesión Analítica', concerns: 'Enfoque racional en resolver el puzzle...' },
+    'I+D - Interiorismo': { score: 45, emotion: 'Descontrol de Stock', concerns: 'Conciliación manual agotadora...' },
+    'I+D - Diseño': { score: 88, emotion: 'Optimismo Vital', concerns: 'Alta motivación por el uso de IA...' },
+    'Comercial - Ventas': { score: 65, emotion: 'Preocupación Humana', concerns: 'Temor a perder el "toque humano"...' },
+    'Comercial - Marketing': { score: 55, emotion: 'Saturación de Leads', concerns: 'Bandeja de entrada colapsada...' },
+    'Mantenimiento': { score: 70, emotion: 'Expectativa de Orden', concerns: 'Deseo de mayor trazabilidad...' },
+    'Tech & Innovación': { score: 75, emotion: 'Pioneros Digitales', concerns: 'Proyectos transversales...' },
   };
 
   const moods = await Promise.all(
-    (uniqueDepartments as string[]).map((deptName) => {
+    uniqueDepartments.map((deptName) => {
       const data = sentimentMap[deptName] || {
         score: 60,
         emotion: 'Neutral / Adaptación',
@@ -175,7 +244,6 @@ async function main() {
     })
   );
 
-
   console.log(`✅ Created ${moods.length} team mood records`);
   console.log('🎉 Seeding completed!');
 }
@@ -188,4 +256,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-

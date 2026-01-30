@@ -2,16 +2,47 @@
 
 import { cookies } from "next/headers"
 import { encrypt, decrypt } from "./session"
+import { prisma } from "@/lib/prisma"
+import { compare } from "bcryptjs"
 
 export async function login(formData: FormData) {
-  // Hardcoded for development
-  const username = formData.get("username")
-  const password = formData.get("password")
+  const username = formData.get("username") as string
+  const password = formData.get("password") as string
 
-  if (username === "admin" && password === "admin") {
+  if (!username || !password) {
+    return { success: false, error: "invalidCredentials" }
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { username },
+      include: { role: { include: { permissions: true } } }
+    })
+
+    if (!user) {
+      return { success: false, error: "invalidCredentials" }
+    }
+
+    const passwordsMatch = await compare(password, user.password)
+
+    if (!passwordsMatch) {
+      return { success: false, error: "invalidCredentials" }
+    }
+
     // Create the session
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000)
-    const session = await encrypt({ user: "admin", expires })
+    const sessionPayload = {
+      user: {
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        role: user.role.name,
+        permissions: user.role.permissions.map(p => p.action + ':' + p.resource)
+      },
+      expires
+    }
+    
+    const session = await encrypt(sessionPayload)
 
     // Save the session in a cookie
     const cookieStore = await cookies()
@@ -21,10 +52,12 @@ export async function login(formData: FormData) {
       secure: process.env.NODE_ENV === "production",
       path: '/'
     })
+    
     return { success: true }
+  } catch (error) {
+    console.error("Login error:", error)
+    return { success: false, error: "invalidCredentials" }
   }
-
-  return { success: false, error: "invalidCredentials" }
 }
 
 export async function logout() {

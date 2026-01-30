@@ -53,19 +53,13 @@ export async function POST(request: NextRequest) {
     // Insert or update team moods if provided
     if (body.teamMoods && Array.isArray(body.teamMoods)) {
       for (const mood of body.teamMoods) {
-        await prisma.teamMood.upsert({
-          where: { departmentName: mood.departmentName },
-          update: {
-            sentimentScore: mood.sentimentScore,
-            dominantEmotion: mood.dominantEmotion,
-            keyConcerns: mood.keyConcerns,
-            detectedAt: new Date(),
-          },
-          create: {
+        await prisma.teamMood.create({
+          data: {
             departmentName: mood.departmentName,
             sentimentScore: mood.sentimentScore,
             dominantEmotion: mood.dominantEmotion,
             keyConcerns: mood.keyConcerns,
+            detectedAt: new Date(),
           },
         })
         counts.moods++
