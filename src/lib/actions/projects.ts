@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { Prisma } from "@/generated/prisma/client"
 
 // Types
 export interface ProjectFilters {
@@ -24,7 +25,7 @@ export interface ProjectUpdateData {
 
 // Get all projects with optional filters
 export async function getProjects(filters?: ProjectFilters) {
-  const where: any = {}
+  const where: Prisma.ProjectWhereInput = {}
 
   if (filters?.search) {
     where.OR = [

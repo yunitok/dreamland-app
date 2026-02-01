@@ -2,11 +2,9 @@ import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import type { TeamMood } from "@/generated/prisma/client"
 import { 
-  Smile, 
   Meh, 
   AlertTriangle,
   ThumbsUp,
-  FolderKanban,
   Zap
 } from "lucide-react"
 
@@ -99,7 +97,7 @@ export function EmotionCards({ moods }: EmotionCardsProps) {
                 </div>
                 {mood.keyConcerns && (
                   <p className="text-xs text-muted-foreground/80 italic border-l-2 border-border/60 pl-3 py-1 line-clamp-2 leading-relaxed">
-                    "{mood.keyConcerns}"
+                    &quot;{mood.keyConcerns}&quot;
                   </p>
                 )}
               </div>

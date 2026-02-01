@@ -1,4 +1,4 @@
-import { PrismaClient } from '@/generated/prisma/client';
+import { PrismaClient } from '@/generated/prisma';
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 import path from 'path';
 
@@ -10,7 +10,6 @@ const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
 type PrismaClientInstance = InstanceType<typeof PrismaClient>;
 
 declare global {
-  // eslint-disable-next-line no-var
   var prismaGlobal: PrismaClientInstance | undefined;
 }
 

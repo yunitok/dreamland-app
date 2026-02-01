@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import { hash } from "bcryptjs"
 import { revalidatePath } from "next/cache"
+import { Prisma } from "@/generated/prisma/client"
 
 const SALT_ROUNDS = 10
 
@@ -21,9 +22,18 @@ export async function getUsers() {
   }
 }
 
-export async function createUser(data: any) {
+interface UserFormData {
+  name: string;
+  username: string;
+  email: string;
+  password?: string;
+  roleId: string;
+  image?: string;
+}
+
+export async function createUser(data: UserFormData) {
   try {
-    const hashedPassword = await hash(data.password, SALT_ROUNDS)
+    const hashedPassword = await hash(data.password!, SALT_ROUNDS)
     const user = await prisma.user.create({
       data: {
         name: data.name,
@@ -42,9 +52,9 @@ export async function createUser(data: any) {
   }
 }
 
-export async function updateUser(id: string, data: any) {
+export async function updateUser(id: string, data: UserFormData) {
   try {
-    const updateData: any = {
+    const updateData: Prisma.UserUncheckedUpdateInput = {
       name: data.name,
       username: data.username,
       email: data.email,

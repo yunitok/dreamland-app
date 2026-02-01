@@ -1,11 +1,17 @@
+import { getSession } from "@/lib/auth"
+import { hasPermission, UserSession } from "@/lib/permissions"
 import { Header } from "@/components/layout/header"
 import { SentimentChart } from "@/components/sentiment/sentiment-chart"
 import { EmotionCards } from "@/components/sentiment/emotion-cards"
 import { prisma } from "@/lib/prisma"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertTriangle, CheckCircle, TrendingDown, TrendingUp } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { AlertTriangle, CheckCircle, TrendingDown, TrendingUp, Plus } from "lucide-react"
 import { getTranslations, setRequestLocale } from "next-intl/server"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Link } from "@/i18n/navigation"
+import { getDepartments } from "@/lib/actions/sentiment"
+import { NewCheckInButton } from "@/components/sentiment/new-check-in-button"
 
 async function getSentimentData() {
   // 1. Get all moods ordered by detection time
@@ -55,7 +61,7 @@ async function getSentimentData() {
     moods: currentMoods, 
     avgScore, 
     criticalDepts, 
-    stableDepts,
+    stableDepts, 
     healthyDepts, 
     trend: trend ? parseFloat(trend) : null 
   }
@@ -69,15 +75,41 @@ export default async function SentimentPage({
   const { locale } = await params
   setRequestLocale(locale)
   const t = await getTranslations("sentiment")
+  const session = await getSession() as UserSession | null
+  // Check permissions for managing sentiment (with fallback for legacy sessions)
+  const hasAuth = hasPermission(session?.user, 'create', 'sentiment')
   
-  const { moods, avgScore, criticalDepts, stableDepts, healthyDepts, trend } = await getSentimentData()
+  // Fallback for older sessions where role might be an object or direct string without permissions array
+  const userRole = session?.user?.role
+  // @ts-expect-error - legacy session handling
+  const rawRole = typeof userRole === 'string' ? userRole : userRole?.code || userRole?.name
+  const roleCode = rawRole?.toString().toUpperCase().replace(/\s+/g, '_')
+  const isLegacyAdmin = ['SUPER_ADMIN', 'ADMIN', 'STRATEGIC_PM', 'PEOPLE_LEAD'].includes(roleCode || '')
+
+  const canManage = hasAuth || isLegacyAdmin
+  
+  const [{ moods, avgScore, criticalDepts, stableDepts, healthyDepts, trend }, departments] = await Promise.all([
+    getSentimentData(),
+    getDepartments()
+  ])
 
   return (
     <div className="flex flex-col min-h-screen">
       <Header 
         titleKey="sentiment.title"
         descriptionKey="sentiment.description"
-      />
+      >
+        {canManage && (
+            <div className="flex gap-2">
+                <Button variant="outline" size="sm" asChild className="hidden md:flex">
+                    <Link href="/sentiment/history">
+                        Gestión (Admin)
+                    </Link>
+                </Button>
+                <NewCheckInButton departments={departments} />
+            </div>
+        )}
+      </Header>
       
       <div className="flex-1 p-4 md:p-6 space-y-4 w-full max-w-[1600px] mx-auto">
         {/* Bento Grid Compacto - Header Section */}

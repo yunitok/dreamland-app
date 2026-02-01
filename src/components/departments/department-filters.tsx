@@ -21,7 +21,6 @@ interface FilterState {
 
 interface DepartmentFiltersProps {
   onFiltersChange: (filters: FilterState) => void
-  onCreateClick: () => void
   totalCount: number
   filteredCount: number
   className?: string
@@ -37,7 +36,6 @@ const SENTIMENT_LEVELS = [
 
 export function DepartmentFilters({
   onFiltersChange,
-  onCreateClick,
   totalCount,
   filteredCount,
   className,
@@ -91,10 +89,6 @@ export function DepartmentFilters({
               <span className="sm:hidden">Limpiar</span>
             </Button>
           )}
-          <Button onClick={onCreateClick} size="sm" className="h-8">
-            <Plus className="h-4 w-4 sm:mr-1" />
-            <span className="hidden sm:inline">{t("createDepartment")}</span>
-          </Button>
         </div>
       </div>
 

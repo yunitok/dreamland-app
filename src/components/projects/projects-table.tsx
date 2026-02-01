@@ -1,8 +1,10 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Link } from "@/i18n/navigation"
 import {
   Table,
   TableBody,
@@ -27,7 +29,7 @@ import {
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import type { Project } from "@/generated/prisma/client"
-import { Eye, Quote, Pencil, ChevronLeft, ChevronRight } from "lucide-react"
+import { Eye, Quote, Pencil, ChevronLeft, ChevronRight, LayoutDashboard, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { useTranslations, useLocale } from "next-intl"
 import { ProjectFilters } from "./project-filters"
 import { ProjectEditForm } from "./project-edit-form"
@@ -76,10 +78,22 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
     type: "all",
     status: "all",
   })
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Project | string; direction: 'asc' | 'desc' } | null>({ key: 'priority', direction: 'desc' }) // Default sort
   const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState<number>(25)
+  const [pageSize, setPageSize] = useState<number>(10)
   const t = useTranslations("projects")
   const locale = useLocale()
+
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  // Effect to check for new-project query param
+  useEffect(() => {
+    if (searchParams.get('new-project') === 'true') {
+      handleCreateClick()
+    }
+  }, [searchParams])
 
   // Reset page when filters change
   const handleFiltersChange = (newFilters: FilterState) => {
@@ -87,8 +101,28 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
     setCurrentPage(1)
   }
 
+  const handleSort = (key: keyof Project | string) => {
+    setSortConfig(current => {
+      if (current?.key === key) {
+        if (current.direction === 'asc') return { key, direction: 'desc' }
+        return null // Toggle off or cycle? usually asc -> desc -> off/asc. Let's do asc -> desc -> asc
+      }
+      return { key, direction: 'asc' }
+    })
+    // Better cycle: asc -> desc -> asc
+    setSortConfig(current => {
+       if (current?.key === key) {
+         return { key, direction: current.direction === 'asc' ? 'desc' : 'asc' }
+       }
+       return { key, direction: 'asc' }
+    })
+  }
+
+  const priorityValues = { High: 3, Medium: 2, Low: 1 }
+  const statusValues = { Active: 1, Pending: 2, Done: 3 }
+
   const filteredProjects = useMemo(() => {
-    return projects.filter((project) => {
+    let result = projects.filter((project) => {
       // Search filter
       if (filters.search !== "") {
         const searchLower = filters.search.toLowerCase()
@@ -104,7 +138,38 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
       if (filters.status !== "all" && project.status !== filters.status) return false
       return true
     })
-  }, [projects, filters])
+
+    // Sorting
+    if (sortConfig) {
+      result = [...result].sort((a, b) => {
+        const aValue = a[sortConfig.key as keyof Project]
+        const bValue = b[sortConfig.key as keyof Project]
+
+        if (sortConfig.key === 'priority') {
+           const pA = priorityValues[a.priority as keyof typeof priorityValues] || 0
+           const pB = priorityValues[b.priority as keyof typeof priorityValues] || 0
+           return sortConfig.direction === 'asc' ? pA - pB : pB - pA
+        }
+
+        if (sortConfig.key === 'status') {
+           // Custom status sort if needed, or alphabetical
+           // Using statusValues map
+           const sA = statusValues[a.status as keyof typeof statusValues] || 99
+           const sB = statusValues[b.status as keyof typeof statusValues] || 99
+           return sortConfig.direction === 'asc' ? sA - sB : sB - sA
+        }
+
+        // Default string/number comparison
+        const vA = aValue ?? ''
+        const vB = bValue ?? ''
+        if (vA < vB) return sortConfig.direction === 'asc' ? -1 : 1
+        if (vA > vB) return sortConfig.direction === 'asc' ? 1 : -1
+        return 0
+      })
+    }
+    
+    return result
+  }, [projects, filters, sortConfig])
 
   // Pagination
   const totalPages = Math.ceil(filteredProjects.length / pageSize)
@@ -157,13 +222,26 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
     setIsFormOpen(true)
   }
 
+  const handleCloseForm = () => {
+    setIsFormOpen(false)
+    // Remove query param if it exists
+    if (searchParams.get('new-project')) {
+        router.replace(pathname)
+    }
+  }
+  
+  const SortIcon = ({ column }: { column: string }) => {
+    if (sortConfig?.key !== column) return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+    if (sortConfig.direction === 'asc') return <ArrowUp className="ml-2 h-4 w-4" />
+    return <ArrowDown className="ml-2 h-4 w-4" />
+  }
+
   return (
-    <>
+    <div className="space-y-6">
       {/* Filters */}
       <ProjectFilters
         departments={departments}
         onFiltersChange={handleFiltersChange}
-        onCreateClick={handleCreateClick}
         totalCount={projects.length}
         filteredCount={filteredProjects.length}
       />
@@ -174,11 +252,51 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent border-border/50">
-                <TableHead className="font-bold">{t("titleLabel")}</TableHead>
-                <TableHead className="hidden md:table-cell font-bold">{t("department")}</TableHead>
-                <TableHead className="hidden sm:table-cell font-bold">{t("type")}</TableHead>
-                <TableHead className="hidden xs:table-cell font-bold">{t("priority")}</TableHead>
-                <TableHead className="font-bold">{t("status")}</TableHead>
+                <TableHead 
+                  className="font-bold cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => handleSort('title')}
+                >
+                  <div className="flex items-center">
+                    {t("titleLabel")}
+                    <SortIcon column="title" />
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="hidden md:table-cell font-bold cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => handleSort('department')}
+                >
+                  <div className="flex items-center">
+                    {t("department")}
+                    <SortIcon column="department" />
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="hidden sm:table-cell font-bold cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => handleSort('type')}
+                >
+                  <div className="flex items-center">
+                    {t("type")}
+                    <SortIcon column="type" />
+                  </div>
+                </TableHead>
+                <TableHead 
+                   className="hidden xs:table-cell font-bold cursor-pointer hover:bg-muted/50 transition-colors"
+                   onClick={() => handleSort('priority')}
+                >
+                   <div className="flex items-center">
+                    {t("priority")}
+                    <SortIcon column="priority" />
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="font-bold cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => handleSort('status')}
+                >
+                  <div className="flex items-center">
+                    {t("status")}
+                     <SortIcon column="status" />
+                  </div>
+                </TableHead>
                 <TableHead className="w-[80px] text-right font-bold">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
@@ -248,8 +366,14 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
                         variant="ghost" 
                         size="icon"
                         className="h-8 w-8 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                        asChild
                       >
-                        <Eye className="h-4 w-4" />
+                        <Link 
+                          href={`/projects/${project.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Link>
                       </Button>
                     </div>
                   </TableCell>
@@ -319,7 +443,7 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
           </div>
         </div>
       )}
-    </div>
+      </div>
 
     {/* Project Detail Sheet */}
     <Sheet open={!!selectedProject} onOpenChange={() => setSelectedProject(null)}>
@@ -387,6 +511,16 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
                     <Pencil className="h-3 w-3 mr-1" />
                     {t("editProject")}
                   </Button>
+                  <Button 
+                    size="sm" 
+                    variant="default"
+                    asChild
+                  >
+                    <Link href={`/projects/${selectedProject.id}`}>
+                      <LayoutDashboard className="h-3 w-3 mr-1" />
+                      {t("manageProject")}
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </>
@@ -400,9 +534,9 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
         project={editingProject}
         departments={departments}
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={handleCloseForm}
         mode={formMode}
       />
-    </>
+    </div>
   )
 }

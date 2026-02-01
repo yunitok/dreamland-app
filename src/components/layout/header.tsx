@@ -17,9 +17,10 @@ import { SidebarContent } from "./sidebar"
 interface HeaderProps {
   titleKey?: string
   descriptionKey?: string
+  children?: React.ReactNode
 }
 
-export function Header({ titleKey, descriptionKey }: HeaderProps) {
+export function Header({ titleKey, descriptionKey, children }: HeaderProps) {
   const t = useTranslations()
   const tCommon = useTranslations("common")
 
@@ -56,6 +57,8 @@ export function Header({ titleKey, descriptionKey }: HeaderProps) {
       </div>
       
       <div className="flex items-center gap-2">
+        {children}
+        <div className="h-6 w-px bg-border mx-2 hidden sm:block" />
         <ThemeToggle />
         <LanguageSwitcher />
         <Button variant="ghost" size="icon" className="hidden sm:flex h-9 w-9">

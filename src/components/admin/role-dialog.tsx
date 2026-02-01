@@ -13,13 +13,13 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
 import { createRole, updateRole } from "@/lib/actions/roles"
 import { Plus, Pencil } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { Role, Permission } from "@/generated/prisma/client"
 
 interface RoleDialogProps {
-  role?: any
+  role?: Role & { permissions: Permission[] }
 }
 
 const RESOURCES = ["projects", "users", "roles", "departments", "sentiment", "admin"]
@@ -35,7 +35,7 @@ export function RoleDialog({ role }: RoleDialogProps) {
   const [formData, setFormData] = useState({
     name: role?.name || "",
     description: role?.description || "",
-    permissions: role?.permissions?.map((p: any) => `${p.action}:${p.resource}`) || []
+    permissions: role?.permissions?.map((p) => `${p.action}:${p.resource}`) || []
   })
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export function RoleDialog({ role }: RoleDialogProps) {
         setFormData({
             name: role.name,
             description: role.description || "",
-            permissions: role.permissions.map((p: any) => `${p.action}:${p.resource}`)
+            permissions: role.permissions.map((p) => `${p.action}:${p.resource}`)
         })
     } else if (open && !role) {
         setFormData({ name: "", description: "", permissions: [] })
@@ -76,7 +76,7 @@ export function RoleDialog({ role }: RoleDialogProps) {
       } else {
         setError(result.error || "An error occurred")
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred")
     } finally {
       setLoading(false)
@@ -168,7 +168,7 @@ export function RoleDialog({ role }: RoleDialogProps) {
                                 <tr key={resource} className="group hover:bg-muted/30 transition-colors">
                                     <td className="p-4 font-medium">
                                         <div className="flex items-center gap-2">
-                                            {t(`permissions.resources.${resource}` as any)}
+                                            {t(`permissions.resources.${resource}`)}
                                         </div>
                                     </td>
                                     <td className="p-4">
@@ -185,7 +185,7 @@ export function RoleDialog({ role }: RoleDialogProps) {
                                                     onClick={() => !role?.isSystem && togglePermission(action, resource)}
                                                 >
                                                     <div className={`w-1.5 h-1.5 rounded-full ${formData.permissions.includes(`${action}:${resource}`) ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
-                                                    {t(`permissions.actions.${action}` as any)}
+                                                    {t(`permissions.actions.${action}`)}
                                                 </div>
                                             ))}
                                         </div>

@@ -9,7 +9,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { getTranslations, setRequestLocale } from "next-intl/server"
-import { Plus } from "lucide-react"
 
 export default async function RolesPage({
   params,

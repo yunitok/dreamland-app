@@ -21,10 +21,17 @@ export async function getRoles() {
   }
 }
 
-export async function createRole(data: any) {
+interface RoleFormData {
+  name: string;
+  description?: string;
+  permissions: string[];
+}
+
+export async function createRole(data: RoleFormData) {
   try {
     const role = await prisma.role.create({
       data: {
+        code: data.name.toUpperCase().replace(/\s+/g, '_'),
         name: data.name,
         description: data.description,
         permissions: {
@@ -46,7 +53,7 @@ export async function createRole(data: any) {
   }
 }
 
-export async function updateRole(id: string, data: any) {
+export async function updateRole(id: string, data: RoleFormData) {
   try {
     // 1. Clear existing permissions
     await prisma.role.update({

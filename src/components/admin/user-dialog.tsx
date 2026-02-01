@@ -23,10 +23,11 @@ import {
 import { createUser, updateUser } from "@/lib/actions/users"
 import { Plus, Pencil } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { User, Role } from "@/generated/prisma/client"
 
 interface UserDialogProps {
-  user?: any
-  roles: any[]
+  user?: User & { role?: Role } // simplified type
+  roles: Role[]
 }
 
 export function UserDialog({ user, roles }: UserDialogProps) {
@@ -66,7 +67,7 @@ export function UserDialog({ user, roles }: UserDialogProps) {
       } else {
         setError(result.error || "An error occurred")
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred")
     } finally {
       setLoading(false)

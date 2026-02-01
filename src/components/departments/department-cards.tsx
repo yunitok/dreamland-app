@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { useTranslations } from "next-intl"
@@ -37,6 +38,25 @@ export function DepartmentCards({ departments }: DepartmentCardsProps) {
   const [selectedDepartment, setSelectedDepartment] = useState<TeamMood | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [formMode, setFormMode] = useState<"create" | "edit">("create")
+
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  // Effect to check for new-department query param
+  useEffect(() => {
+    if (searchParams.get('new-department') === 'true') {
+      handleCreateClick()
+    }
+  }, [searchParams])
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false)
+    // Remove query param if it exists
+    if (searchParams.get('new-department')) {
+        router.replace(pathname)
+    }
+  }
 
   const getSentimentLevel = (score: number): string => {
     if (score < 40) return "critical"
@@ -124,7 +144,6 @@ export function DepartmentCards({ departments }: DepartmentCardsProps) {
       <>
         <DepartmentFilters
           onFiltersChange={setFilters}
-          onCreateClick={handleCreateClick}
           totalCount={0}
           filteredCount={0}
         />
@@ -134,7 +153,7 @@ export function DepartmentCards({ departments }: DepartmentCardsProps) {
         <DepartmentForm
           department={selectedDepartment}
           isOpen={isFormOpen}
-          onClose={() => setIsFormOpen(false)}
+          onClose={handleCloseForm}
           mode={formMode}
         />
       </>
@@ -145,7 +164,6 @@ export function DepartmentCards({ departments }: DepartmentCardsProps) {
     <>
       <DepartmentFilters
         onFiltersChange={setFilters}
-        onCreateClick={handleCreateClick}
         totalCount={departments.length}
         filteredCount={filteredDepartments.length}
       />
@@ -239,7 +257,7 @@ export function DepartmentCards({ departments }: DepartmentCardsProps) {
                 {/* Emotion Quote - Data storytelling */}
                 {dept.dominantEmotion && (
                   <p className="text-xs text-muted-foreground/80 italic border-l-2 border-border/60 pl-3 py-1 line-clamp-2 leading-relaxed">
-                    "{dept.dominantEmotion}"
+                    &quot;{dept.dominantEmotion}&quot;
                   </p>
                 )}
               </div>
@@ -257,7 +275,7 @@ export function DepartmentCards({ departments }: DepartmentCardsProps) {
       <DepartmentForm
         department={selectedDepartment}
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={handleCloseForm}
         mode={formMode}
       />
     </>

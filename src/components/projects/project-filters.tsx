@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Search, X, Filter, SlidersHorizontal, Plus } from "lucide-react"
+import { Search, X, SlidersHorizontal, Plus } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 
@@ -25,7 +25,6 @@ interface FilterState {
 interface ProjectFiltersProps {
   departments: string[]
   onFiltersChange: (filters: FilterState) => void
-  onCreateClick: () => void
   totalCount: number
   filteredCount: number
   className?: string
@@ -38,7 +37,6 @@ const STATUSES = ["Active", "Pending", "Done"] as const
 export function ProjectFilters({
   departments,
   onFiltersChange,
-  onCreateClick,
   totalCount,
   filteredCount,
   className,
@@ -131,17 +129,13 @@ export function ProjectFilters({
               <span className="sm:hidden">Limpiar</span>
             </Button>
           )}
-          <Button onClick={onCreateClick} size="sm" className="h-8">
-            <Plus className="h-4 w-4 sm:mr-1" />
-            <span className="hidden sm:inline">{t("createProject")}</span>
-          </Button>
         </div>
       </div>
 
-      {/* Search and Filters - All in one line */}
-      <div className="flex flex-wrap items-center gap-3">
-        {/* Search Bar */}
-        <div className="w-full sm:w-auto sm:min-w-[250px]">
+      {/* Search and Filters */}
+      <div className="grid grid-cols-2 md:flex md:flex-wrap items-center gap-3">
+        {/* Search Bar - Full width on mobile */}
+        <div className="col-span-2 md:w-auto md:min-w-[250px]">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -154,9 +148,9 @@ export function ProjectFilters({
         </div>
 
         {/* Department */}
-        <div className="w-auto">
+        <div className="col-span-2 xs:col-span-1 md:w-auto">
           <Select value={filters.department} onValueChange={(v: string) => updateFilter("department", v)}>
-            <SelectTrigger className="h-9 bg-background/50 w-auto min-w-[160px]">
+            <SelectTrigger className="h-9 bg-background/50 w-full md:w-auto md:min-w-[160px]">
               <SelectValue placeholder={t("allDepartments")} />
             </SelectTrigger>
             <SelectContent>
@@ -171,9 +165,9 @@ export function ProjectFilters({
         </div>
 
         {/* Priority */}
-        <div className="w-auto">
+        <div className="col-span-2 xs:col-span-1 md:w-auto">
           <Select value={filters.priority} onValueChange={(v: string) => updateFilter("priority", v)}>
-            <SelectTrigger className="h-9 bg-background/50 w-auto min-w-[140px]">
+            <SelectTrigger className="h-9 bg-background/50 w-full md:w-auto md:min-w-[140px]">
               <SelectValue placeholder={t("allPriorities")} />
             </SelectTrigger>
             <SelectContent>
@@ -188,9 +182,9 @@ export function ProjectFilters({
         </div>
 
         {/* Type */}
-        <div className="w-auto">
+        <div className="col-span-2 xs:col-span-1 md:w-auto">
           <Select value={filters.type} onValueChange={(v: string) => updateFilter("type", v)}>
-            <SelectTrigger className="h-9 bg-background/50 w-auto min-w-[120px]">
+            <SelectTrigger className="h-9 bg-background/50 w-full md:w-auto md:min-w-[120px]">
               <SelectValue placeholder={t("allTypes")} />
             </SelectTrigger>
             <SelectContent>
@@ -205,9 +199,9 @@ export function ProjectFilters({
         </div>
 
         {/* Status */}
-        <div className="w-auto">
+        <div className="col-span-2 xs:col-span-1 md:w-auto">
           <Select value={filters.status} onValueChange={(v: string) => updateFilter("status", v)}>
-            <SelectTrigger className="h-9 bg-background/50 w-auto min-w-[130px]">
+            <SelectTrigger className="h-9 bg-background/50 w-full md:w-auto md:min-w-[130px]">
               <SelectValue placeholder={t("allStatuses")} />
             </SelectTrigger>
             <SelectContent>

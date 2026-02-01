@@ -36,7 +36,7 @@ export async function login(formData: FormData) {
         id: user.id,
         username: user.username,
         name: user.name,
-        role: user.role.name,
+        role: user.role.code,
         permissions: user.role.permissions.map(p => p.action + ':' + p.resource)
       },
       expires

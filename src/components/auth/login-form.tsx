@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Lock, User, AlertCircle } from "lucide-react"
 import { useTranslations } from "next-intl"
-import { cn } from "@/lib/utils"
+
+
 
 export function LoginForm() {
   const t = useTranslations("login")
@@ -29,9 +30,9 @@ export function LoginForm() {
         router.refresh()
         router.push("/")
       } else {
-        setError(t(result.error as any))
+        setError(t(result.error as "invalidCredentials"))
       }
-    } catch (err) {
+    } catch {
       setError(t("invalidCredentials"))
     } finally {
       setIsLoading(false)

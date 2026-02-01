@@ -80,7 +80,7 @@ export default async function DashboardPage({
             </div>
             <div className="hidden lg:flex flex-col justify-center border-l pl-6 border-primary/10">
               <p className="text-xs text-muted-foreground italic">
-                "Basado en los datos actuales, priorizar la resolución del proyecto más antiguo de alta prioridad mejorará la moral en un 15%."
+                &quot;Basado en los datos actuales, priorizar la resolución del proyecto más antiguo de alta prioridad mejorará la moral en un 15%.&quot;
               </p>
             </div>
           </div>

@@ -1,7 +1,6 @@
 import { getUsers } from "@/lib/actions/users"
 import { getRoles } from "@/lib/actions/roles"
 import { UserDialog } from "@/components/admin/user-dialog"
-import { Button } from "@/components/ui/button"
 import {
   Table,
   TableBody,
@@ -11,7 +10,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { getTranslations, setRequestLocale } from "next-intl/server"
-import { Plus } from "lucide-react"
 
 export default async function UsersPage({
   params,

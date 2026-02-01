@@ -11,19 +11,186 @@ datasource db {
   provider = "sqlite"
 }
 
+// =============================================================================
+// PROJECT MANAGEMENT
+// =============================================================================
+
 model Project {
   id          String   @id @default(cuid())
   title       String
   department  String
-  type        String   // "Problem" | "Idea"
+  type        String   // "Problem" | "Idea" | "Initiative"
   priority    String   // "High" | "Medium" | "Low"
+  status      String   @default("Pending") // "Active" | "Pending" | "Done"
   description String
-  status      String   // "Pending" | "Active" | "Done"
   sourceQuote String?
+  
+  // Project Management Fields
+  startDate   DateTime?
+  dueDate     DateTime?
+  progress    Int      @default(0) // 0-100%
+  color       String?  // For visual identification (hex color)
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  // Relations
   risks       ProjectRisk[]
+  lists       TaskList[]
+  statuses    TaskStatus[]
+  tags        Tag[]
 }
+
+model TaskList {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  position    Int      @default(0)  // For ordering lists
+  color       String?  // Hex color for visual identification
+  
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  tasks       Task[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  position    Int      @default(0)  // For ordering within list
+  
+  // Dates
+  startDate   DateTime?
+  dueDate     DateTime?
+  
+  // Estimation & Tracking
+  estimatedHours  Float?
+  actualHours     Float?
+  storyPoints     Int?
+  
+  // Progress (0-100)
+  progress    Int      @default(0)
+  
+  // Hierarchy - Self-referential for subtasks
+  parentId    String?
+  parent      Task?    @relation("TaskSubtasks", fields: [parentId], references: [id], onDelete: Cascade)
+  subtasks    Task[]   @relation("TaskSubtasks")
+  
+  // Relations
+  listId      String
+  list        TaskList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  
+  statusId    String
+  status      TaskStatus @relation(fields: [statusId], references: [id])
+  
+  assigneeId  String?
+  assignee    User?    @relation("AssignedTasks", fields: [assigneeId], references: [id], onDelete: SetNull)
+  
+  // Dependencies
+  predecessors TaskDependency[] @relation("SuccessorTask")
+  successors   TaskDependency[] @relation("PredecessorTask")
+  
+  // Collaboration
+  comments    TaskComment[]
+  attachments TaskAttachment[]
+  tags        Tag[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TaskStatus {
+  id          String   @id @default(cuid())
+  name        String
+  color       String   @default("#6B7280") // gray-500
+  position    Int      @default(0)  // For ordering columns in Kanban
+  isDefault   Boolean  @default(false) // Default status for new tasks
+  isClosed    Boolean  @default(false) // Marks task as "done"
+  
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  tasks       Task[]
+  
+  @@unique([projectId, name])
+}
+
+model TaskDependency {
+  id              String @id @default(cuid())
+  
+  // The task that must be completed first
+  predecessorId   String
+  predecessor     Task   @relation("PredecessorTask", fields: [predecessorId], references: [id], onDelete: Cascade)
+  
+  // The task that depends on the predecessor
+  successorId     String
+  successor       Task   @relation("SuccessorTask", fields: [successorId], references: [id], onDelete: Cascade)
+  
+  // Dependency types:
+  // FS = Finish-to-Start (most common - successor starts after predecessor finishes)
+  // SS = Start-to-Start (both start together)
+  // FF = Finish-to-Finish (both finish together)
+  // SF = Start-to-Finish (successor finishes when predecessor starts)
+  type            String @default("FS")
+  
+  // Lag days (positive = delay, negative = lead time)
+  lagDays         Int    @default(0)
+  
+  createdAt       DateTime @default(now())
+  
+  @@unique([predecessorId, successorId])
+}
+
+model TaskComment {
+  id        String   @id @default(cuid())
+  content   String
+  
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
+  authorId  String
+  author    User     @relation("TaskComments", fields: [authorId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TaskAttachment {
+  id        String   @id @default(cuid())
+  filename  String
+  filepath  String   // Path to stored file
+  filesize  Int      // Size in bytes
+  mimetype  String
+  
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
+  uploaderId String
+  uploader   User    @relation("TaskAttachments", fields: [uploaderId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String
+  color     String   @default("#3B82F6") // blue-500
+  
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  tasks     Task[]
+  
+  @@unique([projectId, name])
+}
+
+// =============================================================================
+// TEAM SENTIMENT
+// =============================================================================
 
 model TeamMood {
   id              String   @id @default(cuid())
@@ -42,6 +209,10 @@ model ProjectRisk {
   reason    String
 }
 
+// =============================================================================
+// AUTHENTICATION & RBAC
+// =============================================================================
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -53,11 +224,17 @@ model User {
   role          Role      @relation(fields: [roleId], references: [id])
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  
+  // Task Management Relations
+  assignedTasks  Task[]           @relation("AssignedTasks")
+  comments       TaskComment[]    @relation("TaskComments")
+  attachments    TaskAttachment[] @relation("TaskAttachments")
 }
 
 model Role {
   id          String       @id @default(cuid())
-  name        String       @unique
+  code        String       @unique // System Code: SUPER_ADMIN, STRATEGIC_PM, TEAM_LEAD, TEAM_MEMBER
+  name        String       // Display Name: Super Admin, Team Lead
   description String?
   isSystem    Boolean      @default(false)
   users       User[]

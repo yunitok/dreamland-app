@@ -17,14 +17,6 @@ import {
 import { logout } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 
-const navItems = [
-  { href: "/", labelKey: "dashboard", icon: LayoutDashboard },
-  { href: "/projects", labelKey: "projects", icon: FolderKanban },
-  { href: "/departments", labelKey: "departments", icon: Zap },
-  { href: "/sentiment", labelKey: "teamPulse", icon: Heart },
-  { href: "/admin/seed", labelKey: "admin", icon: Settings },
-]
-
 interface SidebarContentProps {
   user?: {
     name?: string | null
