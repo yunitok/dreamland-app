@@ -9,7 +9,7 @@ import { FolderKanban, Sparkles, AlertTriangle, ThumbsUp, Meh, Pencil } from "lu
 import { Button } from "@/components/ui/button"
 import { DepartmentFilters } from "./department-filters"
 import { DepartmentForm } from "./department-form"
-import type { TeamMood } from "@/generated/prisma/client"
+import type { TeamMood } from "@prisma/client"
 
 interface DepartmentInfo {
   id: string

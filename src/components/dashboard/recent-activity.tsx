@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import type { Project } from "@/generated/prisma/client"
+import type { Project } from "@prisma/client"
 import { useTranslations } from "next-intl"
 
 interface RecentActivityProps {

@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import type { TeamMood } from "@/generated/prisma/client"
+import type { TeamMood } from "@prisma/client"
 import { 
   Meh, 
   AlertTriangle,

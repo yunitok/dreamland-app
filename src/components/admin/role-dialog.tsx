@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label"
 import { createRole, updateRole } from "@/lib/actions/roles"
 import { Plus, Pencil } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { Role, Permission } from "@/generated/prisma/client"
+import { Role, Permission } from "@prisma/client"
 
 interface RoleDialogProps {
   role?: Role & { permissions: Permission[] }

@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import { hash } from "bcryptjs"
 import { revalidatePath } from "next/cache"
-import { Prisma } from "@/generated/prisma/client"
+import { Prisma } from "@prisma/client"
 
 const SALT_ROUNDS = 10
 

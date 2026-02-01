@@ -1,22 +1,24 @@
-import { PrismaClient } from '@/generated/prisma';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
-import path from 'path';
+import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
-// Use prisma/dev.db as per Prisma documentation
-const dbPath = path.join(process.cwd(), 'prisma', 'dev.db');
-const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
+const prismaClientSingleton = () => {
+  const connectionString = process.env.DATABASE_URL;
+  const pool = new Pool({ connectionString });
+  const adapter = new PrismaPg(pool);
+  return new PrismaClient({ adapter });
+};
 
-// Create a type for the Prisma Client instance
-type PrismaClientInstance = InstanceType<typeof PrismaClient>;
+type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
 
-declare global {
-  var prismaGlobal: PrismaClientInstance | undefined;
-}
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClientSingleton | undefined;
+};
 
-export const prisma = globalThis.prismaGlobal ?? new PrismaClient({ adapter });
+export const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
 
 if (process.env.NODE_ENV !== 'production') {
-  globalThis.prismaGlobal = prisma;
+  globalForPrisma.prisma = prisma;
 }
 
 export default prisma;

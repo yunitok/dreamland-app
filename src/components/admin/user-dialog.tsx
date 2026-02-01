@@ -23,7 +23,7 @@ import {
 import { createUser, updateUser } from "@/lib/actions/users"
 import { Plus, Pencil } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { User, Role } from "@/generated/prisma/client"
+import { User, Role } from "@prisma/client"
 
 interface UserDialogProps {
   user?: User & { role?: Role } // simplified type

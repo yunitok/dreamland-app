@@ -15,7 +15,7 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet"
 import { createDepartment, updateDepartment, deleteDepartment } from "@/lib/actions/departments"
-import type { TeamMood } from "@/generated/prisma/client"
+import type { TeamMood } from "@prisma/client"
 import { useTranslations } from "next-intl"
 import { Loader2, Trash2 } from "lucide-react"
 import { useRouter } from "@/i18n/navigation"

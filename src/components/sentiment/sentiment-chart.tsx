@@ -3,7 +3,7 @@
 import { Bar, BarChart, XAxis, YAxis, Cell, ResponsiveContainer, Tooltip } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useTranslations } from "next-intl"
-import type { TeamMood } from "@/generated/prisma/client"
+import type { TeamMood } from "@prisma/client"
 
 interface SentimentChartProps {
   moods: TeamMood[]

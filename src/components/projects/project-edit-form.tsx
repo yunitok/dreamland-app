@@ -21,7 +21,7 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet"
 import { updateProject, deleteProject, createProject } from "@/lib/actions/projects"
-import type { Project } from "@/generated/prisma/client"
+import type { Project } from "@prisma/client"
 import { useTranslations } from "next-intl"
 import { Loader2, Trash2 } from "lucide-react"
 import { useRouter } from "@/i18n/navigation"

@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { Prisma } from "@/generated/prisma/client"
+import { Prisma } from "@prisma/client"
 
 // Types
 export interface ProjectFilters {

@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
-import type { Project } from "@/generated/prisma/client"
+import type { Project } from "@prisma/client"
 import { Eye, Quote, Pencil, ChevronLeft, ChevronRight, LayoutDashboard, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { useTranslations, useLocale } from "next-intl"
 import { ProjectFilters } from "./project-filters"
