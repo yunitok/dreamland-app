@@ -15,7 +15,11 @@ interface VoiceAssistantButtonProps {
 export function VoiceAssistantButton({ projectId, className }: VoiceAssistantButtonProps) {
   const [isListening, setIsListening] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [transcript, setTranscript] = useState('')
+  
   const recognitionRef = useRef<any>(null)
+  const silenceTimerRef = useRef<any>(null)
+  const finalTranscriptRef = useRef('') // Keep track of full text manually
 
   useEffect(() => {
     // Check browser support
@@ -23,39 +27,65 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition()
-        recognition.continuous = false
-        recognition.lang = 'es-ES' // Set to Spanish
-        recognition.interimResults = false
+        recognition.continuous = true // Keep listening even after pauses
+        recognition.lang = 'es-ES'
+        recognition.interimResults = true // Detect speech activity early
         recognition.maxAlternatives = 1
 
         recognition.onstart = () => {
           setIsListening(true)
+          setTranscript('')
+          finalTranscriptRef.current = ''
         }
 
         recognition.onend = () => {
           setIsListening(false)
+          // Don't auto-process here because onend fires when we manually stop too.
+          // Processing is handled by the silence timer or manual stop.
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
         }
 
-        recognition.onresult = async (event: any) => {
-          const text = event.results[0][0].transcript
-          console.log('Transcript:', text)
-          
-          if (text) {
-             // Stop listening and process
-            recognition.stop()
-            await handleCommand(text)
+        recognition.onresult = (event: any) => {
+          // Reset silence timer on any result
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
+
+          let interimTranscript = ''
+          let newFinalTranscript = ''
+
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              newFinalTranscript += event.results[i][0].transcript
+            } else {
+              interimTranscript += event.results[i][0].transcript
+            }
           }
+          
+          if (newFinalTranscript) {
+             finalTranscriptRef.current += ' ' + newFinalTranscript
+          }
+
+          setTranscript(finalTranscriptRef.current + (interimTranscript ? ' ' + interimTranscript : ''))
+
+          // Set 1.5s timer to stop and process
+          silenceTimerRef.current = setTimeout(() => {
+             recognition.stop()
+             const fullText = (finalTranscriptRef.current + ' ' + interimTranscript).trim()
+             if (fullText) handleCommand(fullText)
+          }, 1500) // 1.5 seconds of silence
         }
 
         recognition.onerror = (event: any) => {
           console.error('Speech recognition error', event.error)
+          // Ignore frequent "no-speech" errors in continuous mode if we haven't started speaking
+          if (event.error === 'no-speech') return 
+
           setIsListening(false)
-          
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
+
           let errorMessage = 'Error desconocido'
           if (event.error === 'not-allowed') errorMessage = 'Permiso denegado. Habilita el micrófono.'
-          if (event.error === 'no-speech') errorMessage = 'No se detectó voz.'
           if (event.error === 'network') errorMessage = 'Error de conexión.'
-          if (event.error === 'aborted') return // Ignore aborted
+          if (event.error === 'aborted') return
           
           toast.error('Error micrófono', { description: errorMessage })
         }
@@ -64,11 +94,9 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
       }
     }
     
-    // Cleanup on unmount
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort()
-      }
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
+      if (recognitionRef.current) recognitionRef.current.abort()
     }
   }, [projectId])
 
@@ -79,16 +107,18 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
     }
 
     if (isListening) {
+      // Manual stop
       recognitionRef.current.stop()
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
+      
+      // Process immediately what we have
+      const text = finalTranscriptRef.current.trim()
+      if (text) handleCommand(text)
     } else {
       try {
-        // Reset language just in case
-        recognitionRef.current.lang = 'es-ES'
         recognitionRef.current.start()
       } catch (e) {
         console.error('Start error:', e)
-        // Usually throwing means it's already started or aborting
-        // We can try to abort and restart, but safer to just notify
         toast.info('Reiniciando micrófono...')
         recognitionRef.current.abort()
         setTimeout(() => {
@@ -99,14 +129,16 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
   }
 
   const handleCommand = async (text: string) => {
+    if (isProcessing) return
+    
     setIsProcessing(true)
+    setIsListening(false) // Visual update
     toast.info('Procesando...', { description: `"${text}"` })
 
     try {
       const result = await processTextCommand(projectId, text)
 
       if (result.success) {
-        // If the AI responded with a question/text (shouldSpeak), speak it
         if (result.shouldSpeak && result.message) {
            speakText(result.message)
            toast.info('AI dice:', { description: result.message })
@@ -116,6 +148,9 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
            })
         }
       } else {
+        if (result.debugStack) {
+            console.error('[SERVER_ERROR_STACK]', result.debugStack)
+        }
         toast.error('Error al procesar', {
           description: result.error || 'Inténtalo de nuevo'
         })
@@ -125,6 +160,8 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
       toast.error('Error de conexión')
     } finally {
       setIsProcessing(false)
+      finalTranscriptRef.current = ''
+      setTranscript('')
     }
   }
 
@@ -151,12 +188,11 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
       {isProcessing ? (
         <Loader2 className="h-5 w-5 animate-spin" />
       ) : isListening ? (
-        <Mic className="h-5 w-5 animate-bounce" /> // Bounce when listening implies activity
+        <Mic className="h-5 w-5 animate-bounce" />
       ) : (
         <Mic className="h-5 w-5" />
       )}
       
-      {/* Ripple effect when recording */}
       {isListening && (
         <span className="absolute -inset-1 rounded-full border-2 border-red-500 opacity-75 animate-ping pointer-events-none"></span>
       )}

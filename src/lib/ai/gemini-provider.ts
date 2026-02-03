@@ -2,9 +2,9 @@
 import { AIProvider, AIResponse } from './provider.interface'
 import { genAI } from '@/lib/gemini'
 import { SchemaType } from '@google/generative-ai'
-import { getTaskLists, createTaskList, deleteTaskList } from '@/lib/actions/task-lists'
+import { getTaskLists, createTaskList, deleteTaskList, updateTaskList } from '@/lib/actions/task-lists'
 import { getTaskStatuses, createDefaultStatuses } from '@/lib/actions/task-statuses'
-import { createTask, getTasks, deleteTask } from '@/lib/actions/tasks'
+import { createTask, getTasks, deleteTask, updateTask } from '@/lib/actions/tasks'
 import { revalidatePath } from 'next/cache'
 import { TaskList, TaskStatus } from '@prisma/client'
 import { logAiUsage } from '@/lib/actions/ai-usage'
@@ -28,6 +28,28 @@ const toolsDef = {
           },
         },
         required: ['name'],
+      },
+    },
+    {
+      name: 'updateTaskList',
+      description: 'Rename or update a list (column).',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+            listId: {
+                type: SchemaType.STRING,
+                description: 'The ID of the list to update.',
+            },
+            name: {
+                type: SchemaType.STRING,
+                description: 'The new name of the list.',
+            },
+            description: {
+                type: SchemaType.STRING,
+                description: 'The new description of the list.',
+            },
+        },
+        required: ['listId'],
       },
     },
     {
@@ -72,6 +94,32 @@ const toolsDef = {
           },
         },
         required: ['title', 'listId', 'statusId'],
+      },
+    },
+    {
+      name: 'updateTask',
+      description: 'Rename or update a task.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          taskId: {
+            type: SchemaType.STRING,
+            description: 'The ID of the task to update.',
+          },
+          title: {
+            type: SchemaType.STRING,
+            description: 'The new title of the task.',
+          },
+          description: {
+            type: SchemaType.STRING,
+            description: 'The new description of the task.',
+          },
+          dueDate: {
+            type: SchemaType.STRING,
+            description: 'New due date in ISO format (YYYY-MM-DD)',
+          },
+        },
+        required: ['taskId'],
       },
     },
     {
@@ -155,11 +203,18 @@ export class GeminiProvider implements AIProvider {
     
     RULES:
     1. If the user's command is complete and clear, CALL the appropriate function/tool.
-    2. If the user's command is VAGUE or MISSING CRITICAL INFO (like Task Title, or which List to use), **DO NOT GUESS**. instead, **RESPOND WITH A TEXT QUESTION** asking for the missing info.
+    2. **VOICE RECOGNITION CORRECTION**: The input is a raw voice transcript and may contain phonetic errors.
+       - "dia" / "ella" usually means "IA" (Artificial Intelligence) in this context.
+       - "Miercoles de dia" -> "Miercoles de IA".
+       - Check if the input sounds like an existing List or Task in the CONTEXT. If it's a close phonetic match, USE THE EXISTING ID.
+    3. **PREFER EXISTING**: Before creating a NEW list/task, check if one with a very similar name already exists.
+    4. **AMBIGUITY CHECK**: If the user asks to create something that sounds very similar to an existing item but slightly wrong, OR if the command is ambiguous, **ASK FOR CONFIRMATION** instead of executing.
+       - Example: "Did you mean 'Miercoles de IA'?"
+    5. If the user's command is VAGUE or MISSING CRITICAL INFO (like Task Title, or which List to use), **DO NOT GUESS**. instead, **RESPOND WITH A TEXT QUESTION** asking for the missing info.
        - Example 1: User: "Create a task." -> You: "What is the title of the task?"
        - Example 2: User: "Add 'Buy Milk'." -> You: "Which list should I add 'Buy Milk' to?"
-    3. If the user asks to create a task in a list that doesn't exist, you should CALL 'createTaskList' first.
-    4. Keep your text responses (questions) short and natural (in Spanish if the user speaks Spanish).
+    6. If the user asks to create a task in a list that doesn't exist, you should CALL 'createTaskList' first.
+    7. Keep your text responses (questions) short and natural (in Spanish if the user speaks Spanish).
     ` }],
             },
             {
@@ -190,6 +245,14 @@ export class GeminiProvider implements AIProvider {
               })
               lastCreatedListId = list.id
               executionResults.push(`List created: "${args.name}"`)
+            }
+
+            if (call.name === 'updateTaskList') {
+                await updateTaskList(args.listId, {
+                    name: args.name,
+                    description: args.description
+                })
+                executionResults.push(`List updated. ID: "${args.listId}"`)
             }
             
             if (call.name === 'deleteTaskList') {
@@ -235,6 +298,15 @@ export class GeminiProvider implements AIProvider {
                 dueDate: args.dueDate ? new Date(args.dueDate) : undefined
               })
               executionResults.push(`Task created: "${args.title}"`)
+            }
+
+            if (call.name === 'updateTask') {
+                await updateTask(args.taskId, {
+                    title: args.title,
+                    description: args.description,
+                    dueDate: args.dueDate ? new Date(args.dueDate) : undefined
+                })
+                executionResults.push(`Task updated. ID: "${args.taskId}"`)
             }
           }
         } 

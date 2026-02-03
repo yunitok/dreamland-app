@@ -50,7 +50,7 @@ export default async function LocaleLayout({
         >
           <NextIntlClientProvider messages={messages}>
             {children}
-            <Toaster />
+            <Toaster position="top-right" />
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

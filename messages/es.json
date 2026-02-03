@@ -310,5 +310,15 @@
         "saving": "Guardando...",
         "tasksDeleted": "{count} tareas eliminadas",
         "selected": "{count} seleccionadas"
+    },
+    "Voice": {
+        "listCreated": "Lista creada: \"{name}\"",
+        "listUpdated": "Lista actualizada: \"{name}\"",
+        "listDeleted": "Lista eliminada.",
+        "taskCreated": "Tarea creada: \"{title}\"",
+        "taskUpdated": "Tarea actualizada: \"{title}\"",
+        "taskDeleted": "Tarea eliminada.",
+        "executed": "Ejecutado: {actions}",
+        "didNotUnderstand": "No he entendido eso."
     }
 }

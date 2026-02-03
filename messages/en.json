@@ -310,5 +310,15 @@
         "saving": "Saving...",
         "tasksDeleted": "{count} tasks deleted",
         "selected": "{count} selected"
+    },
+    "Voice": {
+        "listCreated": "List created: \"{name}\"",
+        "listUpdated": "List updated: \"{name}\"",
+        "listDeleted": "List deleted.",
+        "taskCreated": "Task created: \"{title}\"",
+        "taskUpdated": "Task updated: \"{title}\"",
+        "taskDeleted": "Task deleted.",
+        "executed": "Executed: {actions}",
+        "didNotUnderstand": "I didn't understand that."
     }
 }

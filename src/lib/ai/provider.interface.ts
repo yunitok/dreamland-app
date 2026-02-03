@@ -12,9 +12,10 @@ export interface AIResponse {
   message?: string
   shouldSpeak?: boolean
   error?: string
+  debugStack?: string // For client-side debugging
   usage?: AIUsage
 }
 
 export interface AIProvider {
-  processCommand(projectId: string, userText: string): Promise<AIResponse>
+  processCommand(projectId: string, userText: string, locale?: string): Promise<AIResponse>
 }
