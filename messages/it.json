@@ -302,6 +302,8 @@
         "listDeleted": "Lista eliminata con successo",
         "deleteListError": "Impossibile eliminare la lista. Verifica che sia vuota.",
         "create": "Crea",
-        "cancel": "Annulla"
+        "cancel": "Annulla",
+        "tasksDeleted": "{count} attività eliminate",
+        "selected": "{count} selezionati"
     }
 }

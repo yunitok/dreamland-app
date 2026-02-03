@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { ProjectHeader } from '@/components/tasks/project-header'
 import { ViewTabs } from '@/components/tasks/view-tabs'
+import { VoiceAssistantButton } from '@/components/voice-assistant-button'
 
 interface ProjectLayoutProps {
   children: React.ReactNode
@@ -39,6 +40,7 @@ export default async function ProjectLayout({ children, params }: ProjectLayoutP
       <div className="flex-1 overflow-auto">
         {children}
       </div>
+      <VoiceAssistantButton projectId={projectId} className="fixed bottom-6 right-6 z-50 h-14 w-14" />
     </div>
   )
 }

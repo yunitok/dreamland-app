@@ -307,6 +307,8 @@
         "create": "Create",
         "cancel": "Cancel",
         "save": "Save",
-        "saving": "Saving..."
+        "saving": "Saving...",
+        "tasksDeleted": "{count} tasks deleted",
+        "selected": "{count} selected"
     }
 }

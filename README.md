@@ -38,6 +38,36 @@ A robust, secure permission system designed for enterprise needs.
 - **Database**: Prisma ORM + SQLite (Portable & Fast)
 - **Internationalization**: `next-intl` (English & Spanish support)
 - **Security**: Custom session-based auth with `bcryptjs` encryption.
+- **AI Integration**: Google Gemini & Groq (Llama 3) for Voice Commands.
+
+## 🎙️ Voice Assistant & AI
+
+Dreamland includes a sophisticated Voice Assistant capable of managing tasks and projects through natural language.
+
+### Supported Providers
+The system implements a **Provider Pattern**, allowing seamless switching between AI models.
+
+1.  **Groq (Recommended)**: Uses `llama-3.3-70b-versatile` for ultra-fast, near real-time responses.
+    - **Status Tracking**: Uses real-time headers (`x-ratelimit-remaining`) to display exact remaining quota.
+2.  **Google Gemini**: Uses `gemini-1.5-flash` as a reliable fallback.
+    - **Status Tracking**: Uses local estimation (RPM/RPD) based on database logs.
+
+### Configuration
+Set the following environment variables in your `.env` file:
+
+```bash
+# Choose Provider: "groq" or "gemini"
+AI_PROVIDER="groq"
+
+# API Keys
+GROQ_API_KEY="gsk_..."
+GOOGLE_GENERATIVE_AI_API_KEY="AIza..."
+```
+
+### 📊 AI Usage Tracking
+The application includes a built-in **Usage Tracker** in the project header.
+- **Groq Mode**: Displays real-time remaining requests and tokens for the day.
+- **Gemini Mode**: Displays estimated usage (Requests Per Minute/Day) calculated locally.
 
 ## 🏃 Getting Started
 

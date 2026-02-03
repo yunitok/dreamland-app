@@ -597,7 +597,7 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
       {selectedTasks.size > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-foreground text-background px-6 py-3 rounded-full shadow-xl flex items-center gap-4 z-50 animate-in fade-in slide-in-from-bottom-4">
           <span className="text-sm font-medium whitespace-nowrap">
-            {selectedTasks.size} selected
+            {t('selected', { count: selectedTasks.size })}
           </span>
           <Separator orientation="vertical" className="h-4 bg-background/20" />
           <Button 
@@ -608,7 +608,7 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
             disabled={isBulkDeleting}
           >
             <Trash2 className="h-4 w-4 mr-2" />
-            {isBulkDeleting ? "Deleting..." : "Delete"}
+            {isBulkDeleting ? t('deleting') : t('delete')}
           </Button>
           <Button 
              variant="ghost" 

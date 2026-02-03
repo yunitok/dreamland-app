@@ -302,6 +302,8 @@
         "listDeleted": "Liste erfolgreich gelöscht",
         "deleteListError": "Liste konnte nicht gelöscht werden. Bitte stellen Sie sicher, dass sie leer ist.",
         "create": "Erstellen",
-        "cancel": "Abbrechen"
+        "cancel": "Abbrechen",
+        "tasksDeleted": "{count} Aufgaben gelöscht",
+        "selected": "{count} ausgewählt"
     }
 }

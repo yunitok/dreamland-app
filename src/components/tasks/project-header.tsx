@@ -14,6 +14,7 @@ import { useTranslations } from 'next-intl'
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { LanguageSwitcher } from "@/components/layout/language-switcher"
 import { Bell } from "lucide-react"
+import { AiUsageIndicator } from "@/components/voice/ai-usage-indicator"
 
 interface ProjectHeaderProps {
   project: {
@@ -134,6 +135,8 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
           </div>
 
           <div className="flex items-center gap-2 ml-auto md:ml-0">
+            <div className="h-6 w-px bg-border mx-2 hidden md:block" />
+            <AiUsageIndicator />
             <div className="h-6 w-px bg-border mx-2 hidden md:block" />
             <ThemeToggle />
             <LanguageSwitcher />

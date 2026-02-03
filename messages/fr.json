@@ -302,6 +302,8 @@
         "listDeleted": "Liste supprimée avec succès",
         "deleteListError": "Impossible de supprimer la liste. Veuillez vérifier qu'elle est vide.",
         "create": "Créer",
-        "cancel": "Annuler"
+        "cancel": "Annuler",
+        "tasksDeleted": "{count} tâches supprimées",
+        "selected": "{count} sélectionné(s)"
     }
 }

@@ -307,6 +307,8 @@
         "create": "Crear",
         "cancel": "Cancelar",
         "save": "Guardar",
-        "saving": "Guardando..."
+        "saving": "Guardando...",
+        "tasksDeleted": "{count} tareas eliminadas",
+        "selected": "{count} seleccionadas"
     }
 }

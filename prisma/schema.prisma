@@ -252,3 +252,30 @@ model Permission {
 
   @@unique([action, resource])
 }
+
+// =============================================================================
+// AI USAGE TRACKING
+// =============================================================================
+
+model AiUsageLog {
+  id             String   @id @default(cuid())
+  modelName      String
+  actionType     String   // e.g., "VoiceCommand"
+  
+  // Token Usage
+  promptTokens   Int      @default(0)
+  completionTokens Int    @default(0)
+  totalTokens    Int      @default(0)
+  
+  // Metadata
+  projectId      String?
+  userId         String?
+  
+  // Provider Snapshot
+  remainingRequests Int?
+  remainingTokens   Int?
+
+  createdAt      DateTime @default(now())
+}
+
+
