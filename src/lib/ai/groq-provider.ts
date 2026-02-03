@@ -196,8 +196,12 @@ export class GroqProvider implements AIProvider {
         // Handle Tool Calls
         if (toolCalls && toolCalls.length > 0) {
             for (const toolCall of toolCalls) {
-                const args = JSON.parse(toolCall.function.arguments);
-                const name = toolCall.function.name;
+                // @ts-ignore - OpenAI SDK types union fix
+                const functionCall = toolCall.function;
+                if (!functionCall) continue;
+
+                const args = JSON.parse(functionCall.arguments);
+                const name = functionCall.name;
 
                 if (name === 'createTaskList') {
                     const list = await createTaskList({ name: args.name, description: args.description, projectId });
