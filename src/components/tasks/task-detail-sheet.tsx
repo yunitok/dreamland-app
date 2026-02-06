@@ -141,11 +141,13 @@ export function TaskDetailSheet({
   const handleSaveEdit = async () => {
     if (!task) return
     try {
+      const technicalNotes = task.technicalNotes
       await updateTask(task.id, { 
         title: editedTitle, 
-        description: editedDescription 
+        description: editedDescription,
+        technicalNotes
       })
-      setTask({ ...task, title: editedTitle, description: editedDescription })
+      setTask({ ...task, title: editedTitle, description: editedDescription, technicalNotes })
       setIsEditing(false)
     } catch (error) {
       console.error('Failed to update task:', error)
@@ -236,14 +238,27 @@ export function TaskDetailSheet({
                       autoFocus
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <Textarea
                       value={editedDescription}
                       onChange={(e) => setEditedDescription(e.target.value)}
                       placeholder={t('descriptionPlaceholder')}
-                      rows={4}
-                      className="resize-none"
+                      rows={6}
+                      className="resize-none font-sans"
                     />
+                  </div>
+                  <div className="space-y-4">
+                     <label className="text-xs font-medium text-muted-foreground uppercase flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                        {t('technicalNotes')}
+                     </label>
+                     <Textarea
+                        value={task.technicalNotes || ''}
+                        onChange={(e) => setTask({...task, technicalNotes: e.target.value})}
+                        placeholder={t('technicalNotesPlaceholder') || 'Technical implementation details...'}
+                        rows={4}
+                        className="resize-none font-mono text-xs bg-muted/20 focus-visible:ring-1"
+                     />
                   </div>
                   <div className="flex justify-end gap-2 pt-2">
                     <Button variant="ghost" size="sm" onClick={() => {
@@ -259,136 +274,198 @@ export function TaskDetailSheet({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-start justify-between mr-8">
-                  <div 
-                    className="flex-1 group cursor-pointer -ml-2 p-2 rounded-md hover:bg-muted/50 transition-colors"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <SheetTitle className="text-xl font-bold break-words leading-tight text-left">
-                        {task.title}
-                      </SheetTitle>
-                      <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-1 shrink-0" />
+                  <div className="flex-1 space-y-6 mr-8">
+                    <div 
+                      className="group cursor-pointer -ml-2 p-2 rounded-md hover:bg-muted/50 transition-colors"
+                      onClick={() => setIsEditing(true)}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <SheetTitle className="text-xl font-bold break-words leading-tight text-left">
+                            {task.title}
+                          </SheetTitle>
+                          {/* Story Points Badge */}
+                          {task.storyPoints !== null && task.storyPoints !== undefined && (
+                             <Badge variant="secondary" className="mt-2 text-xs font-normal">
+                               {task.storyPoints} {t('storyPoints')}
+                             </Badge>
+                          )}
+                        </div>
+                        <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-1 shrink-0" />
+                      </div>
+                      
+                      <div className="mt-4 text-left">
+                        {task.description ? (
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                            {task.description}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-muted-foreground/50 italic flex items-center gap-1.5">
+                            <Plus className="h-3 w-3" />
+                            {t('clickToAddDescription')}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    
-                    <div className="mt-2 text-left">
-                      {task.description ? (
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                          {task.description}
-                        </p>
-                      ) : (
-                        <p className="text-sm text-muted-foreground/50 italic flex items-center gap-1.5">
-                          <Plus className="h-3 w-3" />
-                          {t('clickToAddDescription')}
-                        </p>
-                      )}
+
+                    {/* Technical Notes - Always Visible */}
+                    <div className="space-y-2">
+                       <h4 className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/50"></span>
+                          {t('technicalNotes')}
+                       </h4>
+                       <div 
+                          className={cn(
+                             "p-3 rounded-md border border-muted/50 transition-colors cursor-text min-h-[80px]",
+                             task.technicalNotes ? "bg-muted/30 font-mono text-xs" : "bg-transparent hover:bg-muted/30"
+                          )}
+                          onClick={() => setIsEditing(true)}
+                       >
+                          {task.technicalNotes ? (
+                             <p className="whitespace-pre-wrap">{task.technicalNotes}</p>
+                          ) : (
+                             <p className="text-muted-foreground/40 italic text-sm">{t('technicalNotesPlaceholder') || 'Add technical notes...'}</p>
+                          )}
+                       </div>
                     </div>
                   </div>
-                </div>
               )}
             </SheetHeader>
 
-            {/* Properties */}
-            <div className="p-6 space-y-4 border-b">
-              {/* List */}
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground w-24 shrink-0">
-                  <FolderKanban className="h-4 w-4 inline mr-1" />
-                  List
-                </span>
-                <Select value={task.list?.id} onValueChange={handleListChange}>
-                  <SelectTrigger className="w-[180px]">
-                     <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {lists.map(list => (
-                      <SelectItem key={list.id} value={list.id}>
-                        {list.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            {/* Properties Grid */}
+            <div className="p-6 border-b">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                {/* List */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <FolderKanban className="h-3.5 w-3.5" />
+                    List
+                  </span>
+                  <Select value={task.list?.id} onValueChange={handleListChange}>
+                    <SelectTrigger className="w-full h-9">
+                       <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {lists.map(list => (
+                        <SelectItem key={list.id} value={list.id}>
+                          {list.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* Status */}
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground w-24 shrink-0">
-                  {t('status')}
-                </span>
-                <Select value={task.status.id} onValueChange={handleStatusChange}>
-                  <SelectTrigger className="w-[180px]">
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: task.status.color }}
-                      />
+                {/* Status */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    {t('status')}
+                  </span>
+                  <Select value={task.status.id} onValueChange={handleStatusChange}>
+                    <SelectTrigger className="w-full h-9">
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: task.status.color }}
+                        />
+                        <SelectValue />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statuses.map(status => (
+                        <SelectItem key={status.id} value={status.id}>
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-2 h-2 rounded-full"
+                              style={{ backgroundColor: status.color }}
+                            />
+                            {status.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Story Points */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    {t('storyPoints')}
+                  </span>
+                  <Select
+                    value={task.storyPoints?.toString() || '0'}
+                    onValueChange={(value) => {
+                      const points = value === '0' ? null : Number(value)
+                      setTask({ ...task, storyPoints: points })
+                      updateTask(task.id, { storyPoints: points })
+                    }}
+                  >
+                    <SelectTrigger className="w-full h-9">
+                      <SelectValue placeholder="-" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">-</SelectItem>
+                      {[1, 2, 3, 5, 8, 13, 21, 34, 55, 89].map((point) => (
+                        <SelectItem key={point} value={point.toString()}>
+                          {point}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Assignee */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <User className="h-3.5 w-3.5" />
+                    {t('assignee')}
+                  </span>
+                  <Select 
+                    value={task.assignee?.id || 'unassigned'} 
+                    onValueChange={handleAssigneeChange}
+                  >
+                    <SelectTrigger className="w-full h-9">
                       <SelectValue />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statuses.map(status => (
-                      <SelectItem key={status.id} value={status.id}>
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: status.color }}
-                          />
-                          {status.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassigned">{t('unassigned')}</SelectItem>
+                      {users.map(user => (
+                        <SelectItem key={user.id} value={user.id}>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-5 w-5">
+                              <AvatarImage src={user.image || undefined} />
+                              <AvatarFallback className="text-xs">
+                                {user.name?.charAt(0) || '?'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="truncate">{user.name || user.username}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* Assignee */}
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground w-24 shrink-0">
-                  <User className="h-4 w-4 inline mr-1" />
-                  {t('assignee')}
-                </span>
-                <Select 
-                  value={task.assignee?.id || 'unassigned'} 
-                  onValueChange={handleAssigneeChange}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned">{t('unassigned')}</SelectItem>
-                    {users.map(user => (
-                      <SelectItem key={user.id} value={user.id}>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-5 w-5">
-                            <AvatarImage src={user.image || undefined} />
-                            <AvatarFallback className="text-xs">
-                              {user.name?.charAt(0) || '?'}
-                            </AvatarFallback>
-                          </Avatar>
-                          {user.name || user.username}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Due Date */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5" />
+                    {t('dueDate')}
+                  </span>
+                  <div className="h-9 flex items-center px-3 border rounded-md text-sm bg-transparent">
+                    <span className={cn(
+                      task.dueDate && new Date(task.dueDate) < new Date() && !task.status.isClosed
+                        ? "text-red-500 font-medium"
+                        : "text-foreground"
+                    )}>
+                      {formatDate(task.dueDate)}
+                    </span>
+                  </div>
+                </div>
               </div>
+            </div>
 
-              {/* Due Date */}
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground w-24 shrink-0">
-                  <Calendar className="h-4 w-4 inline mr-1" />
-                  {t('dueDate')}
-                </span>
-                <span className={cn(
-                  "text-sm",
-                  task.dueDate && new Date(task.dueDate) < new Date() && !task.status.isClosed
-                    ? "text-red-500 font-medium"
-                    : ""
-                )}>
-                  {formatDate(task.dueDate)}
-                </span>
-              </div>
-
+            {/* Progress, Tags, Dependencies Section */}
+            <div className="p-6 border-b space-y-4">
               {/* Progress */}
               <div className="flex items-center gap-4">
                 <span className="text-sm text-muted-foreground w-24 shrink-0">

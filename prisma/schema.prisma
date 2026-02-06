@@ -59,6 +59,7 @@ model Task {
   id          String   @id @default(cuid())
   title       String
   description String?
+  technicalNotes String?  // Acceptance criteria or technical details
   position    Int      @default(0)  // For ordering within list
   
   // Dates

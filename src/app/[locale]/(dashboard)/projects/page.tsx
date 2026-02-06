@@ -16,7 +16,7 @@ async function getProjectsData() {
 
   // Get unique departments
   const departments = [...new Set(projects.map(p => p.department))] as string[]
-
+  
   return { projects, departments }
 }
 

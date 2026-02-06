@@ -150,10 +150,13 @@ export async function reorderTaskStatuses(projectId: string, statusIds: string[]
 
 export async function createDefaultStatuses(projectId: string) {
   const defaultStatuses = [
-    { name: 'To Do', color: '#6B7280', position: 0, isDefault: true, isClosed: false },
-    { name: 'In Progress', color: '#3B82F6', position: 1, isDefault: false, isClosed: false },
-    { name: 'Review', color: '#F59E0B', position: 2, isDefault: false, isClosed: false },
-    { name: 'Done', color: '#10B981', position: 3, isDefault: false, isClosed: true },
+    { name: 'Backlog', color: '#94A3B8', position: 0, isDefault: true, isClosed: false }, // slate-400
+    { name: 'To Do', color: '#6B7280', position: 1, isDefault: false, isClosed: false }, // gray-500
+    { name: 'In Progress', color: '#3B82F6', position: 2, isDefault: false, isClosed: false }, // blue-500
+    { name: 'Blocked', color: '#EF4444', position: 3, isDefault: false, isClosed: false }, // red-500
+    { name: 'On Hold', color: '#F59E0B', position: 4, isDefault: false, isClosed: false }, // amber-500
+    { name: 'Review', color: '#8B5CF6', position: 5, isDefault: false, isClosed: false }, // violet-500
+    { name: 'Done', color: '#10B981', position: 6, isDefault: false, isClosed: true }, // green-500
   ]
 
   await prisma.taskStatus.createMany({

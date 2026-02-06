@@ -80,7 +80,9 @@
         "descriptionPlaceholder": "Describe el proyecto o propuesta...",
         "sourceQuotePlaceholder": "Cita o referencia de origen...",
         "create": "Crear",
-        "manageProject": "Gestionar Proyecto"
+        "manageProject": "Gestionar Proyecto",
+        "allTags": "Todas las etiquetas",
+        "manageTags": "Gestionar Etiquetas"
     },
     "sentiment": {
         "title": "Pulso del Equipo",
@@ -185,6 +187,7 @@
         "editRole": "Editar Rol",
         "manageRolesDescription": "Define roles y asigna permisos granulares.",
         "totalUsers": "Total Usuarios",
+        "totalProjects": "Total Proyectos",
         "activeRoles": "Roles Activos",
         "actions": "Acciones",
         "permissions": {
@@ -271,8 +274,13 @@
         "noTasksMatch": "No hay tareas que coincidan con los filtros",
         "noTasks": "No hay tareas en esta lista",
         "tags": "Etiquetas",
+        "filterByTag": "Filtrar por etiqueta",
+        "allTags": "Todas las etiquetas",
+        "manageTags": "Gestionar Etiquetas",
         "estimatedHours": "Horas estimadas",
         "storyPoints": "Puntos",
+        "technicalNotes": "Notas Técnicas",
+        "technicalNotesPlaceholder": "Añadir notas técnicas, criterios de aceptación...",
         "subtasks": "Subtareas",
         "dependencies": "Dependencias",
         "blockedBy": "Bloqueado por",
@@ -308,6 +316,9 @@
         "cancel": "Cancelar",
         "save": "Guardar",
         "saving": "Guardando...",
+        "groupBy": "Agrupar por",
+        "groupByList": "Agrupar por Lista",
+        "groupByStatus": "Agrupar por Estado",
         "tasksDeleted": "{count} tareas eliminadas",
         "selected": "{count} seleccionadas"
     },

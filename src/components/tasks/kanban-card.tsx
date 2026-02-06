@@ -18,6 +18,7 @@ interface Task {
   title: string
   description: string | null
   progress: number
+  storyPoints: number | null
   dueDate: Date | null
   status: {
     id: string
@@ -112,6 +113,16 @@ export function KanbanCard({ task, onClick, isDragging }: KanbanCardProps) {
               <span className="text-[10px] text-muted-foreground">
                 +{task.tags.length - 3}
               </span>
+            )}
+            
+            {/* Agile Story Points */}
+            {task.storyPoints !== null && task.storyPoints > 0 && (
+              <Badge 
+                variant="secondary" 
+                className="text-[10px] px-1.5 py-0 h-4 bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200"
+              >
+                {task.storyPoints} pts
+              </Badge>
             )}
           </div>
         )}

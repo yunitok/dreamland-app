@@ -20,6 +20,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { ProjectFilters } from "./project-filters"
+import { ProjectEditForm } from "./project-edit-form"
+import { Eye, Quote, Pencil, ChevronLeft, ChevronRight, LayoutDashboard, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
+import { useTranslations, useLocale } from "next-intl"
+import type { Project } from "@prisma/client"
+
 import {
   Select,
   SelectContent,
@@ -28,11 +34,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
-import type { Project } from "@prisma/client"
-import { Eye, Quote, Pencil, ChevronLeft, ChevronRight, LayoutDashboard, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
-import { useTranslations, useLocale } from "next-intl"
-import { ProjectFilters } from "./project-filters"
-import { ProjectEditForm } from "./project-edit-form"
 
 interface ProjectsTableProps {
   projects: Project[]
@@ -135,7 +136,11 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
       if (filters.priority !== "all" && project.priority !== filters.priority) return false
       if (filters.department !== "all" && project.department !== filters.department) return false
       if (filters.type !== "all" && project.type !== filters.type) return false
-      if (filters.status !== "all" && project.status !== filters.status) return false
+      // Status filter
+      if (filters.status !== "all" && project.status !== filters.status) {
+        return false
+      }
+
       return true
     })
 
@@ -241,7 +246,7 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
       {/* Filters */}
       <ProjectFilters
         departments={departments}
-        onFiltersChange={handleFiltersChange}
+        onFiltersChange={setFilters}
         totalCount={projects.length}
         filteredCount={filteredProjects.length}
       />

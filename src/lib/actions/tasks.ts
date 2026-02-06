@@ -10,6 +10,7 @@ import { revalidatePath } from 'next/cache'
 export interface CreateTaskInput {
   title: string
   description?: string
+  technicalNotes?: string
   listId: string
   statusId: string
   parentId?: string
@@ -24,6 +25,7 @@ export interface CreateTaskInput {
 export interface UpdateTaskInput {
   title?: string
   description?: string
+  technicalNotes?: string
   listId?: string
   statusId?: string
   assigneeId?: string | null
@@ -177,6 +179,7 @@ export async function createTask(data: CreateTaskInput) {
     data: {
       title: data.title,
       description: data.description,
+      technicalNotes: data.technicalNotes,
       listId: data.listId,
       statusId: data.statusId,
       parentId: data.parentId,
@@ -196,7 +199,9 @@ export async function createTask(data: CreateTaskInput) {
     }
   })
 
-  revalidatePath(`/projects/${task.list.projectId}`)
+  if (task.list) {
+    revalidatePath(`/projects/${task.list.projectId}`)
+  }
   return task
 }
 
@@ -206,6 +211,7 @@ export async function updateTask(id: string, data: UpdateTaskInput) {
     data: {
       title: data.title,
       description: data.description,
+      technicalNotes: data.technicalNotes,
       listId: data.listId,
       statusId: data.statusId,
       assigneeId: data.assigneeId,
@@ -224,7 +230,9 @@ export async function updateTask(id: string, data: UpdateTaskInput) {
     }
   })
 
-  revalidatePath(`/projects/${task.list.projectId}`)
+  if (task.list) {
+    revalidatePath(`/projects/${task.list.projectId}`)
+  }
   return task
 }
 

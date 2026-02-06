@@ -54,6 +54,7 @@ export function CreateTaskDialog({
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [dueDate, setDueDate] = useState('')
   const [estimatedHours, setEstimatedHours] = useState('')
+  const [storyPoints, setStoryPoints] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -69,6 +70,7 @@ export function CreateTaskDialog({
         assigneeId: assigneeId || undefined,
         dueDate: dueDate ? new Date(dueDate) : undefined,
         estimatedHours: estimatedHours ? parseFloat(estimatedHours) : undefined,
+        storyPoints: storyPoints ? parseInt(storyPoints) : undefined,
         tagIds: selectedTags.length > 0 ? selectedTags : undefined,
       })
       
@@ -79,6 +81,7 @@ export function CreateTaskDialog({
       setSelectedTags([])
       setDueDate('')
       setEstimatedHours('')
+      setStoryPoints('')
       
       onClose()
       router.refresh()
@@ -185,6 +188,9 @@ export function CreateTaskDialog({
               />
             </div>
 
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             {/* Estimated Hours */}
             <div className="space-y-2">
               <Label htmlFor="estimatedHours">{t('estimatedHours')}</Label>
@@ -197,6 +203,23 @@ export function CreateTaskDialog({
                 onChange={(e) => setEstimatedHours(e.target.value)}
                 placeholder="0"
               />
+            </div>
+
+            {/* Story Points */}
+            <div className="space-y-2">
+              <Label>{t('storyPoints')}</Label>
+              <Select value={storyPoints} onValueChange={setStoryPoints}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Points" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1, 2, 3, 5, 8, 13, 21].map((point) => (
+                    <SelectItem key={point} value={point.toString()}>
+                      {point} Points
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

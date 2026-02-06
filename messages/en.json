@@ -80,7 +80,9 @@
         "descriptionPlaceholder": "Describe the project or proposal...",
         "sourceQuotePlaceholder": "Source quote or reference...",
         "create": "Create",
-        "manageProject": "Manage Project"
+        "manageProject": "Manage Project",
+        "allTags": "All tags",
+        "manageTags": "Manage Tags"
     },
     "sentiment": {
         "title": "Team Pulse",
@@ -185,6 +187,7 @@
         "editRole": "Edit Role",
         "manageRolesDescription": "Define roles and assign granular permissions.",
         "totalUsers": "Total Users",
+        "totalProjects": "Total Projects",
         "activeRoles": "Active Roles",
         "actions": "Actions",
         "permissions": {
@@ -271,8 +274,13 @@
         "noTasksMatch": "No tasks match the selected filters",
         "noTasks": "No tasks in this list",
         "tags": "Tags",
+        "filterByTag": "Filter by tag",
+        "allTags": "All tags",
+        "manageTags": "Manage Tags",
         "estimatedHours": "Estimated hours",
         "storyPoints": "Points",
+        "technicalNotes": "Technical Notes",
+        "technicalNotesPlaceholder": "Add technical notes, acceptance criteria...",
         "subtasks": "Subtasks",
         "dependencies": "Dependencies",
         "blockedBy": "Blocked by",
@@ -308,6 +316,9 @@
         "cancel": "Cancel",
         "save": "Save",
         "saving": "Saving...",
+        "groupBy": "Group by",
+        "groupByList": "Group by List",
+        "groupByStatus": "Group by Status",
         "tasksDeleted": "{count} tasks deleted",
         "selected": "{count} selected"
     },

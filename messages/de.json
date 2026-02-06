@@ -184,6 +184,7 @@
         "editRole": "Edit Role",
         "manageRolesDescription": "Define roles and assign granular permissions.",
         "totalUsers": "Total Users",
+        "totalProjects": "Total Projects",
         "activeRoles": "Active Roles",
         "actions": "Actions",
         "permissions": {
@@ -269,6 +270,8 @@
         "tags": "Tags",
         "estimatedHours": "Estimated hours",
         "storyPoints": "Points",
+        "technicalNotes": "Technische Hinweise",
+        "technicalNotesPlaceholder": "Technische Hinweise, Akzeptanzkriterien hinzufügen...",
         "subtasks": "Subtasks",
         "dependencies": "Dependencies",
         "blockedBy": "Blocked by",

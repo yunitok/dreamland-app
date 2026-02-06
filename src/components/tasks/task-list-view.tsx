@@ -69,7 +69,8 @@ import {
   X,
   Link2,
   ArrowRight,
-  GripVertical
+  GripVertical,
+  Tags
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
@@ -78,6 +79,7 @@ import { CreateTaskDialog } from './create-task-dialog'
 import { CreateListDialog } from './create-list-dialog'
 import { EditListDialog } from './edit-list-dialog'
 import { DeleteListDialog } from './delete-list-dialog'
+import { TagManagerDialog } from '../tags/tag-manager-dialog'
 import { createDefaultLists, deleteTasks, deleteTask, moveTask, updateTask } from '@/lib/actions/tasks'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -104,7 +106,7 @@ interface Task {
     name: string | null
     image: string | null
   } | null
-  tags: Array<{ id: string; name: string; color: string }>
+  tags: Array<{ id: string; name: string; color: string; projectId: string }>
   _count?: {
     subtasks: number
     comments: number
@@ -119,6 +121,7 @@ interface TaskList {
   id: string
   name: string
   color: string | null
+  projectId: string
   tasks: Task[]
 }
 
@@ -129,7 +132,7 @@ interface TaskListViewProps {
     lists: TaskList[]
   }
   statuses: Array<{ id: string; name: string; color: string; isClosed: boolean; isDefault: boolean }>
-  tags: Array<{ id: string; name: string; color: string }>
+  tags: Array<{ id: string; name: string; color: string; projectId: string }>
   users: Array<{ id: string; name: string | null; image: string | null; username: string }>
   currentUserId: string
 }
@@ -168,6 +171,8 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
   const [createInStatusId, setCreateInStatusId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all')
+  const [selectedTag, setSelectedTag] = useState<string>('all')
+  const [isTagsOpen, setIsTagsOpen] = useState(false)
   const [isInitializing, setIsInitializing] = useState(false)
   const router = useRouter()
 
@@ -231,6 +236,11 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
         if (assigneeFilter !== 'unassigned' && task.assignee?.id !== assigneeFilter) return false
       }
       
+      // Tag filter
+      if (selectedTag !== 'all') {
+        if (!task.tags.some(t => t.id === selectedTag)) return false
+      }
+
       return true
     })
   }
@@ -446,33 +456,33 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
             placeholder={t('searchTasks')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-10"
           />
         </div>
         
         {/* Filters Grid */}
-        <div className="grid grid-cols-2 md:flex items-center gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex items-center gap-2">
           {/* Group By Selector */}
-          <div className="col-span-2 xs:col-span-1 md:w-auto">
+          <div className="col-span-1 md:w-auto">
             <Select value={groupBy} onValueChange={(v: 'list' | 'status') => setGroupBy(v)}>
-              <SelectTrigger className="w-full md:w-[160px]">
-                <FolderKanban className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Group by" />
+              <SelectTrigger className="w-full lg:w-[180px] h-10">
+                <FolderKanban className="h-4 w-4 mr-2 flex-shrink-0" />
+                <SelectValue placeholder={t('groupBy')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="list">Group by List</SelectItem>
-                <SelectItem value="status">Group by Status</SelectItem>
+                <SelectItem value="list">{t('groupByList')}</SelectItem>
+                <SelectItem value="status">{t('groupByStatus')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
-          <Separator orientation="vertical" className="hidden md:block h-8" />
+          <Separator orientation="vertical" className="hidden lg:block h-8" />
 
           {/* Status Filter */}
-          <div className="col-span-2 xs:col-span-1 md:w-auto">
+          <div className="col-span-1 md:w-auto">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-[140px]">
-                <Filter className="h-4 w-4 mr-2" />
+              <SelectTrigger className="w-full lg:w-[180px] h-10">
+                <Filter className="h-4 w-4 mr-2 flex-shrink-0" />
                 <SelectValue placeholder={t('status')} />
               </SelectTrigger>
               <SelectContent>
@@ -492,10 +502,36 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
             </Select>
           </div>
 
+          {/* Tag Filter */}
+          <div className="col-span-1 md:w-auto">
+             <Select value={selectedTag} onValueChange={setSelectedTag}>
+              <SelectTrigger className="w-full lg:w-[200px] h-10">
+                 <div className="flex items-center gap-2 truncate">
+                   <Tags className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                   <SelectValue placeholder={t('filterByTag')} />
+                 </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('allTags')}</SelectItem>
+                {tags.map((tag) => (
+                  <SelectItem key={tag.id} value={tag.id}>
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-2 h-2 rounded-full" 
+                        style={{ backgroundColor: tag.color }} 
+                      />
+                      {tag.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Assignee Filter */}
-          <div className="col-span-2 xs:col-span-1 md:w-auto">
+          <div className="col-span-1 md:w-auto">
             <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
-              <SelectTrigger className="w-full md:w-[160px]">
+              <SelectTrigger className="w-full lg:w-[180px] h-10">
                 <SelectValue placeholder={t('assignee')} />
               </SelectTrigger>
               <SelectContent>
@@ -511,18 +547,23 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
           </div>
 
           {/* Action Buttons */}
-          <div className="col-span-2 md:ml-auto flex items-center justify-between md:justify-end gap-2 mt-2 md:mt-0">
-            <span className="text-xs text-muted-foreground mr-2">
+          <div className="col-span-1 sm:col-span-2 lg:ml-auto flex flex-wrap items-center justify-between lg:justify-end gap-2 mt-2 lg:mt-0">
+             <Button variant="outline" size="sm" onClick={() => setIsTagsOpen(true)} className="h-10">
+              <Tags className="w-4 h-4 mr-2" />
+              {t('manageTags') || 'Manage Tags'} 
+            </Button>
+            
+            <span className="text-xs text-muted-foreground mr-2 hidden xl:inline">
               {totalTasks} {t('tasks')}
             </span>
             <div className="flex items-center gap-2">
               {groupBy === 'list' && (
-                <Button variant="outline" size="sm" onClick={() => setIsCreateListOpen(true)}>
+                <Button variant="outline" size="sm" onClick={() => setIsCreateListOpen(true)} className="h-10">
                   <Plus className="h-4 w-4 mr-2" />
                   <span>{t('newList')}</span>
                 </Button>
               )}
-              <Button size="sm" onClick={() => handleCreateTask()}>
+              <Button size="sm" onClick={() => handleCreateTask()} className="h-10">
                 <Plus className="h-4 w-4 mr-2" />
                 <span>{t('newTask')}</span>
               </Button>
@@ -562,7 +603,7 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
                 toggleTaskSelection={toggleTaskSelection}
                 setSelectedTask={setSelectedTask}
                 formatDate={formatDate}
-                projectLists={project.lists.map(l => ({ id: l.id, name: l.name, color: l.color }))}
+                projectLists={project.lists.map(l => ({ id: l.id, name: l.name, color: l.color, projectId: l.projectId }))}
                 searchQuery={searchQuery}
                 statusFilter={statusFilter}
                 assigneeFilter={assigneeFilter}
@@ -661,6 +702,13 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
         isOpen={!!deletingList}
         onClose={() => setDeletingList(null)}
         list={deletingList}
+      />
+
+      <TagManagerDialog
+        open={isTagsOpen}
+        onOpenChange={setIsTagsOpen}
+        tags={tags}
+        projectId={project.id}
       />
     </div>
   )

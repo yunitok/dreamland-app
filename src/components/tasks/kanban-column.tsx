@@ -14,6 +14,7 @@ interface Task {
   title: string
   description: string | null
   progress: number
+  storyPoints: number | null
   dueDate: Date | null
   status: {
     id: string
