@@ -6,8 +6,20 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'jsdom',
+    setupFiles: ['./src/__tests__/setup.ts'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['node_modules', '.next', 'out'],
+    globals: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json-summary'],
+      exclude: ['node_modules/', '.next/', 'src/__tests__/', '**/*.d.ts'],
+    },
+  },
+  resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
 })
+
