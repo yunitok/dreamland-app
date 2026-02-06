@@ -176,13 +176,13 @@ export class GroqProvider implements AIProvider {
         // 1. Fetch Context
         const [lists, initialStatuses, tasks] = await Promise.all([
           getTaskLists(projectId),
-          getTaskStatuses(projectId),
+          getTaskStatuses(),
           getTasks(projectId)
         ]) as [TaskList[], TaskStatus[], any[]]
 
         let finalStatuses = initialStatuses;
         if (finalStatuses.length === 0) {
-            finalStatuses = await createDefaultStatuses(projectId)
+            finalStatuses = await createDefaultStatuses()
         }
 
         const context = `

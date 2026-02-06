@@ -206,6 +206,32 @@ export async function createTask(data: CreateTaskInput) {
 }
 
 export async function updateTask(id: string, data: UpdateTaskInput) {
+  // Fetch current task to check validation rules
+  const currentTask = await prisma.task.findUnique({
+    where: { id },
+    include: { status: true }
+  })
+
+  if (!currentTask) {
+    throw new Error('Task not found')
+  }
+
+  // VALIDATION: If removing assignee or changing status without assignee
+  const finalAssigneeId = data.assigneeId !== undefined ? data.assigneeId : currentTask.assigneeId
+  
+  if (data.statusId) {
+    const targetStatus = await prisma.taskStatus.findUnique({ where: { id: data.statusId } })
+    
+    if (targetStatus && !finalAssigneeId && targetStatus.name !== 'Backlog') {
+      throw new Error('Tasks must have an assignee before moving out of Backlog')
+    }
+  }
+
+  // If removing assignee, ensure task is in Backlog
+  if (data.assigneeId === null && currentTask.status.name !== 'Backlog') {
+    throw new Error('Cannot remove assignee from tasks outside of Backlog. Move to Backlog first.')
+  }
+
   const task = await prisma.task.update({
     where: { id },
     data: {
@@ -313,6 +339,30 @@ export async function moveTask(taskId: string, targetListId: string, targetPosit
 }
 
 export async function updateTaskStatus(taskId: string, statusId: string) {
+  // Fetch the task with current status and assignee
+  const currentTask = await prisma.task.findUnique({
+    where: { id: taskId },
+    include: { status: true }
+  })
+
+  if (!currentTask) {
+    throw new Error('Task not found')
+  }
+
+  // Fetch the target status
+  const targetStatus = await prisma.taskStatus.findUnique({
+    where: { id: statusId }
+  })
+
+  if (!targetStatus) {
+    throw new Error('Target status not found')
+  }
+
+  // VALIDATION: Tasks without assignee can only be in Backlog
+  if (!currentTask.assigneeId && targetStatus.name !== 'Backlog') {
+    throw new Error('Tasks must have an assignee before moving out of Backlog')
+  }
+
   const task = await prisma.task.update({
     where: { id: taskId },
     data: { statusId },

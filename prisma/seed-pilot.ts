@@ -6,7 +6,8 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const connectionString = process.env.DATABASE_URL;
+// Use DIRECT_URL for seeding (bypass pooler)
+const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
@@ -72,31 +73,16 @@ async function main() {
     }
   }
 
-  // 4. Create Tasks
+  // 4. Create Tasks - Use global statuses (shared across all projects)
   let statusTodo = await prisma.taskStatus.findFirst({
-    where: { projectId: PROJECT_ID, isDefault: true }
+    where: { isDefault: true }
   }) || await prisma.taskStatus.findFirst({
-    where: { projectId: PROJECT_ID, position: 0 }
+    where: { position: 0 }
   });
 
   if (!statusTodo) {
-      console.log('⚠️ No se encontró status "To Do". Creando defaults...');
-      statusTodo = await prisma.taskStatus.create({
-        data: {
-          name: 'To Do',
-          color: '#6B7280',
-          position: 0,
-          isDefault: true,
-          projectId: PROJECT_ID
-        }
-      });
-
-      await prisma.taskStatus.createMany({
-        data: [
-          { name: 'In Progress', color: '#3B82F6', position: 1, projectId: PROJECT_ID },
-          { name: 'Done', color: '#10B981', position: 2, isClosed: true, projectId: PROJECT_ID }
-        ]
-      });
+      console.error('❌ No se encontró status default global. Debes crear los estados globales primero.');
+      process.exit(1);
   }
 
   const tasks = [

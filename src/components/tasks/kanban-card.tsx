@@ -4,6 +4,12 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { 
   MessageSquare, 
   Paperclip, 
@@ -188,12 +194,21 @@ export function KanbanCard({ task, onClick, isDragging }: KanbanCardProps) {
 
           {/* Assignee */}
           {task.assignee && (
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={task.assignee.image || undefined} />
-              <AvatarFallback className="text-[10px]">
-                {task.assignee.name?.charAt(0) || '?'}
-              </AvatarFallback>
-            </Avatar>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Avatar className="h-6 w-6 cursor-pointer">
+                    <AvatarImage src={task.assignee.image || undefined} />
+                    <AvatarFallback className="text-[10px]">
+                      {task.assignee.name?.charAt(0) || '?'}
+                    </AvatarFallback>
+                  </Avatar>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">{task.assignee.name || 'Unknown'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
       </div>

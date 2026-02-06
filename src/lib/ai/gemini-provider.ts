@@ -147,13 +147,13 @@ export class GeminiProvider implements AIProvider {
         // 1. Fetch Context (Lists, Statuses, Tasks)
         let [lists, statuses, tasks] = await Promise.all([
           getTaskLists(projectId),
-          getTaskStatuses(projectId),
+          getTaskStatuses(),
           getTasks(projectId)
         ]) as [TaskList[], TaskStatus[], any[]]
     
         // Auto-fix: If no statuses, create defaults
         if (statuses.length === 0) {
-            statuses = await createDefaultStatuses(projectId)
+            statuses = await createDefaultStatuses()
         }
     
         const context = `

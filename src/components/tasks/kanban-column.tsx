@@ -4,7 +4,13 @@ import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Plus, MoreHorizontal } from 'lucide-react'
+import { Plus, MoreHorizontal, EyeOff } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import { KanbanCard } from './kanban-card'
@@ -45,9 +51,10 @@ interface KanbanColumnProps {
   tasks: Task[]
   onTaskClick: (taskId: string) => void
   onAddTask: () => void
+  onHideColumn?: () => void
 }
 
-export function KanbanColumn({ status, tasks, onTaskClick, onAddTask }: KanbanColumnProps) {
+export function KanbanColumn({ status, tasks, onTaskClick, onAddTask, onHideColumn }: KanbanColumnProps) {
   const t = useTranslations('tasks')
   
   const { setNodeRef, isOver } = useDroppable({
@@ -71,9 +78,21 @@ export function KanbanColumn({ status, tasks, onTaskClick, onAddTask }: KanbanCo
         <Badge variant="secondary" className="text-xs">
           {tasks.length}
         </Badge>
-        <Button variant="ghost" size="icon" className="h-6 w-6">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-6 w-6">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {onHideColumn && (
+              <DropdownMenuItem onClick={onHideColumn}>
+                <EyeOff className="h-4 w-4 mr-2" />
+                {t('hideColumn')}
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Tasks Container */}

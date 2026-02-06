@@ -31,13 +31,22 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   Plus,
   Search,
   MoreHorizontal,
   MessageSquare,
   Paperclip,
   GripVertical,
-  Tags as TagsIcon
+  Tags as TagsIcon,
+  Columns3
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
@@ -47,6 +56,7 @@ import { KanbanColumn } from './kanban-column'
 import { KanbanCard } from './kanban-card'
 import { TagManagerDialog } from '@/components/tags/tag-manager-dialog'
 import { updateTaskStatus, moveTask } from '@/lib/actions/tasks'
+import { toast } from 'sonner'
 
 interface Task {
   id: string
@@ -102,6 +112,7 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
   const [createForStatusId, setCreateForStatusId] = useState<string | null>(null)
   const [selectedTag, setSelectedTag] = useState<string>('all')
   const [activeTask, setActiveTask] = useState<Task | null>(null)
+  const [hiddenStatusIds, setHiddenStatusIds] = useState<Set<string>>(new Set())
   
   // Group all tasks by status
   const tasksByStatus = useMemo(() => {
@@ -165,15 +176,32 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
     const activeId = active.id as string
     const overId = over.id as string
 
-    // Check if dropped on a column (status)
-    const targetStatus = statuses.find(s => s.id === overId)
+    // Find target status: could be a status ID directly or a task's status
+    let targetStatusId: string | null = null
     
-    if (targetStatus && activeTask && activeTask.status.id !== targetStatus.id) {
+    // Check if dropped directly on a column (status)
+    const directStatus = statuses.find(s => s.id === overId)
+    if (directStatus) {
+      targetStatusId = directStatus.id
+    } else {
+      // Dropped on a task - find which status column that task belongs to
+      for (const [statusId, tasks] of Object.entries(tasksByStatus)) {
+        if (tasks.find(t => t.id === overId)) {
+          targetStatusId = statusId
+          break
+        }
+      }
+    }
+    
+    if (targetStatusId && activeTask && activeTask.status.id !== targetStatusId) {
       // Update task status
       try {
-        await updateTaskStatus(activeId, targetStatus.id)
+        await updateTaskStatus(activeId, targetStatusId)
+        toast.success('Task moved successfully')
       } catch (error) {
         console.error('Failed to update task status:', error)
+        const errorMessage = error instanceof Error ? error.message : 'Failed to move task'
+        toast.error(errorMessage)
       }
     }
 
@@ -232,6 +260,44 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
             </SelectContent>
           </Select>
           
+          {/* Column Visibility Toggle */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="h-10">
+                <Columns3 className="h-4 w-4 mr-2" />
+                {t('columns')}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>{t('toggleColumns')}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {statuses.map((status) => (
+                <DropdownMenuCheckboxItem
+                  key={status.id}
+                  checked={!hiddenStatusIds.has(status.id)}
+                  onCheckedChange={(checked) => {
+                    setHiddenStatusIds(prev => {
+                      const newSet = new Set(prev)
+                      if (checked) {
+                        newSet.delete(status.id)
+                      } else {
+                        newSet.add(status.id)
+                      }
+                      return newSet
+                    })
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: status.color }}
+                    />
+                    {status.name}
+                  </div>
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
         </div>
         <span className="text-sm text-muted-foreground whitespace-nowrap hidden sm:inline-block">
@@ -249,15 +315,20 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
       >
         <div className="flex-1 overflow-x-auto p-4">
           <div className="flex gap-4 h-full min-h-[500px]">
-            {statuses.map(status => (
-              <KanbanColumn
-                key={status.id}
-                status={status}
-                tasks={tasksByStatus[status.id] || []}
-                onTaskClick={setSelectedTask}
-                onAddTask={() => handleCreateTask(status.id)}
-              />
-            ))}
+            {statuses
+              .filter(status => !hiddenStatusIds.has(status.id))
+              .map(status => (
+                <KanbanColumn
+                  key={status.id}
+                  status={status}
+                  tasks={tasksByStatus[status.id] || []}
+                  onTaskClick={setSelectedTask}
+                  onAddTask={() => handleCreateTask(status.id)}
+                  onHideColumn={() => {
+                    setHiddenStatusIds(prev => new Set(prev).add(status.id))
+                  }}
+                />
+              ))}
           </div>
         </div>
 

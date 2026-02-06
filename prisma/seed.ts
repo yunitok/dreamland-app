@@ -286,48 +286,52 @@ async function main() {
     }
   });
 
-  // Create task statuses for the sample project
-  const statusTodo = await prisma.taskStatus.create({
-    data: {
+  // Create/get global task statuses (shared across all projects)
+  const statusTodo = await prisma.taskStatus.upsert({
+    where: { name: 'To Do' },
+    update: {},
+    create: {
       name: 'To Do',
       color: '#6B7280', // gray
       position: 0,
       isDefault: true,
       isClosed: false,
-      projectId: sampleProject.id,
     }
   });
 
-  const statusInProgress = await prisma.taskStatus.create({
-    data: {
+  const statusInProgress = await prisma.taskStatus.upsert({
+    where: { name: 'In Progress' },
+    update: {},
+    create: {
       name: 'In Progress',
       color: '#3B82F6', // blue
       position: 1,
       isDefault: false,
       isClosed: false,
-      projectId: sampleProject.id,
     }
   });
 
-  const statusReview = await prisma.taskStatus.create({
-    data: {
+  const statusReview = await prisma.taskStatus.upsert({
+    where: { name: 'Review' },
+    update: {},
+    create: {
       name: 'Review',
       color: '#F59E0B', // amber
       position: 2,
       isDefault: false,
       isClosed: false,
-      projectId: sampleProject.id,
     }
   });
 
-  const statusDone = await prisma.taskStatus.create({
-    data: {
+  const statusDone = await prisma.taskStatus.upsert({
+    where: { name: 'Done' },
+    update: {},
+    create: {
       name: 'Done',
       color: '#10B981', // green
       position: 3,
       isDefault: false,
       isClosed: true,
-      projectId: sampleProject.id,
     }
   });
 
@@ -645,15 +649,7 @@ async function main() {
         },
       });
 
-      // Create default statuses for each project
-      await prisma.taskStatus.createMany({
-        data: [
-          { name: 'To Do', color: '#6B7280', position: 0, isDefault: true, projectId: newProject.id },
-          { name: 'In Progress', color: '#3B82F6', position: 1, projectId: newProject.id },
-          { name: 'Review', color: '#F59E0B', position: 2, projectId: newProject.id },
-          { name: 'Done', color: '#10B981', position: 3, isClosed: true, projectId: newProject.id },
-        ]
-      });
+      // (Global statuses are used, no need to create per-project statuses)
     }
     console.log(`✅ Created ${projectsFromFile.length} additional projects from file`);
   }

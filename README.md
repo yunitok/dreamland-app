@@ -1,115 +1,183 @@
-# Dreamland Manager: Strategic Intelligence Platform
+# Dreamland Manager
 
-Dreamland Manager is a premium, AI-first management platform designed to transform raw project data into **strategic intelligence**. This application prioritizes executive-level decision-making by blending operational metrics with team wellness analysis.
+> **Strategic Intelligence Platform** - Transform raw project data into actionable insights with AI-powered decision support.
 
 ![Dreamland App](/public/og-image.png)
 
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-7-2D3748)](https://www.prisma.io/)
+[![License](https://img.shields.io/badge/license-Private-red)]()
+
+---
+
+## ✨ What is Dreamland Manager?
+
+Dreamland Manager is a **premium, AI-first management platform** designed for strategic decision-making. Unlike traditional project management tools, it combines:
+
+- 📊 **Real-time project tracking** with predictive risk analysis
+- ❤️ **Team wellness monitoring** to identify burnout before it happens
+- 🎙️ **Voice-powered AI assistant** for hands-free task management
+- 🛡️ **Enterprise-grade RBAC** with granular permissions
+
+---
+
 ## 🚀 Key Features
 
-### 🧠 Strategic AI Advisor
-- **Predictive Strategy Layer**: Unlike traditional dashboards, we forecast risks before they happen.
-- **Contextual Insights**: Real-time analysis of project bottlenecks and opportunities.
+### 🧠 AI-Powered Voice Assistant
+Manage your projects through natural language commands:
+- "Create task: Fix login bug" → Task created instantly
+- "Show my high-priority tasks" → Filtered list displayed
+- Supports **English** and **Spanish** with 30+ commands
 
-### ❤️ Team Wellness (Pulse)
-- **Sentiment Monitoring**: Tracks department-level emotional trends (e.g., "Resilient Stress", "Critical Frustration").
-- **Holistic View**: Blends quantitative project delivery data with qualitative team health metrics.
+[📖 Full Voice Commands Reference →](./docs/guides/voice-commands.md)
 
-### 🛡️ Role-Based Access Control (RBAC)
-A robust, secure permission system designed for enterprise needs.
-- **Granular Permissions**: Control access to specific resources (Projects, Users, Departments) and actions (View, Create, Edit, Delete).
-- **Role Management**: Matrix-style permission editor for creating custom roles.
-- **Default Roles**:
-    - **Super Admin**: Full system access.
-    - **Strategic PM**: Focus on roadmap and project execution.
-    - **People & Culture Lead**: Manages team sentiment and departments.
-    - **Stakeholder**: Read-only access to strategic insights.
+### ❤️ Team Wellness Analytics
+Monitor team sentiment across departments:
+- Department-level emotional trend tracking
+- Early warning system for team burnout
+- Holistic view combining delivery metrics + team health
 
-### ⚙️ Admin Dashboard
-- **Real-time Metrics**: Live counters for users, roles, and tracked entities.
-- **User Management**: Full CRUD for system users.
-- **Data Ingestion**: Tools to import external reports and datasets.
+### 🛡️ Role-Based Access Control
+Enterprise-grade security with 4 default roles:
+- **Super Admin** - Full system access
+- **Strategic PM** - Project and roadmap management
+- **People & Culture Lead** - Team wellness focus
+- **Stakeholder** - Read-only insights
+
+[📖 RBAC Documentation →](./docs/features/rbac/overview.md)
+
+### 🌍 Internationalization
+Built-in support for multiple languages:
+- English and Spanish included
+- Easy to add new languages
+- Automatic locale detection
+
+---
 
 ## 🛠 Tech Stack
 
-- **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
-- **Language**: TypeScript
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **UI Components**: [shadcn/ui](https://ui.shadcn.com/) + Lucide React
-- **Database**: Prisma ORM + SQLite (Portable & Fast)
-- **Internationalization**: `next-intl` (English & Spanish support)
-- **Security**: Custom session-based auth with `bcryptjs` encryption.
-- **AI Integration**: Google Gemini & Groq (Llama 3) for Voice Commands.
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | Next.js 16 (App Router) + React 19 |
+| **Language** | TypeScript 5 |
+| **Database** | PostgreSQL + Prisma ORM |
+| **Styling** | Tailwind CSS v4 + shadcn/ui |
+| **AI** | Groq (Llama 3.3 70B) / Google Gemini |
+| **Auth** | Custom session-based (bcryptjs) |
+| **i18n** | next-intl |
 
-## 🎙️ Voice Assistant & AI
+[📖 Full Architecture Overview →](./docs/architecture/system-overview.md)
 
-Dreamland includes a sophisticated Voice Assistant capable of managing tasks and projects through natural language.
+---
 
-### Supported Providers
-The system implements a **Provider Pattern**, allowing seamless switching between AI models.
+## ⚡ Quick Start
 
-1.  **Groq (Recommended)**: Uses `llama-3.3-70b-versatile` for ultra-fast, near real-time responses.
-    - **Status Tracking**: Uses real-time headers (`x-ratelimit-remaining`) to display exact remaining quota.
-2.  **Google Gemini**: Uses `gemini-1.5-flash` as a reliable fallback.
-    - **Status Tracking**: Uses local estimation (RPM/RPD) based on database logs.
+### Prerequisites
+- Node.js 18+
+- PostgreSQL database (or SQLite for local development)
 
-### Configuration
-Set the following environment variables in your `.env` file:
+### Installation
 
 ```bash
-# Choose Provider: "groq" or "gemini"
-AI_PROVIDER="groq"
+# 1. Clone the repository
+git clone <repo-url>
+cd dreamland-app
 
-# API Keys
+# 2. Install dependencies
+npm install
+
+# 3. Setup environment variables
+cp .env.example .env
+# Edit .env with your database URL and AI API keys
+
+# 4. Initialize database
+npm run db:reset
+
+# 5. Start development server
+npm run dev
+```
+
+🎉 Open [http://localhost:3000](http://localhost:3000) and login with:
+- **Username**: `admin`
+- **Password**: `admin`
+
+> [!WARNING]
+> Change the default password immediately in production!
+
+---
+
+## 📚 Documentation
+
+Comprehensive technical documentation is available in the [`/docs`](./docs) directory:
+
+### Getting Started
+- [📖 Documentation Index](./docs/README.md) - Start here for complete guide
+- [🚀 Deployment Guide](./docs/guides/deployment.md) - Production setup
+- [🎙️ Voice Commands](./docs/guides/voice-commands.md) - Command reference (EN/ES)
+
+### Technical Deep Dives
+- [🏗️ System Architecture](./docs/architecture/system-overview.md) - Design decisions and data flow
+- [🗄️ Database Model](./docs/database/data-model.md) - Complete schema with ER diagrams
+- [🤖 Voice Assistant](./docs/features/voice-assistant/architecture.md) - Provider pattern and AI integration
+- [🔐 RBAC System](./docs/features/rbac/overview.md) - Role and permission management
+- [🌐 Internationalization](./docs/features/internationalization.md) - Multi-language support
+
+---
+
+## 🎙️ AI Configuration
+
+Dreamland supports two AI providers via a flexible **Provider Pattern**:
+
+```bash
+# .env
+AI_PROVIDER="groq"  # or "gemini"
+
+# API Keys (get from providers)
 GROQ_API_KEY="gsk_..."
 GOOGLE_GENERATIVE_AI_API_KEY="AIza..."
 ```
 
-### 📊 AI Usage Tracking
-The application includes a built-in **Usage Tracker** in the project header.
-- **Groq Mode**: Displays real-time remaining requests and tokens for the day.
-- **Gemini Mode**: Displays estimated usage (Requests Per Minute/Day) calculated locally.
+| Provider | Speed | Free Tier | Best For |
+|----------|-------|-----------|----------|
+| **Groq** (Recommended) | ⚡ 1-2s | 14,400 req/day | Production |
+| **Gemini** | 🐌 2-4s | 1,500 req/day | Fallback |
 
-## 🏃 Getting Started
+[📖 Detailed AI Setup →](./docs/features/voice-assistant/architecture.md)
 
-### 1. Prerequisites
-- Node.js 18+
-- npm or pnpm
+---
 
-### 2. Installation
-```bash
-# Install dependencies
-npm install
+## 🌍 Supported Languages
 
-# Setup Environment
-cp .env.example .env
-```
+- 🇬🇧 English
+- 🇪🇸 Spanish
 
-### 3. Database Setup
-We use a seed script to populate the database with a robust initial state (Roles, permissions, and sample data).
+Adding more languages is as simple as creating a new JSON file in `/messages`.
 
-```bash
-# Reset database and run seeds
-npm run db:reset
-```
+[📖 i18n Guide →](./docs/features/internationalization.md)
 
-### 4. Run Development Server
-```bash
-npm run dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) to access the dashboard.
+## 🤝 Contributing
 
-## 🔐 Default Credentials
+We welcome contributions! Please read our [Contributing Guide](./docs/CONTRIBUTING.md) (coming soon).
 
-The seed script creates a default Super Administrator:
+---
 
-- **Username**: `admin`
-- **Password**: `admin`
+## 📝 License
 
-## 🌍 Localization
+Private project - All rights reserved.
 
-The app detects the user's locale automatically, but can be forced via URL (e.g., `/es/admin`, `/en/admin`).
-- **Translation files**: Located in `/messages/es.json` and `/messages/en.json`.
+---
+
+## 🙏 Acknowledgments
+
+Built with:
+- [Next.js](https://nextjs.org/) - React framework
+- [Prisma](https://www.prisma.io/) - Database ORM
+- [shadcn/ui](https://ui.shadcn.com/) - UI components
+- [Groq](https://groq.com/) - AI inference
+- [Google Gemini](https://ai.google.dev/) - AI fallback
 
 ---
 

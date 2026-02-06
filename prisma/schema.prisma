@@ -35,7 +35,6 @@ model Project {
   // Relations
   risks       ProjectRisk[]
   lists       TaskList[]
-  statuses    TaskStatus[]
   tags        Tag[]
 }
 
@@ -104,18 +103,13 @@ model Task {
 
 model TaskStatus {
   id          String   @id @default(cuid())
-  name        String
+  name        String   @unique  // Global status name
   color       String   @default("#6B7280") // gray-500
   position    Int      @default(0)  // For ordering columns in Kanban
   isDefault   Boolean  @default(false) // Default status for new tasks
   isClosed    Boolean  @default(false) // Marks task as "done"
   
-  projectId   String
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  
   tasks       Task[]
-  
-  @@unique([projectId, name])
 }
 
 model TaskDependency {

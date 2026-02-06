@@ -320,7 +320,10 @@
         "groupByList": "Group by List",
         "groupByStatus": "Group by Status",
         "tasksDeleted": "{count} tasks deleted",
-        "selected": "{count} selected"
+        "selected": "{count} selected",
+        "columns": "Columns",
+        "toggleColumns": "Toggle Columns",
+        "hideColumn": "Hide Column"
     },
     "Voice": {
         "listCreated": "List created: \"{name}\"",

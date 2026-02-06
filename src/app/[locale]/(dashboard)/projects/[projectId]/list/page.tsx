@@ -13,10 +13,14 @@ export default async function ListPage({ params }: ListPageProps) {
   const session = await getSession() as UserSession | null
   const currentUserId = session?.user?.id || ''
 
+  // Fetch global statuses (shared across all projects)
+  const statuses = await prisma.taskStatus.findMany({
+    orderBy: { position: 'asc' }
+  })
+
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
-      statuses: { orderBy: { position: 'asc' } },
       tags: true,
       lists: {
         orderBy: { position: 'asc' },
@@ -39,7 +43,7 @@ export default async function ListPage({ params }: ListPageProps) {
                   _count: { select: { subtasks: true, comments: true, attachments: true } },
                   predecessors: true,
                   successors: true,
-                  subtasks: { include: { status: true, assignee: true, tags: true } } // Fetch one more level just in case or empty
+                  subtasks: { include: { status: true, assignee: true, tags: true } }
                 },
                 orderBy: { position: 'asc' }
               }
@@ -62,10 +66,11 @@ export default async function ListPage({ params }: ListPageProps) {
   return (
     <TaskListView 
       project={project}
-      statuses={project.statuses}
+      statuses={statuses}
       tags={project.tags}
       users={users}
       currentUserId={currentUserId}
     />
   )
 }
+

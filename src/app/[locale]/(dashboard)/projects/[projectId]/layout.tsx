@@ -17,7 +17,6 @@ export default async function ProjectLayout({ children, params }: ProjectLayoutP
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
-      statuses: { orderBy: { position: 'asc' } },
       tags: true,
       lists: {
         orderBy: { position: 'asc' },
