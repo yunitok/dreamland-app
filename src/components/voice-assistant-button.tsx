@@ -139,21 +139,29 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
       const result = await processTextCommand(projectId, text)
 
       if (result.success) {
-        if (result.shouldSpeak && result.message) {
+        // Check shouldSpeak using optional chaining since error responses don't have it
+        if ('shouldSpeak' in result && result.shouldSpeak && result.message) {
            speakText(result.message)
            toast.info('AI dice:', { description: result.message })
         } else {
            toast.success('Comando ejecutado', {
-             description: result.message
+             description: result.message || 'Acción completada'
            })
         }
       } else {
-        if (result.debugStack) {
-            console.error('[SERVER_ERROR_STACK]', result.debugStack)
+        // Check for rate limiting
+        if ('retryAfter' in result && result.retryAfter) {
+          toast.warning('Límite de solicitudes', {
+            description: `Por favor espera ${result.retryAfter} segundos`
+          })
+        } else {
+          if ('debugStack' in result && result.debugStack) {
+              console.error('[SERVER_ERROR_STACK]', result.debugStack)
+          }
+          toast.error('Error al procesar', {
+            description: result.error || 'Inténtalo de nuevo'
+          })
         }
-        toast.error('Error al procesar', {
-          description: result.error || 'Inténtalo de nuevo'
-        })
       }
     } catch (error) {
       console.error('Processing error:', error)
