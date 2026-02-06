@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -52,6 +53,9 @@ model TaskList {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  @@index([projectId])            // Get lists for a project
+  @@index([projectId, position])  // Ordered lists
 }
 
 model Task {
@@ -99,6 +103,14 @@ model Task {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  // Performance indexes for frequent queries
+  @@index([listId])           // Filter tasks by list
+  @@index([statusId])         // Filter by status (Kanban view)
+  @@index([assigneeId])       // "My tasks" queries
+  @@index([parentId])         // Subtask queries
+  @@index([dueDate])          // Sort/filter by due date
+  @@index([listId, position]) // Ordering within lists
 }
 
 model TaskStatus {
@@ -192,6 +204,9 @@ model TeamMood {
   dominantEmotion String
   keyConcerns     String?
   detectedAt      DateTime @default(now())
+  
+  @@index([departmentName])  // Filter by department
+  @@index([detectedAt])      // Historical queries
 }
 
 model ProjectRisk {
@@ -271,6 +286,10 @@ model AiUsageLog {
   remainingTokens   Int?
 
   createdAt      DateTime @default(now())
+  
+  @@index([createdAt])   // Analytics queries by date
+  @@index([modelName])   // Filter by AI provider
+  @@index([userId])      // User usage tracking
 }
 
 
