@@ -90,6 +90,7 @@ npm install
 # 3. Setup environment variables
 cp .env.example .env
 # Edit .env with your database URL and AI API keys
+# Required: GOOGLE_GENERATIVE_AI_API_KEY="AIza..."
 
 # 4. Initialize database
 npm run db:reset

@@ -5,6 +5,17 @@ import { encrypt, decrypt } from "./session"
 import { prisma } from "@/lib/prisma"
 import { compare } from "bcryptjs"
 
+export interface SessionPayload {
+  user: {
+    id: string;
+    username: string;
+    name: string | null;
+    role: string;
+    permissions: string[];
+  };
+  expires: Date;
+}
+
 export async function login(formData: FormData) {
   const username = formData.get("username") as string
   const password = formData.get("password") as string
