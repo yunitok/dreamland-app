@@ -323,7 +323,14 @@
         "selected": "{count} selected",
         "columns": "Columns",
         "toggleColumns": "Toggle Columns",
-        "hideColumn": "Hide Column"
+        "hideColumn": "Hide Column",
+        "taskMoved": "Task moved successfully",
+        "failedToMoveTask": "Failed to move task",
+        "errorMovingTask": "Could not move task",
+        "assigneeRequiredToMove": "Assignee required",
+        "assignTaskFirstDescription": "Tasks must have an assignee before moving out of Backlog",
+        "cannotRemoveAssignee": "Cannot remove assignee",
+        "moveToBacklogFirstDescription": "To remove the assignee, first move the task to Backlog"
     },
     "Voice": {
         "listCreated": "List created: \"{name}\"",

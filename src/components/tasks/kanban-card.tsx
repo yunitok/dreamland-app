@@ -80,24 +80,27 @@ export function KanbanCard({ task, onClick, isDragging }: KanbanCardProps) {
     <div
       ref={setNodeRef}
       style={style}
+      {...attributes}
+      {...listeners}
       className={cn(
-        "group bg-card rounded-lg border shadow-sm cursor-pointer transition-all",
+        "group bg-card rounded-lg border shadow-sm transition-all touch-none",
         "hover:shadow-md hover:border-primary/30",
         (isDragging || isSortableDragging) && "opacity-50 shadow-lg rotate-2",
         isDragging && "opacity-100 shadow-xl"
       )}
-      onClick={onClick}
     >
-      {/* Drag Handle */}
+      {/* Drag Handle Visual Indicator */}
       <div
-        {...attributes}
-        {...listeners}
         className="flex items-center justify-center p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
       >
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </div>
 
-      <div className="px-3 pb-3 -mt-1">
+      {/* Clickable Content Area */}
+      <div 
+        className="px-3 pb-3 -mt-1 cursor-pointer"
+        onClick={onClick}
+      >
         {/* Tags */}
         {task.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-2">

@@ -323,7 +323,14 @@
         "selected": "{count} seleccionadas",
         "columns": "Columnas",
         "toggleColumns": "Alternar Columnas",
-        "hideColumn": "Ocultar Columna"
+        "hideColumn": "Ocultar Columna",
+        "taskMoved": "Tarea movida correctamente",
+        "failedToMoveTask": "Error al mover la tarea",
+        "errorMovingTask": "No se pudo mover la tarea",
+        "assigneeRequiredToMove": "Se requiere asignado",
+        "assignTaskFirstDescription": "Las tareas deben tener un usuario asignado antes de moverlas fuera del Backlog",
+        "cannotRemoveAssignee": "No se puede quitar el asignado",
+        "moveToBacklogFirstDescription": "Para quitar el asignado, primero mueve la tarea al Backlog"
     },
     "Voice": {
         "listCreated": "Lista creada: \"{name}\"",

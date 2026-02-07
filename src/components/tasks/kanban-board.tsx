@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useTransition, useCallback } from 'react'
 import {
   DndContext,
   DragOverlay,
   closestCorners,
+  pointerWithin,
+  rectIntersection,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -12,6 +14,7 @@ import {
   DragStartEvent,
   DragEndEvent,
   DragOverEvent,
+  CollisionDetection,
 } from '@dnd-kit/core'
 import {
   arrayMove,
@@ -113,8 +116,12 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
   const [selectedTag, setSelectedTag] = useState<string>('all')
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [hiddenStatusIds, setHiddenStatusIds] = useState<Set<string>>(new Set())
+  const [overColumnId, setOverColumnId] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+  // Optimistic updates: track temporary task status changes
+  const [optimisticMoves, setOptimisticMoves] = useState<Map<string, string>>(new Map())
   
-  // Group all tasks by status
+  // Group all tasks by status, applying optimistic moves
   const tasksByStatus = useMemo(() => {
     const allTasks = project.lists.flatMap(list => 
       list.tasks.map(task => ({ ...task, listId: list.id }))
@@ -132,13 +139,18 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
         return matchesSearch && matchesTag
     })
 
-    // Group by status
+    // Group by status, applying optimistic moves
     const grouped: Record<string, Task[]> = {}
     statuses.forEach(status => {
-      grouped[status.id] = filteredTasks.filter(task => task.status.id === status.id)
+      grouped[status.id] = filteredTasks.filter(task => {
+        // Check if this task has an optimistic move
+        const optimisticStatusId = optimisticMoves.get(task.id)
+        const effectiveStatusId = optimisticStatusId || task.status.id
+        return effectiveStatusId === status.id
+      })
     })
     return grouped
-  }, [project.lists, statuses, searchQuery, selectedTag])
+  }, [project.lists, statuses, searchQuery, selectedTag, optimisticMoves])
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -150,6 +162,38 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
       coordinateGetter: sortableKeyboardCoordinates,
     })
   )
+
+  // Custom collision detection that prioritizes droppable columns
+  const customCollisionDetection: CollisionDetection = (args) => {
+    // First, try pointerWithin - this is more precise for container detection
+    const pointerCollisions = pointerWithin(args)
+    
+    if (pointerCollisions.length > 0) {
+      // Prioritize column (status) collisions over task collisions
+      const columnCollision = pointerCollisions.find(
+        collision => statuses.some(s => s.id === collision.id)
+      )
+      if (columnCollision) {
+        return [columnCollision]
+      }
+      return pointerCollisions
+    }
+    
+    // Fallback to rectIntersection for edge cases
+    const rectCollisions = rectIntersection(args)
+    if (rectCollisions.length > 0) {
+      const columnCollision = rectCollisions.find(
+        collision => statuses.some(s => s.id === collision.id)
+      )
+      if (columnCollision) {
+        return [columnCollision]
+      }
+      return rectCollisions
+    }
+    
+    // Final fallback to closestCorners
+    return closestCorners(args)
+  }
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event
@@ -166,50 +210,86 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
   }
 
   const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event
+    const { active } = event
     
-    if (!over) {
-      setActiveTask(null)
-      return
-    }
-
+    // Use the overColumnId tracked by handleDragOver
+    const targetStatusId = overColumnId
     const activeId = active.id as string
-    const overId = over.id as string
-
-    // Find target status: could be a status ID directly or a task's status
-    let targetStatusId: string | null = null
     
-    // Check if dropped directly on a column (status)
-    const directStatus = statuses.find(s => s.id === overId)
-    if (directStatus) {
-      targetStatusId = directStatus.id
-    } else {
-      // Dropped on a task - find which status column that task belongs to
-      for (const [statusId, tasks] of Object.entries(tasksByStatus)) {
-        if (tasks.find(t => t.id === overId)) {
-          targetStatusId = statusId
-          break
-        }
-      }
-    }
+    // Reset the over column tracker
+    setOverColumnId(null)
+    setActiveTask(null)
     
     if (targetStatusId && activeTask && activeTask.status.id !== targetStatusId) {
-      // Update task status
+      const targetStatus = statuses.find(s => s.id === targetStatusId)
+      
+      // Client-side validation: Tasks without assignee can only be in Backlog
+      const isMovingToNonBacklog = targetStatus && targetStatus.name !== 'Backlog'
+      if (!activeTask.assignee && isMovingToNonBacklog) {
+        toast.warning(t('assigneeRequiredToMove'), {
+          description: t('assignTaskFirstDescription'),
+          duration: 5000
+        })
+        return
+      }
+
+      // OPTIMISTIC UPDATE: Immediately move the task visually
+      setOptimisticMoves(prev => new Map(prev).set(activeId, targetStatusId))
+      
+      // Call server in background
       try {
         await updateTaskStatus(activeId, targetStatusId)
-        toast.success('Task moved successfully')
+        // DON'T clear optimistic move on success - let server revalidation handle it
+        // The optimistic state will be overwritten by fresh server data
+        toast.success(t('taskMoved'))
       } catch (error) {
+        // REVERT: Remove the optimistic move to restore original position
+        setOptimisticMoves(prev => {
+          const next = new Map(prev)
+          next.delete(activeId)
+          return next
+        })
         console.error('Failed to update task status:', error)
-        const errorMessage = error instanceof Error ? error.message : 'Failed to move task'
-        toast.error(errorMessage)
+        const errorMessage = error instanceof Error ? error.message : t('failedToMoveTask')
+        toast.error(t('errorMovingTask'), {
+          description: errorMessage,
+          duration: 5000
+        })
       }
     }
-
-    setActiveTask(null)
   }
 
   const handleDragOver = (event: DragOverEvent) => {
-    // Optional: Handle visual feedback during drag
+    const { active, over } = event
+    
+    if (!over) {
+      setOverColumnId(null)
+      return
+    }
+    
+    const overId = over.id as string
+    const activeId = active.id as string
+    
+    // Ignore if hovering over yourself
+    if (overId === activeId) {
+      return // Keep the previously detected column
+    }
+    
+    // Check if we're over a column directly (status ID)
+    const directStatus = statuses.find(s => s.id === overId)
+    if (directStatus) {
+      setOverColumnId(directStatus.id)
+      return
+    }
+    
+    // If we're over a task (not ourselves), find which column that task belongs to
+    for (const [statusId, tasks] of Object.entries(tasksByStatus)) {
+      const foundTask = tasks.find(t => t.id === overId && t.id !== activeId)
+      if (foundTask) {
+        setOverColumnId(statusId)
+        return
+      }
+    }
   }
 
   const handleCreateTask = (statusId: string) => {
@@ -308,7 +388,7 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
       {/* Kanban Columns */}
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={customCollisionDetection}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragOver={handleDragOver}

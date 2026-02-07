@@ -38,6 +38,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 import { getTask, updateTask, updateTaskProgress, addDependency, removeDependency } from '@/lib/actions/tasks'
 import { createComment, deleteComment } from '@/lib/actions/task-comments'
 
@@ -97,11 +98,29 @@ export function TaskDetailSheet({
 
   const handleStatusChange = async (statusId: string) => {
     if (!task) return
+    
+    // Client-side validation: check if task has assignee before moving out of Backlog
+    const targetStatus = statuses.find(s => s.id === statusId)
+    const isMovingToNonBacklog = targetStatus && targetStatus.name !== 'Backlog'
+    if (!task.assignee && isMovingToNonBacklog) {
+      toast.warning(t('assigneeRequiredToMove'), {
+        description: t('assignTaskFirstDescription'),
+        duration: 5000
+      })
+      return
+    }
+    
     try {
       await updateTask(task.id, { statusId })
-      setTask({ ...task, status: statuses.find(s => s.id === statusId) })
+      setTask({ ...task, status: targetStatus })
+      toast.success(t('taskMoved'))
     } catch (error) {
       console.error('Failed to update status:', error)
+      const errorMessage = error instanceof Error ? error.message : t('failedToMoveTask')
+      toast.error(t('errorMovingTask'), {
+        description: errorMessage,
+        duration: 5000
+      })
     }
   }
 
@@ -118,13 +137,26 @@ export function TaskDetailSheet({
 
   const handleAssigneeChange = async (assigneeId: string) => {
     if (!task) return
+    
+    const newAssigneeId = assigneeId === 'unassigned' ? null : assigneeId
+    
+    // Client-side validation: cannot remove assignee from tasks outside Backlog
+    if (newAssigneeId === null && task.status?.name !== 'Backlog') {
+      toast.warning(t('cannotRemoveAssignee'), {
+        description: t('moveToBacklogFirstDescription'),
+        duration: 5000
+      })
+      return
+    }
+    
     try {
-      const newAssigneeId = assigneeId === 'unassigned' ? null : assigneeId
       await updateTask(task.id, { assigneeId: newAssigneeId })
       const assignee = users.find(u => u.id === newAssigneeId)
       setTask({ ...task, assignee })
     } catch (error) {
       console.error('Failed to update assignee:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update assignee'
+      toast.error(errorMessage, { duration: 5000 })
     }
   }
 
