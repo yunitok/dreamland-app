@@ -12,9 +12,11 @@ BEGIN
   WHERE name = 'Backlog'
   LIMIT 1;
 
-  -- If Backlog doesn't exist, raise an error
   IF backlog_status_id IS NULL THEN
-    RAISE EXCEPTION 'Backlog status not found. Please seed global statuses first.';
+    INSERT INTO "TaskStatus" (id, name, "isClosed", position, color)
+    VALUES (gen_random_uuid(), 'Backlog', false, 0, '#808080')
+    RETURNING id INTO backlog_status_id;
+    RAISE NOTICE 'Created Backlog status with ID %', backlog_status_id;
   END IF;
 
   -- Update all tasks that:
