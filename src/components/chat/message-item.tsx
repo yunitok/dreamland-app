@@ -2,15 +2,16 @@
 
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { UIMessage, ToolInvocation } from '@/types/chat'
-import { Bot, User, Check, Loader2, Terminal } from 'lucide-react'
+import rehypeRaw from 'rehype-raw'
+import { UIMessage } from 'ai'
+import { User, Check, Loader2, Sparkles } from 'lucide-react'
 import { memo } from 'react'
 
 interface MessageItemProps {
     message: UIMessage
 }
 
-function ToolCall({ toolName, state, result }: ToolInvocation) {
+function ToolCall({ toolName, state, result }: any) {
     const isCompleted = state === 'result'
     
     return (
@@ -37,9 +38,37 @@ function ToolCall({ toolName, state, result }: ToolInvocation) {
 
 export const MessageItem = memo(({ message }: MessageItemProps) => {
     const isUser = message.role === 'user'
-    const isTool = message.role === 'data' // Sometimes tools come as data? No, Vercel AI SDK embeds them in 'assistant' usually.
+    const isTool = message.role === 'assistant' && message.parts?.some(p => p.type === 'tool-invocation')
     
     if (message.role === 'system') return null;
+
+    // Extraer texto de forma robusta (soporta String o Array de partes en v6)
+    const rawContent = (message as any).content;
+    let textContent = '';
+    
+    // 1. Intentar sacar texto directo si es string
+    if (typeof rawContent === 'string' && rawContent.length > 0) {
+        textContent = rawContent;
+    } 
+    // 2. Si es array en 'content' (algunos proveedores nuevos)
+    else if (Array.isArray(rawContent)) {
+        textContent = rawContent
+            .filter((p: any) => p.type === 'text')
+            .map((p: any) => p.text)
+            .join('');
+    }
+    
+    // 3. Si sigue vacío, buscar en 'parts' (formato estándar AI SDK)
+    if (!textContent && message.parts && message.parts.length > 0) {
+        textContent = message.parts
+            .filter(p => p.type === 'text')
+            .map(p => (p as any).text || '')
+            .join('');
+    }
+
+    const toolInvocations = (message as any).toolInvocations || 
+                            message.parts?.filter(p => p.type === 'tool-invocation').map(p => (p as any).toolInvocation) || 
+                            []
 
     return (
         <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'} mb-4 animate-in fade-in slide-in-from-bottom-2`}>
@@ -49,9 +78,9 @@ export const MessageItem = memo(({ message }: MessageItemProps) => {
                 <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${
                     isUser 
                         ? 'bg-primary text-primary-foreground' 
-                        : 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-sm'
+                        : 'bg-gradient-to-tr from-violet-600 to-indigo-600 text-white shadow-sm'
                 }`}>
-                    {isUser ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
+                    {isUser ? <User className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
                 </div>
 
                 {/* Bubble */}
@@ -60,22 +89,22 @@ export const MessageItem = memo(({ message }: MessageItemProps) => {
                         ? 'bg-primary text-primary-foreground rounded-tr-none' 
                         : 'bg-muted/50 border rounded-tl-none'
                 }`}>
-                    {/* Tool Invocations (Rendered above text usually, or mixed? SDK usually puts them at the end or checks for 'stop reason') */}
-                    {message.toolInvocations?.length! > 0 && (
+                    {/* Tool Invocations */}
+                    {toolInvocations.length > 0 && (
                         <div className="mb-2 space-y-2">
-                             {message.toolInvocations?.map((toolInv) => (
+                             {toolInvocations.map((toolInv: any) => (
                                 <ToolCall key={toolInv.toolCallId} {...toolInv} />
                              ))}
                         </div>
                     )}
 
                     {/* Content Markdown */}
-                    {message.content && (
+                    {textContent && (
                         <div className={`prose prose-sm max-w-none break-words ${
                             isUser ? 'prose-invert' : 'dark:prose-invert'
                         }`}>
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {message.content}
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                                {textContent}
                             </ReactMarkdown>
                         </div>
                     )}

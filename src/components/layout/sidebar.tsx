@@ -12,7 +12,8 @@ import {
   Heart, 
   Settings,
   Zap,
-  LogOut
+  LogOut,
+  FileText
 } from "lucide-react"
 import { logout } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
@@ -39,6 +40,7 @@ export function SidebarContent({ user }: SidebarContentProps) {
   const appNavItems = [
     { href: "/", label: t("dashboard"), icon: LayoutDashboard },
     { href: "/projects", label: t("projects"), icon: FolderKanban },
+    { href: "/reports", label: t("reports"), icon: FileText },
     { href: "/departments", label: t("departments"), icon: Zap },
     { href: "/sentiment", label: t("teamPulse"), icon: Heart },
   ]

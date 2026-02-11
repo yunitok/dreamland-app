@@ -4,6 +4,8 @@ import { getAIProvider } from '@/lib/ai/factory'
 import { getLocale } from 'next-intl/server'
 import { requireAuth } from './rbac'
 import { checkAIRateLimit } from '@/lib/rate-limit'
+import { executeAiTools } from '@/lib/ai/executor'
+import { getTaskStatuses } from './task-statuses'
 
 export async function processTextCommand(projectId: string, userText: string) {
   // Verify user is authenticated
@@ -32,5 +34,23 @@ export async function processTextCommand(projectId: string, userText: string) {
   }
   
   const locale = await getLocale()
-  return await provider.processCommand(projectId, userText, locale)
+  const response = await provider.processCommand(projectId, userText, locale)
+
+  // Orchestrate Tool Execution if provider returned toolCalls
+  if (response.success && response.toolCalls && response.toolCalls.length > 0) {
+    const statuses = await getTaskStatuses()
+    const { executionResults, generatedReport } = await executeAiTools(
+      response.toolCalls,
+      { projectId, statuses }
+    )
+
+    return {
+      ...response,
+      actions: executionResults,
+      message: executionResults.length > 0 ? `Executed: ${executionResults.join(', ')}` : response.message,
+      report: generatedReport
+    }
+  }
+
+  return response
 }

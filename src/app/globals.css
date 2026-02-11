@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -165,5 +166,117 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  .prose {
+    --tw-prose-body: var(--foreground);
+    --tw-prose-headings: var(--foreground);
+    --tw-prose-links: var(--primary);
+    --tw-prose-bold: var(--foreground);
+    --tw-prose-counters: var(--muted-foreground);
+    --tw-prose-bullets: var(--primary);
+    --tw-prose-hr: var(--border);
+    --tw-prose-quotes: var(--foreground);
+    --tw-prose-quote-borders: var(--primary);
+    --tw-prose-captions: var(--muted-foreground);
+    --tw-prose-code: var(--foreground);
+    --tw-prose-pre-code: var(--secondary-foreground);
+    --tw-prose-pre-bg: var(--secondary);
+    --tw-prose-th-borders: var(--border);
+    --tw-prose-td-borders: var(--border);
+  }
+
+  /* Executive Report Spacing (Compact) */
+  .prose p {
+    @apply my-3 leading-relaxed;
+  }
+  .prose h1 {
+    @apply mt-0 mb-6 text-2xl font-extrabold tracking-tight;
+  }
+  .prose h2 {
+    @apply mt-8 mb-4 pb-1 border-b border-border text-xl font-bold;
+  }
+  .prose h3 {
+    @apply mt-6 mb-2 text-lg font-semibold;
+  }
+  .prose ul, .prose ol {
+    @apply my-3;
+  }
+  .prose li {
+    @apply my-1;
+  }
+
+  /* Premium Table adjustments (More compact) */
+  .prose table {
+    @apply border-collapse w-full mt-4 mb-6 rounded-lg overflow-hidden border border-border;
+  }
+  .prose thead {
+    @apply bg-muted/50;
+  }
+  .prose th {
+    @apply px-4 py-2 text-left font-semibold text-xs uppercase tracking-wider border-b border-border;
+  }
+  .prose td {
+    @apply px-4 py-2 border-b border-border/50 text-sm;
+  }
+  .prose tr:last-child td {
+    @apply border-b-0;
+  }
+  .prose blockquote {
+    @apply border-l-4 border-primary bg-primary/5 py-1 px-5 rounded-r-lg italic my-6;
+  }
+  .prose hr {
+    @apply my-8 border-t-2 border-dashed border-border;
+  }
+}
+
+@media print {
+  html, body {
+    font-size: 11pt !important; /* Standard PDF font size */
+  }
+  .no-print,
+  nav,
+  header,
+  footer,
+  aside,
+  button,
+  .sidebar-trigger,
+  [data-sidebar="sidebar"] {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  article {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+  }
+
+  .ai-glow::after {
+    display: none !important;
+  }
+
+  /* Ensure page breaks are handled nicely */
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+  
+  table, blockquote {
+    page-break-inside: avoid;
   }
 }

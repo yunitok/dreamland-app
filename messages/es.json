@@ -5,6 +5,7 @@
         "projects": "Proyectos",
         "departments": "Departamentos",
         "teamPulse": "Pulso del Equipo",
+        "reports": "Informes",
         "admin": "Admin",
         "notifications": "Notificaciones",
         "toggleTheme": "Cambiar tema",
@@ -82,7 +83,21 @@
         "create": "Crear",
         "manageProject": "Gestionar Proyecto",
         "allTags": "Todas las etiquetas",
-        "manageTags": "Gestionar Etiquetas"
+        "manageTags": "Gestionar Etiquetas",
+        "views": {
+            "list": "Lista",
+            "timeline": "Cronograma"
+        },
+        "timeline": {
+            "scale": "Escala",
+            "days": "Días",
+            "months": "Meses",
+            "years": "Años",
+            "today": "Hoy",
+            "projects": "Proyectos",
+            "projectsAndTasks": "Proyectos y Tareas",
+            "detail": "Detalle"
+        }
     },
     "sentiment": {
         "title": "Pulso del Equipo",
@@ -251,6 +266,7 @@
         "searchTasks": "Buscar tareas...",
         "status": "Estado",
         "assignee": "Asignado",
+        "startDate": "Fecha de inicio",
         "dueDate": "Fecha límite",
         "progress": "Progreso",
         "completed": "Completado",

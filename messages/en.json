@@ -5,6 +5,7 @@
         "projects": "Projects",
         "departments": "Departments",
         "teamPulse": "Team Pulse",
+        "reports": "Reports",
         "admin": "Admin",
         "notifications": "Notifications",
         "toggleTheme": "Toggle theme",
@@ -82,7 +83,21 @@
         "create": "Create",
         "manageProject": "Manage Project",
         "allTags": "All tags",
-        "manageTags": "Manage Tags"
+        "manageTags": "Manage Tags",
+        "views": {
+            "list": "List",
+            "timeline": "Timeline"
+        },
+        "timeline": {
+            "scale": "Scale",
+            "days": "Days",
+            "months": "Months",
+            "years": "Years",
+            "today": "Today",
+            "projects": "Projects",
+            "projectsAndTasks": "Projects & Tasks",
+            "detail": "Detail"
+        }
     },
     "sentiment": {
         "title": "Team Pulse",
@@ -251,6 +266,7 @@
         "searchTasks": "Search tasks...",
         "status": "Status",
         "assignee": "Assignee",
+        "startDate": "Start Date",
         "dueDate": "Due Date",
         "progress": "Progress",
         "completed": "Completed",

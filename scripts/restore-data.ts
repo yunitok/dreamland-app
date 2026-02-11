@@ -67,7 +67,7 @@ async function main() {
     // 2. Restore Data (Dependency Order)
     
     // Helper to process dates
-    const processData = (items) => {
+    const processData = (items: any[]) => {
       if (!items) return []; 
       return items.map(item => {
         const newItem = { ...item };

@@ -477,6 +477,19 @@ export function TaskDetailSheet({
                   </Select>
                 </div>
 
+                {/* Start Date */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5" />
+                    {t('startDate')}
+                  </span>
+                  <div className="h-9 flex items-center px-3 border rounded-md text-sm bg-transparent">
+                    <span className="text-foreground">
+                      {formatDate(task.startDate)}
+                    </span>
+                  </div>
+                </div>
+
                 {/* Due Date */}
                 <div className="flex flex-col gap-1.5">
                   <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">

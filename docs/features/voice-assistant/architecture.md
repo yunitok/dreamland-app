@@ -107,6 +107,12 @@ export interface AIProvider {
    * @returns Response with execution result
    */
   processVoiceCommand(transcript: string, locale: string): Promise<CommandResponse>;
+
+  /**
+   * Generate direct text based on a prompt (lightweight path)
+   * Used for reports and background processing to save tokens
+   */
+  generateText(projectId: string, prompt: string): Promise<AIResponse>;
   
   /**
    * Get current API usage information (quota, remaining requests, etc.)
@@ -119,6 +125,14 @@ export interface CommandResponse {
   message: string;
   action?: string;
   data?: any;
+}
+
+export interface AIResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+  transcript?: string;
+  actions?: any[];
 }
 
 export interface UsageInfo {

@@ -144,7 +144,12 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   
   useEffect(() => {
+     const start = performance.now()
      setTasks(project.lists.flatMap(l => l.tasks))
+     // Use setTimeout to measure after render cycle completes
+     setTimeout(() => {
+        console.log(`[PERF-CLIENT] TaskListView mount+render: ${(performance.now() - start).toFixed(2)}ms`)
+     }, 0)
   }, [project.lists])
 
   const sensors = useSensors(

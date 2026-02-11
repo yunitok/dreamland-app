@@ -121,6 +121,8 @@ Comprehensive technical documentation is available in the [`/docs`](./docs) dire
 - [🏗️ System Architecture](./docs/architecture/system-overview.md) - Design decisions and data flow
 - [🗄️ Database Model](./docs/database/data-model.md) - Complete schema with ER diagrams
 - [🤖 Voice Assistant](./docs/features/voice-assistant/architecture.md) - Provider pattern and AI integration
+- [💬 AI Chat Agent](./docs/features/ai-chat-agent.md) - Multi-step agent with tool calling
+- [📊 Project Reports](./docs/features/reports.md) - Executive reporting system
 - [🔐 RBAC System](./docs/features/rbac/overview.md) - Role and permission management
 - [🌐 Internationalization](./docs/features/internationalization.md) - Multi-language support
 

@@ -42,3 +42,7 @@ next-env.d.ts
 
 /src/generated/prisma
 backup-data-mcp.json
+
+# debug logs
+chat-debug.log
+ai-debug.log

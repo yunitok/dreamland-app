@@ -14,8 +14,16 @@ export interface AIResponse {
   error?: string
   debugStack?: string // For client-side debugging
   usage?: AIUsage
+  toolCalls?: Array<{ name: string, args: any }>
+  report?: {
+    id: string
+    title: string
+    content: string
+    redirectUrl: string
+  }
 }
 
 export interface AIProvider {
   processCommand(projectId: string, userText: string, locale?: string): Promise<AIResponse>
+  generateText(projectId: string, prompt: string): Promise<AIResponse>
 }

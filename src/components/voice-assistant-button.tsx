@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { processTextCommand } from '@/lib/actions/voice'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 interface VoiceAssistantButtonProps {
   projectId: string
@@ -16,6 +17,7 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
   const [isListening, setIsListening] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [transcript, setTranscript] = useState('')
+  const router = useRouter()
   
   const recognitionRef = useRef<any>(null)
   const silenceTimerRef = useRef<any>(null)
@@ -147,6 +149,12 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
            toast.success('Comando ejecutado', {
              description: result.message || 'Acción completada'
            })
+
+           // Check for report
+           if ('report' in result && result.report && result.report.redirectUrl) {
+             toast.success('Reporte generado. Redirigiendo...')
+             router.push(result.report.redirectUrl)
+           }
         }
       } else {
         // Check for rate limiting
@@ -204,6 +212,7 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
       {isListening && (
         <span className="absolute -inset-1 rounded-full border-2 border-red-500 opacity-75 animate-ping pointer-events-none"></span>
       )}
+
     </Button>
   )
 }

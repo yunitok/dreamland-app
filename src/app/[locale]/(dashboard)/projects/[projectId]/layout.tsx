@@ -1,9 +1,9 @@
 import { prisma } from '@/lib/prisma'
+import { getChatSessions } from '@/lib/actions/chat'
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { ProjectHeader } from '@/components/tasks/project-header'
 import { ViewTabs } from '@/components/tasks/view-tabs'
-import { VoiceAssistantButton } from '@/components/voice-assistant-button'
 import { ChatPanel } from '@/components/chat/chat-panel'
 
 interface ProjectLayoutProps {
@@ -11,14 +11,14 @@ interface ProjectLayoutProps {
   params: Promise<{ projectId: string; locale: string }>
 }
 
-import { getHistory } from '@/lib/actions/chat'
-
 export default async function ProjectLayout({ children, params }: ProjectLayoutProps) {
+  const startLayout = performance.now()
   const { projectId, locale } = await params
   const t = await getTranslations('tasks')
+  console.log(`[PERF] layout-startup: ${(performance.now() - startLayout).toFixed(2)}ms`)
 
-  const [project, history] = await Promise.all([
-    prisma.project.findUnique({
+  const startProjectLayout = performance.now()
+  const project = await prisma.project.findUnique({
       where: { id: projectId },
       include: {
         tags: true,
@@ -30,13 +30,17 @@ export default async function ProjectLayout({ children, params }: ProjectLayoutP
           select: { lists: true }
         }
       }
-    }),
-    getHistory(projectId)
-  ])
+    })
+  console.log(`[PERF] layout-fetch-project: ${(performance.now() - startProjectLayout).toFixed(2)}ms`)
 
   if (!project) {
     notFound()
   }
+
+  /* Fetch Chat Sessions */
+  const startChat = performance.now()
+  const sessions = await getChatSessions(projectId)
+  console.log(`[PERF] layout-fetch-chat: ${(performance.now() - startChat).toFixed(2)}ms`)
 
   return (
     <div className="flex flex-col h-full">
@@ -45,8 +49,7 @@ export default async function ProjectLayout({ children, params }: ProjectLayoutP
       <div className="flex-1 overflow-auto">
         {children}
       </div>
-      <ChatPanel projectId={projectId} initialMessages={history} />
-      {/* <VoiceAssistantButton projectId={projectId} className="fixed bottom-6 right-24 z-50 h-14 w-14" /> */}
+      <ChatPanel projectId={projectId} initialSessions={sessions} />
     </div>
   )
 }
