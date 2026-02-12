@@ -49,4 +49,5 @@ ai-debug.log
 
 # agentic skills
 .agent/skills
+.agent/rules
 .claude
