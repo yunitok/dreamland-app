@@ -27,13 +27,13 @@ export default async function ReportsPage({
   })
 
   return (
-    <div className="flex flex-col h-[calc(100vh-65px)]">
+    <div className="flex flex-col ai-glow min-h-full">
       <Header 
         titleKey="reports.title"
         descriptionKey="reports.headerDescription"
       />
 
-      <div className="flex-1 p-4 md:p-8 overflow-y-auto">
+      <div className="flex-1 p-4 md:p-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reports.map((report) => (
             <ReportCard key={report.id} report={report} />

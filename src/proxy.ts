@@ -1,3 +1,4 @@
+
 import createMiddleware from 'next-intl/middleware';
 import { routing } from './i18n/routing';
 import { NextRequest, NextResponse } from 'next/server';
@@ -8,14 +9,18 @@ const intlMiddleware = createMiddleware(routing);
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // 1. Check if the path is /login, /login/, or /locale/login
+  // 1. Check protected routes exceptions
   const isLoginPage = pathname === '/login' || pathname === '/login/' || routing.locales.some(
     (locale) => pathname === `/${locale}/login` || pathname === `/${locale}/login/`
   );
 
+  const isChangePasswordPage = pathname === '/change-password' || pathname === '/change-password/' || routing.locales.some(
+    (locale) => pathname === `/${locale}/change-password` || pathname === `/${locale}/change-password/`
+  );
+
   // 2. Get the session
   const session = request.cookies.get("session")?.value;
-  let user = null;
+  let user: any = null;
   if (session) {
     try {
       user = await decrypt(session);
@@ -24,31 +29,40 @@ export default async function middleware(request: NextRequest) {
     }
   }
 
+  const locale = routing.locales.find((l) => pathname.startsWith(`/${l}`)) || routing.defaultLocale;
+
   // 3. Auth Logic
   if (!user && !isLoginPage) {
     // Not logged in and not on login page -> Redirect to /login
-    // Determine the locale from the pathname or fallback
-    const locale = routing.locales.find((l) => pathname.startsWith(`/${l}`)) || routing.defaultLocale;
     
-    // Construct the login URL. If it's the default locale and prefix is as-needed, 
-    // next-intl expects /login (not /es/login)
+    // Construct the login URL
     const loginPath = locale === routing.defaultLocale && routing.localePrefix === 'as-needed' 
       ? '/login' 
       : `/${locale}/login`;
       
     const loginUrl = new URL(loginPath, request.url);
+    
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && isLoginPage) {
-    // Logged in and on login page -> Redirect to dashboard
-    const locale = routing.locales.find((l) => pathname.startsWith(`/${l}`)) || routing.defaultLocale;
-    const dashboardPath = locale === routing.defaultLocale && routing.localePrefix === 'as-needed'
-      ? '/'
-      : `/${locale}`;
-      
-    const dashboardUrl = new URL(dashboardPath, request.url);
-    return NextResponse.redirect(dashboardUrl);
+  if (user) {
+    // Check for forced password change
+    if (user.user?.mustChangePassword && !isChangePasswordPage) {
+        const changePasswordPath = locale === routing.defaultLocale && routing.localePrefix === 'as-needed'
+            ? '/change-password'
+            : `/${locale}/change-password`;
+        return NextResponse.redirect(new URL(changePasswordPath, request.url));
+    }
+
+    if (isLoginPage) {
+      // Logged in and on login page -> Redirect to dashboard
+      const dashboardPath = locale === routing.defaultLocale && routing.localePrefix === 'as-needed'
+        ? '/'
+        : `/${locale}`;
+        
+      const dashboardUrl = new URL(dashboardPath, request.url);
+      return NextResponse.redirect(dashboardUrl);
+    }
   }
 
   // 4. Run intl middleware

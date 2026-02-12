@@ -2,8 +2,9 @@
 
 import { ThemeToggle } from "./theme-toggle"
 import { LanguageSwitcher } from "./language-switcher"
-import { Bell, Menu } from "lucide-react"
+import { Bell, Menu, ArrowLeft } from "lucide-react"
 import { Button } from "@/modules/shared/ui/button"
+import { Link } from "@/i18n/navigation"
 import { useTranslations } from "next-intl"
 import { 
   Sheet, 
@@ -17,10 +18,12 @@ import { SidebarContent } from "./sidebar"
 interface HeaderProps {
   titleKey?: string
   descriptionKey?: string
+  backHref?: string
+  backLabelKey?: string
   children?: React.ReactNode
 }
 
-export function Header({ titleKey, descriptionKey, children }: HeaderProps) {
+export function Header({ titleKey, descriptionKey, backHref, backLabelKey, children }: HeaderProps) {
   const t = useTranslations()
   const tCommon = useTranslations("common")
 
@@ -43,6 +46,17 @@ export function Header({ titleKey, descriptionKey, children }: HeaderProps) {
             <SidebarContent />
           </SheetContent>
         </Sheet>
+        
+        {backHref && (
+          <div className="hidden md:block mr-2">
+            <Button variant="ghost" size="sm" className="pl-0 hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors" asChild>
+              <Link href={backHref}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                {backLabelKey ? t(backLabelKey) : tCommon('back')}
+              </Link>
+            </Button>
+          </div>
+        )}
         
         <div className="flex flex-col">
           <h1 className="text-sm md:text-xl font-bold tracking-tight truncate max-w-[140px] xs:max-w-[200px] md:max-w-none">

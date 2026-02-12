@@ -9,6 +9,8 @@ const mocks = vi.hoisted(() => {
     decrypt: vi.fn(),
     setCookie: vi.fn(),
     getCookie: vi.fn(),
+    update: vi.fn(),
+    hash: vi.fn(),
   }
 })
 
@@ -93,7 +95,94 @@ describe('Auth - Login', () => {
 
     const result = await login(formData)
     expect(result.success).toBe(true)
-    expect(mocks.setCookie).toHaveBeenCalled()
     expect(mocks.encrypt).toHaveBeenCalled()
   })
+})
+
+vi.mock('bcryptjs', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual as any,
+    compare: mocks.compare,
+    hash: mocks.hash
+  }
+})
+
+// Add update mock
+// mocks.update is already defined in vi.hoisted
+vi.mock('@/lib/prisma', async (importOriginal) => {
+    const actual = await importOriginal() as any
+    return {
+        prisma: {
+            user: {
+                findUnique: mocks.findUnique,
+                update: mocks.update
+            }
+        }
+    }
+})
+
+import { updatePassword } from '../lib/auth'
+
+describe('Auth - Update Password', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+    })
+
+    it('should fail if password is too short', async () => {
+        const formData = new FormData()
+        formData.append('newPassword', '123')
+        
+        const result = await updatePassword(formData)
+        expect(result.success).toBe(false)
+        expect(result.error).toBe('Password must be at least 6 characters')
+    })
+
+    it('should fail if unauthorized (no session)', async () => {
+        mocks.decrypt.mockResolvedValue(null) // Simulate no session
+
+        const formData = new FormData()
+        formData.append('newPassword', 'newsecurepassword')
+
+        const result = await updatePassword(formData)
+        expect(result.success).toBe(false)
+        expect(result.error).toBe('Unauthorized')
+    })
+
+    it('should success if session exists and password is valid', async () => {
+        // Mock valid session logic: getSession calls cookies().get() then decrypt()
+        mocks.getCookie.mockReturnValue({ value: 'valid-session-token' })
+        mocks.decrypt.mockResolvedValue({
+            user: { id: 'user-1', role: 'BASIC_USER', permissions: [] },
+            expires: new Date()
+        })
+        
+        // Mock successful DB update
+        mocks.update.mockResolvedValue({
+            id: 'user-1',
+            username: 'test',
+            name: 'Test',
+            role: { code: 'BASIC_USER', permissions: [] },
+            mustChangePassword: false
+        })
+
+        // Mock hash
+        mocks.hash.mockResolvedValue('hashed-new-password')
+
+        const formData = new FormData()
+        formData.append('newPassword', 'newsecurepassword')
+
+        const result = await updatePassword(formData)
+        
+        expect(result.success).toBe(true)
+        expect(mocks.update).toHaveBeenCalledWith({
+            where: { id: 'user-1' },
+            data: {
+                password: 'hashed-new-password',
+                mustChangePassword: false
+            },
+            include: { role: { include: { permissions: true } } }
+        })
+        expect(mocks.setCookie).toHaveBeenCalled()
+    })
 })

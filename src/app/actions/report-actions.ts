@@ -130,7 +130,7 @@ export async function generateProjectReport(projectId: string) {
   }
 
   const text = aiResponse.message
-  const title = `Reporte - ${project.title} - ${today}`
+  const title = `Reporte - ${project.title}`
 
   // 6. Save Report to DB
   const report = await prisma.report.create({

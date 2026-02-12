@@ -235,7 +235,35 @@
         "signIn": "Sign In",
         "invalidCredentials": "Invalid username or password",
         "welcomeBack": "Welcome Back",
-        "subTitle": "Identify yourself to access the strategic portal"
+        "subTitle": "Identify yourself to access the strategic portal",
+        "rememberMe": "Angemeldet bleiben",
+        "passwordPlaceholder": "••••••••",
+        "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten",
+        "failedToUpdate": "Passwort konnte nicht aktualisiert werden",
+        "unauthorized": "Unbefugter Zugriff",
+        "footer": "Dreamland v2.0 • Sicherer Zugriff"
+    },
+    "changePassword": {
+        "title": "Sicherheitsüberprüfung",
+        "subTitle": "Bitte aktualisieren Sie Ihr Passwort, um fortzufahren",
+        "newPassword": "Neues Passwort",
+        "confirmPassword": "Passwort bestätigen",
+        "updatePassword": "Passwort aktualisieren",
+        "updating": "Aktualisierung...",
+        "success": "Passwort erfolgreich aktualisiert! Weiterleitung...",
+        "passwordMismatch": "Passwörter stimmen nicht überein",
+        "passwordTooShort": "Passwort muss mindestens 6 Zeichen lang sein",
+        "passwordPlaceholder": "••••••••",
+        "footer": "Dreamland v2.0 • Sicherer Zugriff"
+    },
+    "reports": {
+        "title": "Intelligenzbericht",
+        "headerDescription": "Intelligenzverlauf und KI-generierte Statusberichte",
+        "backToReports": "Zurück zu Berichten",
+        "viewReport": "Vollständigen Bericht anzeigen",
+        "deleteReport": "Bericht löschen",
+        "deleteConfirmation": "Sind Sie sicher, dass Sie diesen Bericht löschen möchten?",
+        "deleteDescription": "Diese Aktion kann nicht rückgängig gemacht werden."
     },
     "tasks": {
         "views": {
@@ -245,6 +273,7 @@
             "calendar": "Calendar",
             "timeline": "Timeline"
         },
+        "backToProjects": "Zurück zu Projekten",
         "searchTasks": "Search tasks...",
         "status": "Status",
         "assignee": "Assignee",

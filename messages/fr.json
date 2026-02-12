@@ -235,7 +235,35 @@
         "signIn": "Sign In",
         "invalidCredentials": "Invalid username or password",
         "welcomeBack": "Welcome Back",
-        "subTitle": "Identify yourself to access the strategic portal"
+        "subTitle": "Identify yourself to access the strategic portal",
+        "rememberMe": "Se souvenir de moi",
+        "passwordPlaceholder": "••••••••",
+        "unexpectedError": "Une erreur inattendue s'est produite",
+        "failedToUpdate": "Échec de la mise à jour du mot de passe",
+        "unauthorized": "Accès non autorisé",
+        "footer": "Dreamland v2.0 • Accès Sécurisé"
+    },
+    "changePassword": {
+        "title": "Contrôle de sécurité",
+        "subTitle": "Veuillez mettre à jour votre mot de passe pour continuer",
+        "newPassword": "Nouveau mot de passe",
+        "confirmPassword": "Confirmer le mot de passe",
+        "updatePassword": "Mettre à jour le mot de passe",
+        "updating": "Mise à jour...",
+        "success": "Mot de passe mis à jour ! Redirection...",
+        "passwordMismatch": "Les mots de passe ne correspondent pas",
+        "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères",
+        "passwordPlaceholder": "••••••••",
+        "footer": "Dreamland v2.0 • Accès Sécurisé"
+    },
+    "reports": {
+        "title": "Rapport d'Intelligence",
+        "headerDescription": "Historique de l'intelligence et rapports d'état générés par l'IA",
+        "backToReports": "Retour aux rapports",
+        "viewReport": "Voir le rapport complet",
+        "deleteReport": "Supprimer le rapport",
+        "deleteConfirmation": "Êtes-vous sûr de vouloir supprimer ce rapport ?",
+        "deleteDescription": "Cette action est irréversible."
     },
     "tasks": {
         "views": {
@@ -245,6 +273,7 @@
             "calendar": "Calendar",
             "timeline": "Timeline"
         },
+        "backToProjects": "Retour aux projets",
         "searchTasks": "Search tasks...",
         "status": "Status",
         "assignee": "Assignee",

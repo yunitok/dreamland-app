@@ -253,7 +253,17 @@
         "signIn": "Sign In",
         "invalidCredentials": "Invalid username or password",
         "welcomeBack": "Welcome Back",
-        "subTitle": "Identify yourself to access the strategic portal"
+        "subTitle": "Identify yourself to access the strategic portal",
+        "rememberMe": "Remember me"
+    },
+    "reports": {
+        "title": "Intelligence Report",
+        "headerDescription": "Intelligence history and AI-generated status reports",
+        "backToReports": "Back to Reports",
+        "viewReport": "View Full Report",
+        "deleteReport": "Delete Report",
+        "deleteConfirmation": "Are you sure you want to delete this report?",
+        "deleteDescription": "This action cannot be undone."
     },
     "tasks": {
         "views": {
@@ -263,6 +273,7 @@
             "calendar": "Calendar",
             "timeline": "Timeline"
         },
+        "backToProjects": "Back to Projects",
         "searchTasks": "Search tasks...",
         "status": "Status",
         "assignee": "Assignee",
@@ -359,5 +370,21 @@
         "taskDeleted": "Task deleted.",
         "executed": "Executed: {actions}",
         "didNotUnderstand": "I didn't understand that."
+    },
+    "changePassword": {
+        "title": "Security Check",
+        "subTitle": "Please update your password to continue",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm Password",
+        "updatePassword": "Update Password",
+        "updating": "Updating...",
+        "success": "Password updated successfully! Redirecting...",
+        "passwordMismatch": "Passwords do not match",
+        "passwordTooShort": "Password must be at least 6 characters",
+        "passwordPlaceholder": "••••••••",
+        "unexpectedError": "An unexpected error occurred",
+        "failedToUpdate": "Failed to update password",
+        "unauthorized": "Unauthorized access",
+        "footer": "Dreamland v2.0 • Secure Access"
     }
 }

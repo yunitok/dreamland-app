@@ -235,7 +235,35 @@
         "signIn": "Sign In",
         "invalidCredentials": "Invalid username or password",
         "welcomeBack": "Welcome Back",
-        "subTitle": "Identify yourself to access the strategic portal"
+        "subTitle": "Identify yourself to access the strategic portal",
+        "rememberMe": "Ricordami",
+        "passwordPlaceholder": "••••••••",
+        "unexpectedError": "Si è verificato un errore imprevisto",
+        "failedToUpdate": "Impossibile aggiornare la password",
+        "unauthorized": "Accesso non autorizzato",
+        "footer": "Dreamland v2.0 • Accesso Sicuro"
+    },
+    "changePassword": {
+        "title": "Controllo di sicurezza",
+        "subTitle": "Aggiorna la tua password per continuare",
+        "newPassword": "Nuova password",
+        "confirmPassword": "Conferma password",
+        "updatePassword": "Aggiorna password",
+        "updating": "Aggiornamento...",
+        "success": "Password aggiornata con successo! Reindirizzamento...",
+        "passwordMismatch": "Le password non corrispondono",
+        "passwordTooShort": "La password deve contenere almeno 6 caratteri",
+        "passwordPlaceholder": "••••••••",
+        "footer": "Dreamland v2.0 • Accesso Sicuro"
+    },
+    "reports": {
+        "title": "Rapporto di Intelligence",
+        "headerDescription": "Cronologia dell'intelligence e rapporti di stato generati dall'IA",
+        "backToReports": "Torna ai rapporti",
+        "viewReport": "Visualizza rapporto completo",
+        "deleteReport": "Elimina rapporto",
+        "deleteConfirmation": "Sei sicuro di voler eliminare questo rapporto?",
+        "deleteDescription": "Questa azione non può essere annullata."
     },
     "tasks": {
         "views": {
@@ -245,6 +273,7 @@
             "calendar": "Calendar",
             "timeline": "Timeline"
         },
+        "backToProjects": "Torna ai progetti",
         "searchTasks": "Search tasks...",
         "status": "Status",
         "assignee": "Assignee",

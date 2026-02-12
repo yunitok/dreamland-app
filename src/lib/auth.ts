@@ -3,7 +3,7 @@
 import { cookies } from "next/headers"
 import { encrypt, decrypt } from "./session"
 import { prisma } from "@/lib/prisma"
-import { compare } from "bcryptjs"
+import { compare, hash } from "bcryptjs"
 
 export interface SessionPayload {
   user: {
@@ -12,6 +12,7 @@ export interface SessionPayload {
     name: string | null;
     role: string;
     permissions: string[];
+    mustChangePassword: boolean;
   };
   expires: Date;
 }
@@ -40,15 +41,20 @@ export async function login(formData: FormData) {
       return { success: false, error: "invalidCredentials" }
     }
 
+    const remember = formData.get("remember") === "on"
+    
     // Create the session
-    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000)
+    // Default expiration: 24 hours. If remember me: 30 days
+    const expirationDuration = remember ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000
+    const expires = new Date(Date.now() + expirationDuration)
     const sessionPayload = {
       user: {
         id: user.id,
         username: user.username,
         name: user.name,
         role: user.role.code,
-        permissions: user.role.permissions.map(p => p.action + ':' + p.resource)
+        permissions: user.role.permissions.map(p => p.action + ':' + p.resource),
+        mustChangePassword: user.mustChangePassword
       },
       expires
     }
@@ -71,6 +77,64 @@ export async function login(formData: FormData) {
   }
 }
 
+export async function updatePassword(formData: FormData) {
+  const newPassword = formData.get("newPassword") as string
+  
+  if (!newPassword || newPassword.length < 6) {
+    return { success: false, error: "passwordTooShort" }
+  }
+  
+  const session = await getSession()
+  if (!session || !session.user) {
+    return { success: false, error: "unauthorized" }
+  }
+
+  const userId = session.user.id
+  
+  try {
+    const hashedPassword = await hash(newPassword, 10)
+    
+    // Update user in DB
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+        mustChangePassword: false
+      },
+      include: { role: { include: { permissions: true } } }
+    }) as any // Cast to any to avoid temporary TS consistency issues content
+    
+    // Update session
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000)
+    const sessionPayload = {
+      user: {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        name: updatedUser.name,
+        role: updatedUser.role.code,
+        permissions: updatedUser.role.permissions.map((p: any) => p.action + ':' + p.resource),
+        mustChangePassword: false
+      },
+      expires
+    }
+    
+    // Re-encrypt and set cookie
+    const newSessionToken = await encrypt(sessionPayload)
+    const cookieStore = await cookies()
+    cookieStore.set("session", newSessionToken, { 
+      expires, 
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === "production",
+      path: '/'
+    })
+    
+    return { success: true }
+  } catch (error) {
+    console.error("Update password error:", error)
+    return { success: false, error: "failedToUpdate" }
+  }
+}
+
 export async function logout() {
   // Destroy the session
   const cookieStore = await cookies()
@@ -85,7 +149,8 @@ export async function getSession() {
   const session = cookieStore.get("session")?.value
   if (!session) return null
   try {
-    return await decrypt(session)
+    const payload = await decrypt(session)
+    return payload as unknown as SessionPayload
   } catch {
     return null
   }

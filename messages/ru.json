@@ -235,7 +235,35 @@
         "signIn": "Sign In",
         "invalidCredentials": "Invalid username or password",
         "welcomeBack": "Welcome Back",
-        "subTitle": "Identify yourself to access the strategic portal"
+        "subTitle": "Identify yourself to access the strategic portal",
+        "rememberMe": "Запомнить меня",
+        "passwordPlaceholder": "••••••••",
+        "unexpectedError": "Произошла непредвиденная ошибка",
+        "failedToUpdate": "Не удалось обновить пароль",
+        "unauthorized": "Несанкционированный доступ",
+        "footer": "Dreamland v2.0 • Безопасный доступ"
+    },
+    "changePassword": {
+        "title": "Проверка безопасности",
+        "subTitle": "Пожалуйста, обновите пароль, чтобы продолжить",
+        "newPassword": "Новый пароль",
+        "confirmPassword": "Подтвердите пароль",
+        "updatePassword": "Обновить пароль",
+        "updating": "Обновление...",
+        "success": "Пароль успешно обновлен! Перенаправление...",
+        "passwordMismatch": "Пароли не совпадают",
+        "passwordTooShort": "Пароль должен содержать не менее 6 символов",
+        "passwordPlaceholder": "••••••••",
+        "footer": "Dreamland v2.0 • Безопасный доступ"
+    },
+    "reports": {
+        "title": "Отчет по аналитике",
+        "headerDescription": "История аналитики и отчеты о состоянии, созданные ИИ",
+        "backToReports": "Назад к отчетам",
+        "viewReport": "Посмотреть полный отчет",
+        "deleteReport": "Удалить отчет",
+        "deleteConfirmation": "Вы уверены, что хотите удалить этот отчет?",
+        "deleteDescription": "Это действие нельзя отменить."
     },
     "tasks": {
         "views": {
@@ -245,6 +273,7 @@
             "calendar": "Calendar",
             "timeline": "Timeline"
         },
+        "backToProjects": "Назад к проектам",
         "searchTasks": "Search tasks...",
         "status": "Status",
         "assignee": "Assignee",

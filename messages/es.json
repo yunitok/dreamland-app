@@ -248,6 +248,7 @@
     "reports": {
         "title": "Informe de Inteligencia",
         "headerDescription": "Historial de inteligencia y reportes de estado generados por IA",
+        "backToReports": "Volver a Informes",
         "viewReport": "Ver Reporte Completo",
         "deleteReport": "Eliminar Informe",
         "deleteConfirmation": "¿Estás seguro de que quieres eliminar este informe?",
@@ -264,7 +265,8 @@
         "signIn": "Iniciar Sesión",
         "invalidCredentials": "Usuario o contraseña incorrectos",
         "welcomeBack": "Bienvenido de nuevo",
-        "subTitle": "Identifícate para acceder al portal estratégico"
+        "subTitle": "Identifícate para acceder al portal estratégico",
+        "rememberMe": "Recuérdame"
     },
     "tasks": {
         "views": {
@@ -274,6 +276,7 @@
             "calendar": "Calendario",
             "timeline": "Timeline"
         },
+        "backToProjects": "Volver a Proyectos",
         "searchTasks": "Buscar tareas...",
         "status": "Estado",
         "assignee": "Asignado",
@@ -370,5 +373,21 @@
         "taskDeleted": "Tarea eliminada.",
         "executed": "Ejecutado: {actions}",
         "didNotUnderstand": "No he entendido eso."
+    },
+    "changePassword": {
+        "title": "Control de Seguridad",
+        "subTitle": "Por favor actualiza tu contraseña para continuar",
+        "newPassword": "Nueva Contraseña",
+        "confirmPassword": "Confirmar Contraseña",
+        "updatePassword": "Actualizar Contraseña",
+        "updating": "Actualizando...",
+        "success": "¡Contraseña actualizada! Redirigiendo...",
+        "passwordMismatch": "Las contraseñas no coinciden",
+        "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
+        "passwordPlaceholder": "••••••••",
+        "unexpectedError": "Ha ocurrido un error inesperado",
+        "failedToUpdate": "Error al actualizar la contraseña",
+        "unauthorized": "Acceso no autorizado",
+        "footer": "Dreamland v2.0 • Acceso Seguro"
     }
 }

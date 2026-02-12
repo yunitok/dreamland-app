@@ -23,7 +23,7 @@ import {
 } from "@/modules/shared/ui/sheet"
 import { ProjectFilters } from "./project-filters"
 import { ProjectEditForm } from "./project-edit-form"
-import { Eye, Quote, Pencil, ChevronLeft, ChevronRight, LayoutDashboard, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
+import { Settings, Quote, Pencil, ChevronLeft, ChevronRight, LayoutDashboard, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { useTranslations, useLocale } from "next-intl"
 import type { Project } from "@prisma/client"
 
@@ -381,7 +381,7 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
                           href={`/projects/${project.id}`}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <Eye className="h-4 w-4" />
+                          <Settings className="h-4 w-4" />
                         </Link>
                       </Button>
                     </div>
