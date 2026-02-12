@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage && lastMessage.role === 'user') {
        const content = lastMessage.content ||
-                      lastMessage.parts?.filter((p) => p.type === 'text').map((p) => p.text).join('') ||
+                      lastMessage.parts?.filter((p: MessagePart) => p.type === 'text').map((p: MessagePart) => p.text).join('') ||
                       '';
        await saveMessage(projectId, { role: 'user', content }, sessionId);
     }
