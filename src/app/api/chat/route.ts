@@ -4,7 +4,7 @@ import { getChatLanguageModel } from '@/lib/ai/config';
 import { getTaskLists, createTaskList, deleteTaskList, updateTaskList } from '@/lib/actions/task-lists';
 import { getTaskStatuses } from '@/lib/actions/task-statuses';
 import { createTask, getTasks, deleteTask, updateTask } from '@/lib/actions/tasks';
-import { getProjects } from '@/lib/actions/projects';
+import { getProjects, getProjectById } from '@/lib/actions/projects';
 import { generateProjectReport } from '@/app/actions/report-actions';
 import { getLocale } from 'next-intl/server';
 import { getHistory, saveMessage } from '@/lib/actions/chat';
@@ -40,11 +40,10 @@ export async function POST(req: Request) {
        await saveMessage(projectId, { role: 'user', content }, sessionId);
     }
 
-    // Contexto Global de Proyectos
-    const allProjects = await getProjects();
-
-    // Contexto Específico del Proyecto Actual
-    const [currentLists, currentStatuses] = await Promise.all([
+    // Contexto Global + Proyecto Actual
+    const [allProjects, currentProject, currentLists, currentStatuses] = await Promise.all([
+      getProjects(),
+      getProjectById(projectId),
       getTaskLists(projectId),
       getTaskStatuses()
     ]);
@@ -68,28 +67,50 @@ export async function POST(req: Request) {
     let result;
 
     try {
+      const projectListContext = allProjects.map((p: any) => `- "${p.title}" (ID: ${p.id})`).join('\n');
+      const currentProjectName = currentProject?.title || 'Desconocido';
+      const listsContext = currentLists.map((l: any) => `- ${l.name} (ID: ${l.id})`).join('\n');
+      const statusesContext = currentStatuses.map((s: any) => `- ${s.name} (ID: ${s.id})`).join('\n');
+
       result = streamText({
         model,
-        system: `Eres el Asistente de Proyectos de Dreamland. Tu objetivo es ayudar al usuario a gestionar su tablero de forma eficiente.
-        
-        REGLAS DE ORO:
-        1. ERES UNA IA DE ACCIÓN: Si el usuario te pide crear, borrar o modificar algo, SIEMPRE usa la herramienta correspondiente.
-        2. PARÁMETROS OBLIGATORIOS: Todas las herramientas requieren parámetros. Nunca llames a una herramienta con un objeto vacío {}.
-        3. CONFIRMACIÓN: Tras ejecutar una herramienta con éxito, confirma la acción al usuario de forma breve y natural en castellano.
-        
-        EJEMPLOS DE LLAMADAS CORRECTAS:
-        - "Crea una lista llamada Tareas" -> createlist({ name: "Tareas" })
-        - "Añade la tarea Comprar pan a la lista Compra" -> createtask({ title: "Comprar pan", listId: "id_lista" })
-        
-        ID PROYECTO ACTUAL: ${projectId}
-        BASE_URL: ${baseUrl}`,
+        system: `Eres el Asistente de Proyectos de Dreamland. Tu objetivo es ayudar al usuario a gestionar sus proyectos de forma eficiente.
+
+REGLAS DE ORO:
+1. ERES UNA IA DE ACCIÓN: Si el usuario te pide crear, borrar o modificar algo, SIEMPRE usa la herramienta correspondiente.
+2. PARÁMETROS OBLIGATORIOS: Todas las herramientas requieren parámetros. Nunca llames a una herramienta con un objeto vacío {}.
+3. CONFIRMACIÓN: Tras ejecutar una herramienta con éxito, confirma la acción al usuario de forma breve y natural en castellano.
+
+PROYECTO ACTIVO: "${currentProjectName}" (ID: ${projectId})
+BASE_URL: ${baseUrl}
+
+LISTA COMPLETA DE PROYECTOS:
+${projectListContext}
+
+PROYECTO ACTUAL - LISTAS:
+${listsContext || '(sin listas)'}
+
+PROYECTO ACTUAL - ESTADOS:
+${statusesContext || '(sin estados)'}
+
+REGLAS PARA OPERACIONES CROSS-PROJECT:
+1. El usuario puede pedir acciones sobre CUALQUIER proyecto, no solo el activo.
+2. Si el usuario nombra un proyecto diferente al activo (ej: "hazme un informe de Atención al Cliente"), BUSCA en la LISTA COMPLETA DE PROYECTOS el que mejor coincida por nombre.
+3. USA FUZZY MATCHING: "atención al cliente" coincide con "Atención al Cliente: Mejora del Servicio", "sherlock" coincide con "Sherlock: Desviación de Costes", etc.
+4. Para generate_report: usa SIEMPRE el projectId del proyecto que el usuario ha nombrado, NO el del proyecto activo (a menos que no especifique otro).
+5. Si no encuentras coincidencia clara, pregunta al usuario cuál proyecto se refiere.
+
+EJEMPLOS:
+- Usuario en Sherlock dice "genera un informe de atención al cliente" -> Buscar en la lista el proyecto que contenga "atención al cliente" y usar su ID.
+- Usuario dice "genera un informe" (sin especificar proyecto) -> Usar el proyecto activo (${projectId}).
+- "Crea una lista llamada Tareas" -> createlist({ name: "Tareas" }) (se crea en el proyecto activo)`,
         messages: normalizedMessages,
         stopWhen: stepCountIs(5),
         tools: {
           generate_report: tool({
-            description: 'Genera un informe detallado del proyecto',
-            parameters: z.object({
-              projectId: z.string().describe('ID único del proyecto'),
+            description: 'Genera un informe detallado de CUALQUIER proyecto. Si el usuario nombra un proyecto específico (ej: "atención al cliente"), busca su ID en la LISTA COMPLETA DE PROYECTOS y úsalo. Solo usa el proyecto activo si el usuario no especifica otro.',
+            inputSchema: z.object({
+              projectId: z.string().describe('ID del proyecto objetivo. IMPORTANTE: Buscar en la LISTA COMPLETA DE PROYECTOS por nombre usando fuzzy matching. NO usar siempre el proyecto activo.'),
             }),
             execute: async ({ projectId: id }: { projectId: string }) => {
               try {
@@ -102,7 +123,7 @@ export async function POST(req: Request) {
           }),
           createlist: tool({
             description: 'Crea una nueva lista (columna) en el tablero.',
-            parameters: z.object({
+            inputSchema: z.object({
               name: z.string().min(1).describe('Nombre de la lista a crear'),
             }),
             execute: async ({ name }: { name: string }) => {
@@ -116,7 +137,7 @@ export async function POST(req: Request) {
           }),
           createtask: tool({
             description: 'Crea una nueva tarea en una lista específica.',
-            parameters: z.object({
+            inputSchema: z.object({
               title: z.string().min(1).describe('Título de la tarea'),
               listId: z.string().min(1).describe('ID de la lista donde se creará'),
             }),
@@ -131,7 +152,7 @@ export async function POST(req: Request) {
           }),
           deletetask: tool({
             description: 'Elimina una tarea por su ID.',
-            parameters: z.object({
+            inputSchema: z.object({
               taskId: z.string().min(1).describe('ID de la tarea a eliminar'),
             }),
             execute: async ({ taskId }: { taskId: string }) => {
@@ -143,7 +164,7 @@ export async function POST(req: Request) {
               }
             }
           })
-        } as any,
+        },
         onFinish: async (event) => {
           try {
             const { text } = event;

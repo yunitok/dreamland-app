@@ -8,7 +8,7 @@ import { Sparkles, History } from 'lucide-react'
 import { useRef, useEffect, useState } from 'react'
 import { MessageItem } from '@/components/chat/message-item'
 import { ChatInput } from '@/components/chat/chat-input'
-import { saveMessage, getHistory, createChatSession, deleteChatSession } from '@/lib/actions/chat'
+import { getHistory, createChatSession, deleteChatSession } from '@/lib/actions/chat'
 import { ChatHistoryList, ChatSession } from './chat-history-list'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -105,35 +105,14 @@ export function ChatPanel({ projectId, initialSessions }: ChatPanelProps) {
         api: '/api/chat',
         body: { projectId, sessionId: currentSessionId }
     }),
-    onFinish: async (result: any) => {
-        const message = result.message;
-        const text = message.content || message.parts?.filter((p: any) => p.type === 'text').map((p: any) => p.text).join('')
-
-        // Ensure we have a valid session before saving (though backend should handle it)
+    onFinish: async () => {
+        // El mensaje ya se guarda en el servidor (route.ts onFinish).
+        // Aquí solo actualizamos el timestamp local de la sesión.
         const activeSessionId = currentSessionIdRef.current
-        
-         // Guardar mensaje en BBDD (Persistencia desde cliente)
-        if (message.role === 'assistant') {
-             try {
-                 await saveMessage(projectId, {
-                     role: 'assistant',
-                     content: text || '',
-                     toolInvocations: message.toolInvocations
-                 }, activeSessionId || undefined)
-                 
-                 // If this was a new session automagically created by backend (which we try to avoid by creating explicitly),
-                 // we might want to refresh sessions list.
-                 // But since we create session explicitly mostly, just refresh timestamp?
-                 if (activeSessionId) {
-                    // Update the timestamp in the local list to reflect activity
-                    setSessions(prev => prev.map(s => 
-                        s.id === activeSessionId ? { ...s, updatedAt: new Date() } : s
-                    ).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()))
-                 }
-                 
-             } catch (err) {
-                 console.error('Failed to save message from client:', err)
-             }
+        if (activeSessionId) {
+            setSessions(prev => prev.map(s =>
+                s.id === activeSessionId ? { ...s, updatedAt: new Date() } : s
+            ).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()))
         }
     }
   })

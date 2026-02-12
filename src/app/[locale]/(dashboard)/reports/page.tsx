@@ -17,7 +17,7 @@ export default async function ReportsPage() {
   if (!auth.authenticated) return <div>Acceso denegado</div>
 
   const reports = await prisma.report.findMany({
-    where: { authorId: auth.userId },
+    where: { OR: [{ authorId: auth.userId }, { authorId: null }] },
     orderBy: { createdAt: 'desc' },
     include: { project: true }
   })

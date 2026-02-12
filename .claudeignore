@@ -1,0 +1,12 @@
+node_modules
+messages
+.next
+.vercel
+dist
+coverage
+*.log
+.git
+docs
+public
+data
+tsconfig.tsbuildinfo

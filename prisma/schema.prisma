@@ -224,18 +224,19 @@ model ProjectRisk {
 model Report {
   id        String   @id @default(cuid())
   title     String
-  type      String   @default("Weekly") // "Weekly", "Risk", "Financial"
+  type      String   @default("Weekly") // "Weekly", "Risk", "Financial", "SentimentAnalysis", "ProjectCatalog"
   content   String   @db.Text
-  
+  metadata  Json?
+
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  
+
+  authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([projectId])
   @@index([authorId])
 }
