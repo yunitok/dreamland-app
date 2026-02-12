@@ -19,6 +19,7 @@ Welcome to the Dreamland Manager documentation! This comprehensive guide covers 
 - [Usage Tracking](./features/voice-assistant/usage-tracking.md) - Quota monitoring and analytics
 
 #### Security & Access Control
+- [Authentication](./features/authentication.md) - Login flows, password policies, and user import
 - [RBAC Overview](./features/rbac/overview.md) - Role-based access control system
 
 #### Tasks & Organization
