@@ -48,5 +48,5 @@ chat-debug.log
 ai-debug.log
 
 # agentic skills
-.agent/skills
-.claude
+# .agent/skills
+# .claude
