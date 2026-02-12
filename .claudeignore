@@ -10,3 +10,4 @@ docs
 public
 data
 tsconfig.tsbuildinfo
+package-lock.json
