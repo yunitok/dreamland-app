@@ -21,6 +21,9 @@ Welcome to the Dreamland Manager documentation! This comprehensive guide covers 
 #### Security & Access Control
 - [RBAC Overview](./features/rbac/overview.md) - Role-based access control system
 
+#### Tasks & Organization
+- [Task List Management](./features/tasks/task-lists.md) - Global folding, hierarchy, and view controls
+
 #### Internationalization
 - [i18n Guide](./features/internationalization.md) - Multi-language support and translation management
 

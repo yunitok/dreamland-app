@@ -19,6 +19,11 @@ The agent is configured to handle complex workflows through multi-step processin
 - Uses `toUIMessageStreamResponse()` for seamless integration with the frontend.
 - Captures `onStepFinish` and `onFinish` events for logging and database persistence.
 
+### Real-Time UI Refresh
+El agente incluye un motor de detección de herramientas que fuerza el refresco de la interfaz en el cliente cuando la IA realiza cambios estructurales (como crear una tarea o lista).
+- **Lógica Centralizada**: Ubicada en `src/lib/ai/ai-utils.ts`.
+- **Detección Dinámica**: Escanea el stream de mensajes en tiempo real para detectar la finalización de llamadas a herramientas, permitiendo que el tablero se actualice sin recarga manual.
+
 ---
 
 ## 🛠️ Integrated Tools
@@ -45,6 +50,11 @@ The system prompt contains explicit "Truthfulness" constraints:
 To stay within Groq's Tokens-Per-Minute (TPM) limits:
 - **Context Compaction**: The global project list is passed as a compact pipe-separated string.
 - **Provider Methods**: The `generateText` method is used for background tasks to avoid reloading the entire chat context history.
+
+### Gemini 3 & Multi-Modal Compatibility
+La arquitectura ha sido adaptada para soportar las peculiaridades de los modelos experimentales de Google:
+- **Estados No Estándar**: Manejo explícito de `output-available` como señal de finalización de herramienta.
+- **Normalización de Mensajes**: Algoritmo robusto para convertir historiales de chat al formato requerido por la API de Google, evitando errores de validación de esquema.
 
 ---
 

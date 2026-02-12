@@ -6,8 +6,12 @@ Dreamland Manager is built with internationalization from day one using [`next-i
 
 - 🇬🇧 **English** (`en`)
 - 🇪🇸 **Spanish** (`es`)
+- 🇩🇪 **German** (`de`)
+- 🇫🇷 **French** (`fr`)
+- 🇮🇹 **Italian** (`it`)
+- 🇷🇺 **Russian** (`ru`)
 
-Additional languages can be added easily by following this guide.
+El sistema detecta automáticamente el idioma del navegador o permite la selección manual a través de la URL.
 
 ---
 
@@ -51,7 +55,7 @@ Defines available locales and default locale:
 import { defineRouting } from 'next-intl/routing';
 
 export const routing = defineRouting({
-  locales: ['en', 'es'],
+  locales: ['en', 'es', 'de', 'fr', 'it', 'ru'],
   defaultLocale: 'en'
 });
 ```
@@ -66,7 +70,7 @@ import { routing } from './i18n/routing';
 export default createMiddleware(routing);
 
 export const config = {
-  matcher: ['/', '/(en|es)/:path*']
+  matcher: ['/', '/(en|es|de|fr|it|ru)/:path*']
 };
 ```
 
