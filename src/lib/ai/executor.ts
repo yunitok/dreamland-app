@@ -23,7 +23,8 @@ export async function executeAiTools(
 
   for (const call of toolCalls) {
     console.log(`[Executor] Processing tool: ${call.name}`, call.args)
-    const args = call.args
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const args = call.args as Record<string, any>
     const { projectId, statuses } = context
 
     try {

@@ -18,14 +18,16 @@ interface ChatInputProps {
 
 export function ChatInput({ input, handleInputChange, handleSubmit, isLoading, stop, setInput }: ChatInputProps) {
     const [isListening, setIsListening] = useState(false)
-    const recognitionRef = useRef<SpeechRecognition | null>(null)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const recognitionRef = useRef<any>(null)
 
     // Improved Speech Recognition Logic
     const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const SpeechRecognition = (window as Window & { SpeechRecognition?: typeof window.SpeechRecognition; webkitSpeechRecognition?: typeof window.SpeechRecognition }).SpeechRecognition || (window as Window & { webkitSpeechRecognition?: typeof window.SpeechRecognition }).webkitSpeechRecognition
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
             if (SpeechRecognition) {
                 const recognition = new SpeechRecognition()
                 recognition.continuous = true
@@ -40,7 +42,8 @@ export function ChatInput({ input, handleInputChange, handleSubmit, isLoading, s
                     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
                 }
                 
-                recognition.onresult = (event: SpeechRecognitionEvent) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                recognition.onresult = (event: any) => {
                     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
 
                     let interimTranscript = ''
@@ -66,7 +69,8 @@ export function ChatInput({ input, handleInputChange, handleSubmit, isLoading, s
                     }, 1200)
                 }
                 
-                recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                recognition.onerror = (event: any) => {
                     // console.error('Speech recognition error', event.error)
                     if (event.error === 'no-speech') return 
                     setIsListening(false)

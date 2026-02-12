@@ -108,7 +108,8 @@ EJEMPLOS:
 - Usuario en Sherlock dice "genera un informe de atención al cliente" -> Buscar en la lista el proyecto que contenga "atención al cliente" y usar su ID.
 - Usuario dice "genera un informe" (sin especificar proyecto) -> Usar el proyecto activo (${projectId}).
 - "Crea una lista llamada Tareas" -> createlist({ name: "Tareas" }) (se crea en el proyecto activo)`,
-        messages: normalizedMessages,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        messages: normalizedMessages as any[],
         stopWhen: stepCountIs(5),
         tools: {
           generate_report: tool({

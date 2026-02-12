@@ -19,14 +19,16 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
   const [transcript, setTranscript] = useState('')
   const router = useRouter()
   
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null)
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const finalTranscriptRef = useRef('') // Keep track of full text manually
 
   useEffect(() => {
     // Check browser support
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as Window & { SpeechRecognition?: typeof window.SpeechRecognition; webkitSpeechRecognition?: typeof window.SpeechRecognition }).SpeechRecognition || (window as Window & { webkitSpeechRecognition?: typeof window.SpeechRecognition }).webkitSpeechRecognition
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition()
         recognition.continuous = true // Keep listening even after pauses
@@ -47,7 +49,8 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
           if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
         }
 
-        recognition.onresult = (event: SpeechRecognitionEvent) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        recognition.onresult = (event: any) => {
           // Reset silence timer on any result
           if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
 
@@ -76,7 +79,8 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
           }, 1500) // 1.5 seconds of silence
         }
 
-        recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        recognition.onerror = (event: any) => {
           console.error('Speech recognition error', event.error)
           // Ignore frequent "no-speech" errors in continuous mode if we haven't started speaking
           if (event.error === 'no-speech') return 

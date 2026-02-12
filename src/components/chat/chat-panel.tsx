@@ -91,8 +91,7 @@ export function ChatPanel({ projectId, initialSessions }: ChatPanelProps) {
       }
   }
 
-  // Cast to any to bypass linter errors with @ai-sdk/react types
-  // @ts-expect-error - unused state managed by useChat
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [input, setInput] = useState('')
 
   const { 

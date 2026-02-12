@@ -18,8 +18,10 @@ describe('AI Tool Mapping', () => {
     expect(tools).toHaveLength(Object.keys(AI_TOOLS_REGISTRY).length)
     expect(tools[0]).toHaveProperty('type', 'function')
     
-    const generateReport = tools.find(t => t.function.name === 'generateReport')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const generateReport = tools.find((t: any) => t.function.name === 'generateReport')
     expect(generateReport).toBeDefined()
-    expect(generateReport?.function.parameters.required).toContain('projectId')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((generateReport as any)?.function.parameters.required).toContain('projectId')
   })
 })
