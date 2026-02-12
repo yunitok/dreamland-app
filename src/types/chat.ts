@@ -1,9 +1,9 @@
 export interface ToolInvocation {
     toolCallId: string;
     toolName: string;
-    args: any;
+    args: Record<string, unknown>;
     state: 'call' | 'result';
-    result?: any;
+    result?: unknown;
 }
 
 export interface UIMessage {

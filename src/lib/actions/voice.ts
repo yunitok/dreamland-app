@@ -6,11 +6,11 @@ import { getLocale } from 'next-intl/server'
 import { requireAuth } from './rbac'
 import { checkAIRateLimit } from '@/lib/rate-limit'
 import { executeAiTools } from '@/lib/ai/executor'
-import { getTaskStatuses } from './task-statuses'
+import { getTaskStatuses } from '@/modules/projects/actions/task-statuses'
 import * as fs from 'fs'
 import * as path from 'path'
 
-function writeVoiceLog(data: any) {
+function writeVoiceLog(data: unknown) {
   try {
     const logPath = path.join(process.cwd(), 'ai_debug.log')
     const entry = `\n[VOICE] --- ${new Date().toISOString()} ---\n${JSON.stringify(data, null, 2)}\n`
@@ -84,12 +84,14 @@ export async function processTextCommand(projectId: string, userText: string) {
     writeVoiceLog({ step: 'FINAL_NO_TOOLS', response })
     return response
     
-  } catch (error: any) {
-    writeVoiceLog({ step: 'CRITICAL_ERROR', error: error.message, stack: error.stack })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error)
+    const stack = error instanceof Error ? error.stack : undefined
+    writeVoiceLog({ step: 'CRITICAL_ERROR', error: message, stack })
     console.error('[Voice Action] Critical Error:', error)
     return {
       success: false,
-      error: error.message,
+      error: message,
       message: 'A critical error occurred while processing the command'
     }
   }

@@ -1,10 +1,10 @@
 
 import { AIProvider, AIResponse } from './provider.interface'
 import { genAI } from '@/lib/gemini'
-import { getTaskStatuses, createDefaultStatuses } from '@/lib/actions/task-statuses'
-import { getTaskLists } from '@/lib/actions/task-lists'
-import { getTasks } from '@/lib/actions/tasks'
-import { getProjects, getProjectById } from '@/lib/actions/projects'
+import { getTaskStatuses, createDefaultStatuses } from '@/modules/projects/actions/task-statuses'
+import { getTaskLists } from '@/modules/projects/actions/task-lists'
+import { getTasks } from '@/modules/projects/actions/tasks'
+import { getProjects, getProjectById } from '@/modules/projects/actions/projects'
 import { logAiUsage } from '@/lib/actions/ai-usage'
 import { getGeminiTools } from './tools'
 import { TaskList, TaskStatus } from '@prisma/client'
@@ -15,14 +15,16 @@ export class GeminiProvider implements AIProvider {
         if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) throw new Error('Missing Google API Key')
     
         // 1. Fetch Context (Lists, Statuses, Tasks, Projects)
-        let [lists, statuses, tasks, allProjects, currentProject] = await Promise.all([
+        const [lists, initialStatuses, tasks, allProjects, currentProject] = await Promise.all([
           getTaskLists(projectId),
           getTaskStatuses(),
           getTasks(projectId),
           getProjects(),
           getProjectById(projectId)
-        ]) as [TaskList[], TaskStatus[], any[], any[], any]
-    
+        ]) as [TaskList[], TaskStatus[], { title: string }[], { id: string; title: string }[], { title: string } | null]
+
+        let statuses = initialStatuses
+
         // Auto-fix: If no statuses, create defaults
         if (statuses.length === 0) {
             statuses = await createDefaultStatuses()
@@ -69,6 +71,7 @@ export class GeminiProvider implements AIProvider {
     4. Be concise and professional.
     ` }]
           },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           tools: [getGeminiTools() as any]
         })
     
@@ -83,7 +86,7 @@ export class GeminiProvider implements AIProvider {
     
         const toolCalls = calls?.map(call => ({
           name: call.name,
-          args: call.args as Record<string, any>
+          args: call.args as Record<string, unknown>
         }))
     
         // Log Usage
@@ -116,11 +119,11 @@ export class GeminiProvider implements AIProvider {
           shouldSpeak: true 
         }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Gemini Provider Error:', error)
         return {
             success: false,
-            error: error.message,
+            error: error instanceof Error ? error.message : String(error),
             transcript: userText,
             actions: []
         }
@@ -153,10 +156,10 @@ export class GeminiProvider implements AIProvider {
             actions: [],
             message: response.text()
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         return {
             success: false,
-            error: error.message,
+            error: error instanceof Error ? error.message : String(error),
             transcript: 'Direct generation failed',
             actions: []
         }

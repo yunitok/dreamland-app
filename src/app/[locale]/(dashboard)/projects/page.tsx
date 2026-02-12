@@ -1,13 +1,13 @@
 
 import { Header } from "@/components/layout/header"
-import { ProjectsTable } from "@/components/projects/projects-table"
-import { PortfolioTimeline } from "@/components/projects/portfolio-timeline"
+import { ProjectsTable } from "@/modules/projects/components/projects/projects-table"
+import { PortfolioTimeline } from "@/modules/projects/components/projects/portfolio-timeline"
 import { prisma } from "@/lib/prisma"
 import { setRequestLocale, getTranslations } from "next-intl/server"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/modules/shared/ui/button"
 import { Link } from "@/i18n/navigation"
 import { Plus, LayoutList, CalendarDays } from "lucide-react"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/modules/shared/ui/tabs"
 
 async function getProjectsData(includeTasks: boolean = false) {
   const projects = await prisma.project.findMany({
@@ -51,6 +51,8 @@ export default async function ProjectsPage({
   const t = await getTranslations("projects")
   
   const { projects, departments } = await getProjectsData(view === 'timeline')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const timelineProjects = projects as any
 
   return (
     <div className="flex flex-col h-[calc(100vh-65px)]">
@@ -98,7 +100,7 @@ export default async function ProjectsPage({
       
       <div className="flex-1 p-4 md:p-8 overflow-hidden">
         {view === 'timeline' ? (
-          <PortfolioTimeline projects={projects as any} />
+          <PortfolioTimeline projects={timelineProjects} />
         ) : (
           <ProjectsTable projects={projects} departments={departments} />
         )}

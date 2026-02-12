@@ -1,7 +1,7 @@
 "use client"
 
 import { Bar, BarChart, XAxis, YAxis, Cell, ResponsiveContainer, Tooltip } from "recharts"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/modules/shared/ui/card"
 import { useTranslations } from "next-intl"
 import type { TeamMood } from "@prisma/client"
 

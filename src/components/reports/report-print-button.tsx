@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/modules/shared/ui/button'
 import { Printer } from 'lucide-react'
 
 interface ReportPrintButtonProps {

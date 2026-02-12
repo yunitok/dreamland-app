@@ -14,7 +14,7 @@ export interface AIResponse {
   error?: string
   debugStack?: string // For client-side debugging
   usage?: AIUsage
-  toolCalls?: Array<{ name: string, args: any }>
+  toolCalls?: Array<{ name: string, args: Record<string, unknown> }>
   report?: {
     id: string
     title: string

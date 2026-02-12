@@ -1,11 +1,11 @@
-import { createTaskList, deleteTaskList, updateTaskList } from '@/lib/actions/task-lists'
-import { createTask, deleteTask, updateTask } from '@/lib/actions/tasks'
+import { createTaskList, deleteTaskList, updateTaskList } from '@/modules/projects/actions/task-lists'
+import { createTask, deleteTask, updateTask } from '@/modules/projects/actions/tasks'
 import { generateProjectReport } from '@/app/actions/report-actions'
 import { TaskStatus } from '@prisma/client'
 
 export interface ToolCall {
   name: string
-  args: any
+  args: Record<string, unknown>
 }
 
 export interface ExecutionContext {
@@ -105,9 +105,10 @@ export async function executeAiTools(
         generatedReport = report
         executionResults.push(`Report generated: "${report.title}"`)
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error executing tool ${call.name}:`, error)
-      executionResults.push(`Error in ${call.name}: ${error.message}`)
+      const message = error instanceof Error ? error.message : String(error)
+      executionResults.push(`Error in ${call.name}: ${message}`)
     }
   }
 

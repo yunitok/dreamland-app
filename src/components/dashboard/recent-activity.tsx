@@ -1,7 +1,7 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/modules/shared/ui/card"
+import { Badge } from "@/modules/shared/ui/badge"
 import { cn } from "@/lib/utils"
 import type { Project } from "@prisma/client"
 import { useTranslations } from "next-intl"

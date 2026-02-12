@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
-import { KanbanBoard } from '@/components/tasks/kanban-board'
+import { KanbanBoard } from '@/modules/projects/components/tasks/kanban-board'
 import { getSession } from '@/lib/auth'
 import { UserSession } from '@/lib/permissions'
 

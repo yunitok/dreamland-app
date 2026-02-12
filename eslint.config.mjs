@@ -13,6 +13,13 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "src/generated/**",
+    // Agent/skill files — not project source code
+    ".agent/**",
+    ".claude/**",
+    // Prisma migration/seed scripts — utility scripts, not production code
+    "prisma/**",
+    // Utility scripts
+    "scripts/**",
   ]),
   // Strict rules for better code quality
   {

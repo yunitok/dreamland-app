@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
-import { CalendarView } from '@/components/tasks/calendar-view'
+import { CalendarView } from '@/modules/projects/components/tasks/calendar-view'
 import { getSession } from '@/lib/auth'
 import { UserSession } from '@/lib/permissions'
 

@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/modules/shared/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/modules/shared/ui/card"
 import { Upload, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 import { useTranslations } from "next-intl"
 

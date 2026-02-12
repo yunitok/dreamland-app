@@ -245,6 +245,17 @@
         "strategicPM": "PM Estratégico",
         "enterprise": "Enterprise"
     },
+    "reports": {
+        "title": "Informe de Inteligencia",
+        "headerDescription": "Historial de inteligencia y reportes de estado generados por IA",
+        "viewReport": "Ver Reporte Completo",
+        "deleteReport": "Eliminar Informe",
+        "deleteConfirmation": "¿Estás seguro de que quieres eliminar este informe?",
+        "cancel": "Cancelar",
+        "delete": "Eliminar",
+        "noReports": "No hay informes generados",
+        "noReportsDescription": "Usa el asistente de voz diciendo \"Genera un reporte\" para crear tu primer informe de inteligencia."
+    },
     "login": {
         "title": "Acceso al Sistema",
         "description": "Panel de Inteligencia Estratégica",

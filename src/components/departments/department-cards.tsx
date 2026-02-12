@@ -2,11 +2,11 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
-import { Card } from "@/components/ui/card"
+import { Card } from "@/modules/shared/ui/card"
 import { cn } from "@/lib/utils"
 import { useTranslations } from "next-intl"
 import { FolderKanban, Sparkles, AlertTriangle, ThumbsUp, Meh, Pencil } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/modules/shared/ui/button"
 import { DepartmentFilters } from "./department-filters"
 import { DepartmentForm } from "./department-form"
 import type { TeamMood } from "@prisma/client"
@@ -43,10 +43,19 @@ export function DepartmentCards({ departments }: DepartmentCardsProps) {
   const router = useRouter()
   const pathname = usePathname()
 
+  const handleCreateClick = () => {
+    setSelectedDepartment(null)
+    setFormMode("create")
+    setIsFormOpen(true)
+  }
+
   // Effect to check for new-department query param
   useEffect(() => {
     if (searchParams.get('new-department') === 'true') {
-      handleCreateClick()
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedDepartment(null)
+      setFormMode("create")
+      setIsFormOpen(true)
     }
   }, [searchParams])
 
@@ -70,7 +79,7 @@ export function DepartmentCards({ departments }: DepartmentCardsProps) {
       // Search filter
       if (filters.search !== "") {
         const searchLower = filters.search.toLowerCase()
-        const matchesSearch = 
+        const matchesSearch =
           dept.departmentName.toLowerCase().includes(searchLower) ||
           dept.dominantEmotion.toLowerCase().includes(searchLower)
         if (!matchesSearch) return false
@@ -83,12 +92,6 @@ export function DepartmentCards({ departments }: DepartmentCardsProps) {
       return true
     })
   }, [departments, filters])
-
-  const handleCreateClick = () => {
-    setSelectedDepartment(null)
-    setFormMode("create")
-    setIsFormOpen(true)
-  }
 
   const handleEditClick = (e: React.MouseEvent, dept: DepartmentInfo) => {
     e.stopPropagation()

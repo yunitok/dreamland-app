@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
-import { TimelineView } from '@/components/tasks/timeline-view'
+import { TimelineView } from '@/modules/projects/components/tasks/timeline-view'
 
 interface TimelinePageProps {
   params: Promise<{ projectId: string }>

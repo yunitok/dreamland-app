@@ -2,8 +2,8 @@
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
-import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { Button } from '@/modules/shared/ui/button'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/modules/shared/ui/sheet'
 import { Sparkles, History } from 'lucide-react'
 import { useRef, useEffect, useState } from 'react'
 import { MessageItem } from '@/components/chat/message-item'
@@ -13,8 +13,8 @@ import { ChatHistoryList, ChatSession } from './chat-history-list'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import { Loader2, RefreshCw } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { RefreshCw } from 'lucide-react'
+import { Badge } from '@/modules/shared/ui/badge'
 import { detectFinishedToolCalls } from '@/lib/ai/ai-utils'
 
 interface ChatPanelProps {
@@ -52,6 +52,7 @@ export function ChatPanel({ projectId, initialSessions }: ChatPanelProps) {
       // Load history
       try {
         const history = await getHistory(projectId, sessionId)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setMessages(history as any)
       } catch (error) {
           console.error("Failed to load history", error)
@@ -91,7 +92,7 @@ export function ChatPanel({ projectId, initialSessions }: ChatPanelProps) {
   }
 
   // Cast to any to bypass linter errors with @ai-sdk/react types
-  // @ts-ignore
+  // @ts-expect-error - unused state managed by useChat
   const [input, setInput] = useState('')
 
   const { 
@@ -126,7 +127,7 @@ export function ChatPanel({ projectId, initialSessions }: ChatPanelProps) {
     
     let needsRefresh = false;
 
-    assistantMessages.forEach((m: any) => {
+    assistantMessages.forEach((m) => {
         const finishedIds = detectFinishedToolCalls(m);
         
         finishedIds.forEach(toolCallId => {
@@ -152,6 +153,10 @@ export function ChatPanel({ projectId, initialSessions }: ChatPanelProps) {
 
   const isLoading = status === 'submitted' || status === 'streaming'
 
+  // Show standalone thinking bubble only when no assistant message exists yet
+  const lastMessage = messages[messages.length - 1]
+  const isThinking = isLoading && (messages.length === 0 || lastMessage?.role === 'user')
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value)
   }
@@ -173,20 +178,20 @@ export function ChatPanel({ projectId, initialSessions }: ChatPanelProps) {
             setSessions([newSession, ...sessions])
             setCurrentSessionId(newSession.id)
             activeSessionId = newSession.id
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.log("[ChatPanel] createChatSession FAILED:", error)
-            toast.error("Error al iniciar sesión de chat: " + error.message)
+            toast.error("Error al iniciar sesión de chat: " + (error instanceof Error ? error.message : String(error)))
             return // Stop execution if we can't get a session
         }
     }
-    
+
     // Send message with the (potentially new) session ID
     try {
       if (typeof sendMessage === 'function') {
         sendMessage({ text: input }, { body: { sessionId: activeSessionId } })
       }
-    } catch (error: any) {
-      toast.error("Error al enviar mensaje: " + error.message)
+    } catch (error: unknown) {
+      toast.error("Error al enviar mensaje: " + (error instanceof Error ? error.message : String(error)))
     }
     
     setInput('')
@@ -277,9 +282,30 @@ export function ChatPanel({ projectId, initialSessions }: ChatPanelProps) {
                     </div>
                 )}
                 
-                {messages.map((m: any) => (
-                    <MessageItem key={(m as any).id} message={m} />
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {messages.map((m: any, idx: number) => (
+                    <MessageItem
+                        key={(m as any).id}
+                        message={m}
+                        isActiveMessage={isLoading && idx === messages.length - 1}
+                    />
                 ))}
+
+                {/* Thinking bubble: visible while waiting for first response chunk */}
+                {isThinking && (
+                    <div className="flex w-full justify-start mb-4 animate-in fade-in slide-in-from-bottom-2">
+                        <div className="flex gap-2 flex-row">
+                            <div className="shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-linear-to-tr from-violet-600 to-indigo-600 text-white shadow-sm">
+                                <Sparkles className="h-5 w-5 animate-pulse" />
+                            </div>
+                            <div className="rounded-2xl px-4 py-3 shadow-sm bg-muted/50 border rounded-tl-none flex items-center gap-1.5 h-12">
+                                <span className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:-0.3s]" />
+                                <span className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:-0.15s]" />
+                                <span className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-bounce" />
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="p-4 border-t bg-background shrink-0 relative z-30">

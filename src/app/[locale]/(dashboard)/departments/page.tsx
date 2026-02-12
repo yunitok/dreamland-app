@@ -2,7 +2,7 @@ import { Header } from "@/components/layout/header"
 import { DepartmentCards } from "@/components/departments/department-cards"
 import { prisma } from "@/lib/prisma"
 import { setRequestLocale, getTranslations } from "next-intl/server"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/modules/shared/ui/button"
 import { Link } from "@/i18n/navigation"
 import { Plus } from "lucide-react"
 

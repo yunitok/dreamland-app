@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from "@/modules/shared/ui/badge"
+import { Button } from "@/modules/shared/ui/button"
 import {
   Table,
   TableBody,
@@ -11,14 +11,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/modules/shared/ui/table"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/modules/shared/ui/select"
 import { Pencil, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { format } from "date-fns"
 import { es, enUS } from "date-fns/locale"
@@ -48,6 +48,12 @@ interface FilterState {
 
 const PAGE_SIZES = [10, 25, 50] as const
 
+function SortIcon({ column, sortConfig }: { column: string; sortConfig: { key: string; direction: 'asc' | 'desc' } | null }) {
+  if (sortConfig?.key !== column) return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+  if (sortConfig.direction === 'asc') return <ArrowUp className="ml-2 h-4 w-4" />
+  return <ArrowDown className="ml-2 h-4 w-4" />
+}
+
 export function SentimentHistoryTable({ moods, departments }: SentimentHistoryTableProps) {
   const [filters, setFilters] = useState<FilterState>({
     search: "",
@@ -65,10 +71,19 @@ export function SentimentHistoryTable({ moods, departments }: SentimentHistoryTa
   const router = useRouter()
   const pathname = usePathname()
 
+  const handleCreateClick = () => {
+    setSelectedMood(null)
+    setFormMode("create")
+    setIsFormOpen(true)
+  }
+
   // Effect to check for new-checkin query param
   useEffect(() => {
     if (searchParams.get('new-checkin') === 'true') {
-      handleCreateClick()
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedMood(null)
+      setFormMode("create")
+      setIsFormOpen(true)
     }
   }, [searchParams])
 
@@ -169,23 +184,11 @@ export function SentimentHistoryTable({ moods, departments }: SentimentHistoryTa
     setCurrentPage(1)
   }
 
-  const handleCreateClick = () => {
-    setSelectedMood(null)
-    setFormMode("create")
-    setIsFormOpen(true)
-  }
-
   const handleEditClick = (e: React.MouseEvent, mood: TeamMood) => {
     e.stopPropagation()
     setSelectedMood(mood)
     setFormMode("edit")
     setIsFormOpen(true)
-  }
-
-  const SortIcon = ({ column }: { column: string }) => {
-    if (sortConfig?.key !== column) return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-    if (sortConfig.direction === 'asc') return <ArrowUp className="ml-2 h-4 w-4" />
-    return <ArrowDown className="ml-2 h-4 w-4" />
   }
 
   return (
@@ -210,7 +213,7 @@ export function SentimentHistoryTable({ moods, departments }: SentimentHistoryTa
                 >
                   <div className="flex items-center">
                     {t("dateLabel")}
-                    <SortIcon column="detectedAt" />
+                    <SortIcon column="detectedAt" sortConfig={sortConfig} />
                   </div>
                 </TableHead>
                 <TableHead 
@@ -219,7 +222,7 @@ export function SentimentHistoryTable({ moods, departments }: SentimentHistoryTa
                 >
                   <div className="flex items-center">
                     {t("departmentLabel")}
-                    <SortIcon column="departmentName" />
+                    <SortIcon column="departmentName" sortConfig={sortConfig} />
                   </div>
                 </TableHead>
                 <TableHead 
@@ -228,7 +231,7 @@ export function SentimentHistoryTable({ moods, departments }: SentimentHistoryTa
                 >
                   <div className="flex items-center">
                     {t("zoneLabel")}
-                    <SortIcon column="sentimentScore" />
+                    <SortIcon column="sentimentScore" sortConfig={sortConfig} />
                   </div>
                 </TableHead>
                 <TableHead 
@@ -237,7 +240,7 @@ export function SentimentHistoryTable({ moods, departments }: SentimentHistoryTa
                 >
                   <div className="flex items-center">
                     {t("emotionLabel")}
-                    <SortIcon column="dominantEmotion" />
+                    <SortIcon column="dominantEmotion" sortConfig={sortConfig} />
                   </div>
                 </TableHead>
                 <TableHead className="text-right font-bold">{tProjects("actions")}</TableHead>

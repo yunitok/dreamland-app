@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createTaskList, updateTaskList, deleteTaskList, getTaskLists } from '@/lib/actions/task-lists'
+import { createTaskList, updateTaskList, deleteTaskList, getTaskLists } from '@/modules/projects/actions/task-lists'
 import { prisma } from '@/lib/prisma'
 
 // Mock next/cache

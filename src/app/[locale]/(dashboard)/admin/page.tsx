@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/modules/shared/ui/card"
 import { getTranslations, setRequestLocale } from "next-intl/server"
 import { Users, Shield, FolderGit2, Activity } from "lucide-react"
 import { prisma } from "@/lib/prisma"

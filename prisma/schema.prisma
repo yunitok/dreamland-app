@@ -39,6 +39,7 @@ model Project {
   tags        Tag[]
   chatSessions ChatSession[]
   reports      Report[]
+  sherlockAudits SherlockAudit[]
 }
 
 model TaskList {
@@ -259,6 +260,7 @@ model User {
   attachments    TaskAttachment[] @relation("TaskAttachments")
   chatSessions   ChatSession[]
   reports        Report[]
+  sherlockAudits SherlockAudit[] @relation("SherlockAudits")
 }
 
 model Role {
@@ -355,3 +357,30 @@ model ChatMessage {
   @@index([sessionId])
 }
 
+  @@index([sessionId])
+}
+
+
+// =============================================================================
+// SHERLOCK (AUDIT SYSTEM)
+// =============================================================================
+
+model SherlockAudit {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      String   @default("DRAFT") // DRAFT, IN_PROGRESS, COMPLETED
+  
+  // Relations
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id])
+  
+  authorId    String
+  author      User     @relation("SherlockAudits", fields: [authorId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([authorId])
+}

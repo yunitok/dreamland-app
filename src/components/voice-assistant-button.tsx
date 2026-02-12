@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Mic, Loader2, StopCircle, CheckCircle, XCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/modules/shared/ui/button'
 import { processTextCommand } from '@/lib/actions/voice'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -19,14 +19,14 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
   const [transcript, setTranscript] = useState('')
   const router = useRouter()
   
-  const recognitionRef = useRef<any>(null)
-  const silenceTimerRef = useRef<any>(null)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const finalTranscriptRef = useRef('') // Keep track of full text manually
 
   useEffect(() => {
     // Check browser support
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      const SpeechRecognition = (window as Window & { SpeechRecognition?: typeof window.SpeechRecognition; webkitSpeechRecognition?: typeof window.SpeechRecognition }).SpeechRecognition || (window as Window & { webkitSpeechRecognition?: typeof window.SpeechRecognition }).webkitSpeechRecognition
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition()
         recognition.continuous = true // Keep listening even after pauses
@@ -47,7 +47,7 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
           if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
         }
 
-        recognition.onresult = (event: any) => {
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
           // Reset silence timer on any result
           if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
 
@@ -76,7 +76,7 @@ export function VoiceAssistantButton({ projectId, className }: VoiceAssistantBut
           }, 1500) // 1.5 seconds of silence
         }
 
-        recognition.onerror = (event: any) => {
+        recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
           console.error('Speech recognition error', event.error)
           // Ignore frequent "no-speech" errors in continuous mode if we haven't started speaking
           if (event.error === 'no-speech') return 

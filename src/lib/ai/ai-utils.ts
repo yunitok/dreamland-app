@@ -6,15 +6,21 @@
  * @param message The assistant message object from useChat
  * @returns Set of toolCallIds that have successfully finished
  */
-export function detectFinishedToolCalls(message: any): Set<string> {
+type AiMessageLike = {
+    role?: string
+    toolInvocations?: unknown[]
+    parts?: Array<{ type?: string; toolInvocation?: unknown; toolCall?: unknown; [key: string]: unknown }>
+}
+
+export function detectFinishedToolCalls(message: AiMessageLike): Set<string> {
     const finishedIds = new Set<string>();
     if (!message || message.role !== 'assistant') return finishedIds;
 
     // 1. Standard Vercel AI SDK toolInvocations
     const topLevelInvocations = message.toolInvocations || [];
-    
+
     // 2. Scan parts for hidden or experimental tool structures
-    const partInvocations = (message.parts || []).map((p: any) => {
+    const partInvocations = (message.parts || []).map((p) => {
         // Standard formats
         if (p.type === 'tool-invocation') return p.toolInvocation;
         if (p.type === 'tool-call') return p;
@@ -31,10 +37,11 @@ export function detectFinishedToolCalls(message: any): Set<string> {
 
     const allInvocations = [...topLevelInvocations, ...partInvocations];
 
-    allInvocations.forEach((ti: any) => {
-        const id = ti.toolCallId || ti.id;
-        const state = ti.state;
-        const hasResult = !!(ti.result || ti.output);
+    allInvocations.forEach((ti) => {
+        const inv = ti as Record<string, unknown>
+        const id = inv.toolCallId || inv.id;
+        const state = inv.state;
+        const hasResult = !!(inv.result || inv.output);
 
         /**
          * SCALABILITY RULES:
@@ -48,7 +55,7 @@ export function detectFinishedToolCalls(message: any): Set<string> {
             (state !== 'call' && hasResult);
 
         if (id && isFinished) {
-            finishedIds.add(id);
+            finishedIds.add(String(id));
         }
     });
 

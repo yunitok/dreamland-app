@@ -1,6 +1,6 @@
 
 import { Header } from "@/components/layout/header";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/modules/shared/ui/button";
 import { Plus, Pencil } from "lucide-react";
 import Link from "next/link";
 import { getTeamMoods } from "@/lib/actions/sentiment";

@@ -3,7 +3,7 @@
 import { ThemeToggle } from "./theme-toggle"
 import { LanguageSwitcher } from "./language-switcher"
 import { Bell, Menu } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/modules/shared/ui/button"
 import { useTranslations } from "next-intl"
 import { 
   Sheet, 
@@ -11,7 +11,7 @@ import {
   SheetTrigger,
   SheetTitle,
   SheetDescription 
-} from "@/components/ui/sheet"
+} from "@/modules/shared/ui/sheet"
 import { SidebarContent } from "./sidebar"
 
 interface HeaderProps {

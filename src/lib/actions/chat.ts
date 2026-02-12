@@ -105,7 +105,7 @@ export async function deleteChatSession(sessionId: string) {
     return { success: true }
 }
 
-export async function saveMessage(projectId: string, message: { role: string, content: string, toolInvocations?: any }, sessionId?: string) {
+export async function saveMessage(projectId: string, message: { role: string, content: string, toolInvocations?: unknown }, sessionId?: string) {
     // If sessionId is provided, use it. Otherwise get the default/latest one.
     const session = await getChatSession(projectId, sessionId)
     if (!session) throw new Error("No session found")

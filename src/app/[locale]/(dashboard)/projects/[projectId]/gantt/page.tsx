@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
-import { GanttChart } from '@/components/tasks/gantt-chart'
+import { GanttChart } from '@/modules/projects/components/tasks/gantt-chart'
 
 interface GanttPageProps {
   params: Promise<{ projectId: string }>

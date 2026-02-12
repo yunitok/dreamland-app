@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/modules/shared/ui/button"
 import { Plus } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { SentimentCheckInSheet } from "./sentiment-check-in-sheet"

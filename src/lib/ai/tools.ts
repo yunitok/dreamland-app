@@ -134,13 +134,13 @@ export function getGeminiTools() {
       description: tool.description,
       parameters: {
         type: SchemaType.OBJECT,
-        properties: Object.entries(tool.parameters).reduce((acc, [propName, prop]) => {
+        properties: Object.entries(tool.parameters).reduce<Record<string, { type: SchemaType; description: string }>>((acc, [propName, prop]) => {
           acc[propName] = {
             type: prop.type === 'string' ? SchemaType.STRING : SchemaType.OBJECT,
             description: prop.description
           }
           return acc
-        }, {} as any),
+        }, {}),
         required: Object.entries(tool.parameters)
           .filter(([_, prop]) => prop.required)
           .map(([propName]) => propName)
@@ -161,13 +161,13 @@ export function getOpenAIFormatTools(): ChatCompletionTool[] {
       description: tool.description,
       parameters: {
         type: 'object',
-        properties: Object.entries(tool.parameters).reduce((acc, [propName, prop]) => {
+        properties: Object.entries(tool.parameters).reduce<Record<string, { type: string; description: string }>>((acc, [propName, prop]) => {
           acc[propName] = {
             type: prop.type,
             description: prop.description
           }
           return acc
-        }, {} as any),
+        }, {}),
         required: Object.entries(tool.parameters)
           .filter(([_, prop]) => prop.required)
           .map(([propName]) => propName)

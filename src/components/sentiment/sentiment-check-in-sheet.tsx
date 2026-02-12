@@ -1,10 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/modules/shared/ui/button"
+import { Input } from "@/modules/shared/ui/input"
+import { Label } from "@/modules/shared/ui/label"
+import { Textarea } from "@/modules/shared/ui/textarea"
 import {
   Sheet,
   SheetContent,
@@ -12,14 +12,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetFooter,
-} from "@/components/ui/sheet"
+} from "@/modules/shared/ui/sheet"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/modules/shared/ui/select"
 import { createTeamMood, updateTeamMood, deleteTeamMood } from "@/lib/actions/sentiment"
 import { useTranslations } from "next-intl"
 import { Loader2, Trash2 } from "lucide-react"

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { getAiUsageStats } from '@/lib/actions/ai-usage'
-import { Badge } from '@/components/ui/badge'
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
+import { Badge } from '@/modules/shared/ui/badge'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/modules/shared/ui/hover-card'
 import { Activity, Info, Zap } from 'lucide-react'
 
 type UsageStats = {
@@ -22,7 +22,7 @@ export function AiUsageIndicator() {
   const fetchStats = async () => {
     try {
       const data = await getAiUsageStats()
-      // @ts-ignore - simple type mismatch fix for optional/null vs undefined
+      // @ts-expect-error - simple type mismatch fix for optional/null vs undefined
       setStats(data)
     } catch (error) {
       console.error('Failed to fetch usage stats', error)

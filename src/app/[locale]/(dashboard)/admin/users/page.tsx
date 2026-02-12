@@ -8,7 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/modules/shared/ui/table"
 import { getTranslations, setRequestLocale } from "next-intl/server"
 
 export default async function UsersPage({

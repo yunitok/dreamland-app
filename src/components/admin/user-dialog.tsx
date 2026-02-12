@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useTranslations } from "next-intl"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/modules/shared/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -10,16 +10,16 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/modules/shared/ui/dialog"
+import { Input } from "@/modules/shared/ui/input"
+import { Label } from "@/modules/shared/ui/label"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/modules/shared/ui/select"
 import { createUser, updateUser } from "@/lib/actions/users"
 import { Plus, Pencil } from "lucide-react"
 import { useRouter } from "next/navigation"

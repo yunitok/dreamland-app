@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
-import { TaskListView } from '@/components/tasks/task-list-view'
+import { TaskListView } from '@/modules/projects/components/tasks/task-list-view'
 import { getSession } from '@/lib/auth'
 import { UserSession } from '@/lib/permissions'
 
@@ -14,13 +14,10 @@ export default async function ListPage({ params }: ListPageProps) {
   const currentUserId = session?.user?.id || ''
 
   // Fetch global statuses (shared across all projects)
-  const startStatuses = performance.now()
   const statuses = await prisma.taskStatus.findMany({
     orderBy: { position: 'asc' }
   })
-  console.log(`[PERF] fetch-statuses: ${(performance.now() - startStatuses).toFixed(2)}ms`)
 
-  const startProject = performance.now()
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
@@ -56,21 +53,14 @@ export default async function ListPage({ params }: ListPageProps) {
       }
     }
   })
-  if (project) {
-    // const totalTasks = project.lists.reduce((acc, list) => acc + list.tasks.length, 0)
-    // console.log(`[PERF] total-tasks-payload: ${totalTasks}`)
-  }
-
   if (!project) {
     notFound()
   }
 
   // Get all users for assignee dropdown
-  const startUsers = performance.now()
   const users = await prisma.user.findMany({
     select: { id: true, name: true, image: true, username: true }
   })
-  console.log(`[PERF] fetch-users: ${(performance.now() - startUsers).toFixed(2)}ms`)
 
   return (
     <TaskListView 

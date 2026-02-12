@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/card"
+import { Card } from "@/modules/shared/ui/card"
 import { cn } from "@/lib/utils"
 import type { TeamMood } from "@prisma/client"
 import { 

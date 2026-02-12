@@ -1,17 +1,20 @@
 import { streamText, tool, stepCountIs } from 'ai';
 import { z } from 'zod';
 import { getChatLanguageModel } from '@/lib/ai/config';
-import { getTaskLists, createTaskList, deleteTaskList, updateTaskList } from '@/lib/actions/task-lists';
-import { getTaskStatuses } from '@/lib/actions/task-statuses';
-import { createTask, getTasks, deleteTask, updateTask } from '@/lib/actions/tasks';
-import { getProjects, getProjectById } from '@/lib/actions/projects';
+import { getTaskLists, createTaskList, deleteTaskList, updateTaskList } from '@/modules/projects/actions/task-lists';
+import { getTaskStatuses } from '@/modules/projects/actions/task-statuses';
+import { createTask, getTasks, deleteTask, updateTask } from '@/modules/projects/actions/tasks';
+import { getProjects, getProjectById } from '@/modules/projects/actions/projects';
 import { generateProjectReport } from '@/app/actions/report-actions';
 import { getLocale } from 'next-intl/server';
 import { getHistory, saveMessage } from '@/lib/actions/chat';
 import * as fs from 'fs';
 import * as path from 'path';
 
-function writeLog(data: any) {
+type MessagePart = { type: string; text?: string }
+type ChatMessage = { role: string; content?: string; parts?: MessagePart[]; toolInvocations?: unknown }
+
+function writeLog(data: unknown) {
   try {
     const logPath = path.join(process.cwd(), 'ai_debug.log');
     const entry = `\n[CHAT_API] --- ${new Date().toISOString()} ---\n${JSON.stringify(data, null, 2)}\n`;
@@ -35,7 +38,7 @@ export async function POST(req: Request) {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage && lastMessage.role === 'user') {
        const content = lastMessage.content ||
-                      lastMessage.parts?.filter((p: any) => p.type === 'text').map((p: any) => p.text).join('') ||
+                      lastMessage.parts?.filter((p) => p.type === 'text').map((p) => p.text).join('') ||
                       '';
        await saveMessage(projectId, { role: 'user', content }, sessionId);
     }
@@ -48,12 +51,12 @@ export async function POST(req: Request) {
       getTaskStatuses()
     ]);
 
-    const normalizedMessages = messages.map((m: any) => {
+    const normalizedMessages = (messages as ChatMessage[]).map((m) => {
       let textContent = m.content || '';
       if (!textContent && m.parts) {
         textContent = m.parts
-          .filter((p: any) => p.type === 'text')
-          .map((p: any) => p.text)
+          .filter((p) => p.type === 'text')
+          .map((p) => p.text ?? '')
           .join('');
       }
       return {
@@ -67,10 +70,10 @@ export async function POST(req: Request) {
     let result;
 
     try {
-      const projectListContext = allProjects.map((p: any) => `- "${p.title}" (ID: ${p.id})`).join('\n');
-      const currentProjectName = currentProject?.title || 'Desconocido';
-      const listsContext = currentLists.map((l: any) => `- ${l.name} (ID: ${l.id})`).join('\n');
-      const statusesContext = currentStatuses.map((s: any) => `- ${s.name} (ID: ${s.id})`).join('\n');
+      const projectListContext = (allProjects as { id: string; title: string }[]).map((p) => `- "${p.title}" (ID: ${p.id})`).join('\n');
+      const currentProjectName = (currentProject as { title?: string } | null)?.title || 'Desconocido';
+      const listsContext = (currentLists as { id: string; name: string }[]).map((l) => `- ${l.name} (ID: ${l.id})`).join('\n');
+      const statusesContext = (currentStatuses as { id: string; name: string }[]).map((s) => `- ${s.name} (ID: ${s.id})`).join('\n');
 
       result = streamText({
         model,
@@ -80,6 +83,7 @@ REGLAS DE ORO:
 1. ERES UNA IA DE ACCIÓN: Si el usuario te pide crear, borrar o modificar algo, SIEMPRE usa la herramienta correspondiente.
 2. PARÁMETROS OBLIGATORIOS: Todas las herramientas requieren parámetros. Nunca llames a una herramienta con un objeto vacío {}.
 3. CONFIRMACIÓN: Tras ejecutar una herramienta con éxito, confirma la acción al usuario de forma breve y natural en castellano.
+4. FORMATO DE ENLACES: Cuando menciones la URL de un informe, NUNCA muestres la URL en bruto. Usa SIEMPRE el formato markdown: [**aquí**](url). Ejemplo: "Puedes verlo [**aquí**](/reports/abc123)."
 
 PROYECTO ACTIVO: "${currentProjectName}" (ID: ${projectId})
 BASE_URL: ${baseUrl}
@@ -116,8 +120,8 @@ EJEMPLOS:
               try {
                 const report = await generateProjectReport(id || projectId);
                 return { success: true, url: `/reports/${report.id}`, message: `Ok.` };
-              } catch (err: any) {
-                return { success: false, error: err.message };
+              } catch (err: unknown) {
+                return { success: false, error: err instanceof Error ? err.message : String(err) };
               }
             }
           }),
@@ -130,8 +134,8 @@ EJEMPLOS:
               try {
                 const newList = await createTaskList({ name, projectId });
                 return { success: true, message: `Lista "${name}" creada.`, listId: newList.id };
-              } catch (err: any) {
-                return { success: false, error: err.message };
+              } catch (err: unknown) {
+                return { success: false, error: err instanceof Error ? err.message : String(err) };
               }
             }
           }),
@@ -145,8 +149,8 @@ EJEMPLOS:
               try {
                 const task = await createTask({ title, listId, statusId: currentStatuses[0]?.id || '' });
                 return { success: true, message: `Tarea creada.`, taskId: task.id };
-              } catch (err: any) {
-                return { success: false, error: err.message };
+              } catch (err: unknown) {
+                return { success: false, error: err instanceof Error ? err.message : String(err) };
               }
             }
           }),
@@ -159,8 +163,8 @@ EJEMPLOS:
               try {
                 await deleteTask(taskId);
                 return { success: true, message: "Ok." };
-              } catch (err: any) {
-                return { success: false, error: err.message };
+              } catch (err: unknown) {
+                return { success: false, error: err instanceof Error ? err.message : String(err) };
               }
             }
           })
@@ -171,16 +175,17 @@ EJEMPLOS:
             if (text?.trim()) {
                await saveMessage(projectId, { role: 'assistant', content: text }, sessionId);
             }
-          } catch (e: any) {}
+          } catch (_e: unknown) {}
         }
       });
-    } catch (createError: any) {
+    } catch (createError: unknown) {
       throw createError;
     }
 
     return result.toUIMessageStreamResponse();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('CRITICAL POST ERROR:', error);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    const message = error instanceof Error ? error.message : String(error)
+    return new Response(JSON.stringify({ error: message }), { status: 500 });
   }
 }

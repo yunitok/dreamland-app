@@ -1,6 +1,6 @@
 import { Header } from "@/components/layout/header"
 import { SeedForm } from "@/components/admin/seed-form"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/modules/shared/ui/card"
 import { prisma } from "@/lib/prisma"
 import { Database, FolderKanban, Heart } from "lucide-react"
 import { getTranslations, setRequestLocale } from "next-intl/server"

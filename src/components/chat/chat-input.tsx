@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/modules/shared/ui/button'
+import { Input } from '@/modules/shared/ui/input'
 import { Mic, Send, Loader2, Square, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner' // Assuming sonner is used
@@ -18,14 +18,14 @@ interface ChatInputProps {
 
 export function ChatInput({ input, handleInputChange, handleSubmit, isLoading, stop, setInput }: ChatInputProps) {
     const [isListening, setIsListening] = useState(false)
-    const recognitionRef = useRef<any>(null)
+    const recognitionRef = useRef<SpeechRecognition | null>(null)
 
     // Improved Speech Recognition Logic
-    const silenceTimerRef = useRef<any>(null)
+    const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+            const SpeechRecognition = (window as Window & { SpeechRecognition?: typeof window.SpeechRecognition; webkitSpeechRecognition?: typeof window.SpeechRecognition }).SpeechRecognition || (window as Window & { webkitSpeechRecognition?: typeof window.SpeechRecognition }).webkitSpeechRecognition
             if (SpeechRecognition) {
                 const recognition = new SpeechRecognition()
                 recognition.continuous = true
@@ -40,7 +40,7 @@ export function ChatInput({ input, handleInputChange, handleSubmit, isLoading, s
                     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
                 }
                 
-                recognition.onresult = (event: any) => {
+                recognition.onresult = (event: SpeechRecognitionEvent) => {
                     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
 
                     let interimTranscript = ''
@@ -66,7 +66,7 @@ export function ChatInput({ input, handleInputChange, handleSubmit, isLoading, s
                     }, 1200)
                 }
                 
-                recognition.onerror = (event: any) => {
+                recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
                     // console.error('Speech recognition error', event.error)
                     if (event.error === 'no-speech') return 
                     setIsListening(false)
@@ -127,14 +127,14 @@ export function ChatInput({ input, handleInputChange, handleSubmit, isLoading, s
             </div>
 
             {isLoading ? (
-                 <Button 
-                    type="button" 
-                    size="icon" 
-                    variant="destructive"
+                <Button
+                    type="button"
+                    size="icon"
                     onClick={stop}
-                    className="rounded-xl h-10 w-10"
+                    className="rounded-xl h-10 w-10 relative overflow-hidden bg-linear-to-tr from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white border-0 shadow-md shadow-violet-500/30"
                 >
-                    <Square className="h-4 w-4 fill-current" />
+                    <span className="absolute inset-0 rounded-xl animate-ping bg-white/20" />
+                    <Square className="h-4 w-4 fill-white relative z-10" />
                 </Button>
             ) : (
                 <Button 

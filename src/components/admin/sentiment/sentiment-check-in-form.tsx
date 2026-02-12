@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { teamMoodSchema, TeamMoodFormData } from "@/lib/validations/sentiment";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/modules/shared/ui/button";
 import {
   Form,
   FormControl,
@@ -12,16 +12,16 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/modules/shared/ui/form";
+import { Input } from "@/modules/shared/ui/input";
+import { Textarea } from "@/modules/shared/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/modules/shared/ui/select";
 import { createTeamMood, updateTeamMood } from "@/lib/actions/sentiment";
 import { SentimentZoneSelector } from "./sentiment-zone-selector";
 import { useTransition } from "react";
@@ -36,6 +36,7 @@ export function SentimentCheckInForm({ initialData, departments }: SentimentChec
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<TeamMoodFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(teamMoodSchema) as any,
     defaultValues: {
       departmentName: initialData?.departmentName || "",

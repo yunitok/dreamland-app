@@ -9,9 +9,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/modules/shared/ui/select"
 
-import { FlagUK, FlagES, FlagDE, FlagFR, FlagIT, FlagRU } from "@/components/ui/icons/flags"
+import { FlagUK, FlagES, FlagDE, FlagFR, FlagIT, FlagRU } from "@/modules/shared/ui/icons/flags"
 
 export function LanguageSwitcher() {
   const locale = useLocale()

@@ -2,8 +2,8 @@
 
 import React from 'react'
 import { Plus, MessageSquare, Trash2, Clock } from 'lucide-react'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/modules/shared/ui/scroll-area'
+import { Button } from '@/modules/shared/ui/button'
 import { cn } from '@/lib/utils'
 
 export interface ChatSession {

@@ -1,8 +1,8 @@
 import { AIProvider, AIResponse } from './provider.interface'
-import { getTaskStatuses, createDefaultStatuses } from '@/lib/actions/task-statuses'
-import { getTaskLists } from '@/lib/actions/task-lists'
-import { getTasks } from '@/lib/actions/tasks'
-import { getProjects, getProjectById } from '@/lib/actions/projects'
+import { getTaskStatuses, createDefaultStatuses } from '@/modules/projects/actions/task-statuses'
+import { getTaskLists } from '@/modules/projects/actions/task-lists'
+import { getTasks } from '@/modules/projects/actions/tasks'
+import { getProjects, getProjectById } from '@/modules/projects/actions/projects'
 import { logAiUsage } from '@/lib/actions/ai-usage'
 import { getOpenAIFormatTools } from './tools'
 import { getOpenRouterConfig, getModelConfig } from './config'
@@ -10,7 +10,7 @@ import { TaskList, TaskStatus } from '@prisma/client'
 import * as fs from 'fs'
 import * as path from 'path'
 
-function writeLog(data: any) {
+function writeLog(data: unknown) {
   const logPath = path.join(process.cwd(), 'ai_debug.log')
   const entry = `\n--- ${new Date().toISOString()} ---\n${JSON.stringify(data, null, 2)}\n`
   fs.appendFileSync(logPath, entry)
@@ -36,7 +36,7 @@ export class OpenRouterProvider implements AIProvider {
         getTasks(projectId),
         getProjects(),
         getProjectById(projectId)
-      ]) as [TaskList[], TaskStatus[], any[], any[], any]
+      ]) as [TaskList[], TaskStatus[], { title: string }[], { id: string; title: string }[], { title: string } | null]
 
       let finalStatuses = initialStatuses
       if (finalStatuses.length === 0) {
@@ -123,13 +123,15 @@ GUIDELINES:
         }).catch(e => console.error('Usage log error', e))
       }
 
-      const toolCalls = responseMessage.tool_calls?.map((tc: any) => {
+      type RawToolCall = { type: string; function: { name: string; arguments: string } }
+      const toolCalls = (responseMessage.tool_calls as RawToolCall[] | undefined)?.map((tc) => {
         if (tc.type !== 'function') return null
         return {
           name: tc.function.name,
-          args: JSON.parse(tc.function.arguments)
+          args: JSON.parse(tc.function.arguments) as Record<string, unknown>
         }
-      }).filter(Boolean) as any[]
+      }).filter(Boolean) as Array<{ name: string; args: Record<string, unknown> }>
+
 
       if (toolCalls && toolCalls.length > 0) {
         return {
@@ -149,13 +151,15 @@ GUIDELINES:
         shouldSpeak: true
       }
 
-    } catch (error: any) {
-      writeLog({ type: 'PROVIDER_ERROR', error: error.message, stack: error.stack })
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
+      const stack = error instanceof Error ? error.stack : undefined
+      writeLog({ type: 'PROVIDER_ERROR', error: message, stack })
       console.error('OpenRouter Provider Error!', error)
-      if (error.stack) console.error(error.stack)
+      if (stack) console.error(stack)
       return {
         success: false,
-        error: error.message,
+        error: message,
         transcript: userText,
         actions: []
       }
@@ -211,10 +215,10 @@ GUIDELINES:
         message: responseMessage.content
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         transcript: 'Direct generation failed',
         actions: []
       }
