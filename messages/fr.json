@@ -306,6 +306,8 @@
         "deleteListError": "Impossible de supprimer la liste. Veuillez vérifier qu'elle est vide.",
         "create": "Créer",
         "cancel": "Annuler",
+        "collapseAll": "Tout réduire",
+        "expandAll": "Tout développer",
         "tasksDeleted": "{count} tâches supprimées",
         "selected": "{count} sélectionné(s)"
     }

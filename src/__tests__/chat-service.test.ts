@@ -8,6 +8,7 @@ vi.mock('@/lib/prisma', () => ({
     chatSession: {
       findFirst: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
     },
     chatMessage: {
       create: vi.fn(),

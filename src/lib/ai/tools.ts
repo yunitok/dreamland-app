@@ -150,9 +150,10 @@ export function getGeminiTools() {
 }
 
 /**
- * Transforms the central registry into Groq/OpenAI ChatCompletionTools
+ * Transforms the central registry into OpenAI-compatible ChatCompletionTools.
+ * Works with OpenRouter, Groq, and any OpenAI-compatible API.
  */
-export function getGroqTools(): ChatCompletionTool[] {
+export function getOpenAIFormatTools(): ChatCompletionTool[] {
   return Object.entries(AI_TOOLS_REGISTRY).map(([name, tool]) => ({
     type: 'function' as const,
     function: {
@@ -174,3 +175,6 @@ export function getGroqTools(): ChatCompletionTool[] {
     }
   }))
 }
+
+/** @deprecated Use getOpenAIFormatTools instead */
+export const getGroqTools = getOpenAIFormatTools

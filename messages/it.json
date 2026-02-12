@@ -306,6 +306,8 @@
         "deleteListError": "Impossibile eliminare la lista. Verifica che sia vuota.",
         "create": "Crea",
         "cancel": "Annulla",
+        "collapseAll": "Comprimi tutto",
+        "expandAll": "Espandi tutto",
         "tasksDeleted": "{count} attività eliminate",
         "selected": "{count} selezionati"
     }

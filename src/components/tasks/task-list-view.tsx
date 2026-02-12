@@ -58,6 +58,8 @@ import {
   Search, 
   ChevronRight, 
   ChevronDown,
+  ChevronsDownUp,
+  ChevronsUpDown,
   MessageSquare,
   Paperclip,
   MoreHorizontal,
@@ -181,6 +183,27 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
   const [isInitializing, setIsInitializing] = useState(false)
   const router = useRouter()
 
+  const groupedTasks = useMemo(() => {
+    if (groupBy === 'list') {
+      return project.lists.map(list => ({
+        id: list.id,
+        name: list.name,
+        color: list.color,
+        tasks: tasks.filter(t => t.listId === list.id).sort((a,b) => a.position - b.position),
+        isCustomList: true
+      }))
+    }
+    
+    // Group by status
+    return statuses.map(status => ({
+      id: status.id,
+      name: status.name,
+      color: status.color,
+      tasks: tasks.filter(t => t.status.id === status.id), // Status sorting?
+      isCustomList: false
+    }))
+  }, [groupBy, project.lists, statuses, tasks])
+
   const toggleList = (listId: string) => {
     const newExpanded = new Set(expandedLists)
     if (newExpanded.has(listId)) {
@@ -189,6 +212,20 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
       newExpanded.add(listId)
     }
     setExpandedLists(newExpanded)
+  }
+
+  const allListsExpanded = useMemo(() => {
+    const currentGroupIds = groupedTasks.map(g => g.id)
+    return currentGroupIds.every(id => expandedLists.has(id))
+  }, [expandedLists, groupedTasks])
+
+  const toggleAllLists = () => {
+    if (allListsExpanded) {
+      setExpandedLists(new Set())
+    } else {
+      const allIds = groupedTasks.map(g => g.id)
+      setExpandedLists(new Set(allIds))
+    }
   }
 
   const toggleTask = (taskId: string) => {
@@ -397,26 +434,6 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
     }
   }
 
-  const groupedTasks = useMemo(() => {
-    if (groupBy === 'list') {
-      return project.lists.map(list => ({
-        id: list.id,
-        name: list.name,
-        color: list.color,
-        tasks: tasks.filter(t => t.listId === list.id).sort((a,b) => a.position - b.position),
-        isCustomList: true
-      }))
-    }
-    
-    // Group by status
-    return statuses.map(status => ({
-      id: status.id,
-      name: status.name,
-      color: status.color,
-      tasks: tasks.filter(t => t.status.id === status.id), // Status sorting?
-      isCustomList: false
-    }))
-  }, [groupBy, project.lists, statuses, tasks])
 
   // Initialize expanded sets when grouping changes
   useMemo(() => {
@@ -481,6 +498,20 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
             </Select>
           </div>
           
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="h-10 w-10 shrink-0 cursor-pointer"
+            onClick={toggleAllLists}
+            title={allListsExpanded ? t('collapseAll') || 'Collapse All' : t('expandAll') || 'Expand All'}
+          >
+            {allListsExpanded ? (
+              <ChevronsDownUp className="h-4 w-4" />
+            ) : (
+              <ChevronsUpDown className="h-4 w-4" />
+            )}
+          </Button>
+
           <Separator orientation="vertical" className="hidden lg:block h-8" />
 
           {/* Status Filter */}
@@ -804,7 +835,7 @@ function TaskListGroup({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={(e) => {
+                <DropdownMenuItem className="cursor-pointer" onClick={(e) => {
                   e.stopPropagation()
                   setEditingList({ id: group.id, name: group.name, color: group.color })
                 }}>
@@ -812,7 +843,7 @@ function TaskListGroup({
                   {t('editList')}
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  className="text-destructive focus:text-destructive"
+                  className="text-destructive focus:text-destructive cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation()
                     setDeletingList({ id: group.id, name: group.name, taskCount: group.tasks.length })
@@ -1119,7 +1150,7 @@ const TaskRow = React.forwardRef<HTMLTableRowElement, TaskRowProps & React.HTMLA
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-              <DropdownMenuItem onClick={() => onClick()}>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => onClick()}>
                   <Pencil className="h-4 w-4 mr-2" />
                   Edit Task
               </DropdownMenuItem>
@@ -1130,7 +1161,7 @@ const TaskRow = React.forwardRef<HTMLTableRowElement, TaskRowProps & React.HTMLA
                     Move to...
                   </DropdownMenuLabel>
                   {lists.map(list => (
-                      <DropdownMenuItem key={list.id} onClick={() => handleMove(list.id)}>
+                      <DropdownMenuItem key={list.id} className="cursor-pointer" onClick={() => handleMove(list.id)}>
                           <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: list.color || '#6B7280' }} />
                           {list.name}
                       </DropdownMenuItem>
@@ -1138,7 +1169,7 @@ const TaskRow = React.forwardRef<HTMLTableRowElement, TaskRowProps & React.HTMLA
                   <DropdownMenuSeparator />
                 </>
               )}
-              <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={handleDelete}>
+              <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer" onClick={handleDelete}>
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete
               </DropdownMenuItem>

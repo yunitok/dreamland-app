@@ -95,7 +95,7 @@ export function EditListDialog({ isOpen, onClose, list }: EditListDialogProps) {
                 <button
                   key={c}
                   type="button"
-                  className={`w-6 h-6 rounded-full transition-all ${
+                  className={`w-6 h-6 rounded-full transition-all cursor-pointer ${
                     color === c ? 'ring-2 ring-offset-2 ring-primary scale-110' : 'hover:scale-105'
                   }`}
                   style={{ backgroundColor: c }}
@@ -105,11 +105,11 @@ export function EditListDialog({ isOpen, onClose, list }: EditListDialogProps) {
             </div>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+          <DialogFooter className="gap-3">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="cursor-pointer">
               {t('cancel')}
             </Button>
-            <Button type="submit" disabled={!name.trim() || isLoading}>
+            <Button type="submit" disabled={!name.trim() || isLoading} className="cursor-pointer">
               {isLoading ? t('saving') : t('save')}
             </Button>
           </DialogFooter>

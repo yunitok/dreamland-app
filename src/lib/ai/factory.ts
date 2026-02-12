@@ -1,19 +1,20 @@
-
 import { AIProvider } from './provider.interface'
 import { GeminiProvider } from './gemini-provider'
 import { GroqProvider } from './groq-provider'
+import { OpenRouterProvider } from './openrouter-provider'
+import { getProviderName } from './config'
 
 export function getAIProvider(): AIProvider {
-  const provider = process.env.AI_PROVIDER || 'gemini'
-  console.log('[AI Factory] Selected Provider:', provider);
-
+  const provider = getProviderName()
   console.log(`[AI Factory] Using provider: ${provider}`)
 
-  if (provider === 'groq') {
-    console.log('[AI Factory] Instantiating GroqProvider');
-    return new GroqProvider()
+  switch (provider) {
+    case 'groq':
+      return new GroqProvider()
+    case 'gemini':
+      return new GeminiProvider()
+    case 'openrouter':
+    default:
+      return new OpenRouterProvider()
   }
-
-  console.log('[AI Factory] Instantiating GeminiProvider');
-  return new GeminiProvider()
 }

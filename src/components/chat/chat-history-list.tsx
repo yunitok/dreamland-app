@@ -46,7 +46,7 @@ export function ChatHistoryList({
             
             <ScrollArea className="flex-1">
                 <div className="p-2 space-y-1">
-                    {sessions.length === 0 ? (
+                    {!sessions || sessions.length === 0 ? (
                         <div className="text-center text-xs text-muted-foreground p-4">
                             No hay conversaciones previas.
                         </div>

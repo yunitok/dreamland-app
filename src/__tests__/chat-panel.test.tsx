@@ -7,6 +7,7 @@ import { UIMessage } from '@/types/chat'
 const mockSetInput = vi.fn()
 const mockHandleInputChange = vi.fn()
 const mockHandleSubmit = vi.fn()
+const mockSendMessage = vi.fn()
 const mockStop = vi.fn()
 
 const mockMessages: UIMessage[] = [
@@ -32,7 +33,9 @@ vi.mock('@ai-sdk/react', () => ({
     handleSubmit: mockHandleSubmit,
     isLoading: false,
     stop: mockStop,
-    setInput: mockSetInput
+    setInput: mockSetInput,
+    sendMessage: mockSendMessage,
+    setMessages: vi.fn()
   }))
 }))
 
@@ -54,13 +57,20 @@ Object.defineProperty(global.window, 'SpeechSynthesisUtterance', {
 })
 
 
+vi.mock('@/lib/actions/chat', () => ({
+  saveMessage: vi.fn(),
+  getHistory: vi.fn(() => Promise.resolve([])),
+  createChatSession: vi.fn(() => Promise.resolve({ id: 'new_session_id', title: 'New Session', updatedAt: new Date() })),
+  deleteChatSession: vi.fn()
+}))
+
 describe('ChatPanel Component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it('renders the chat button initially', () => {
-    render(<ChatPanel projectId="proj_123" />)
+    render(<ChatPanel projectId="proj_123" initialSessions={[]} />)
     const button = screen.getByRole('button', { name: '' }) // The generic button might not have a name if it's just an icon
     expect(button).toBeInTheDocument()
   })
@@ -70,7 +80,7 @@ describe('ChatPanel Component', () => {
     // For unit testing complex UI libs, sometimes we just check calls or simple visibility if JSDOM supports it.
     // However, Radix UI (base of Shadcn) often works well in JSDOM.
     
-    render(<ChatPanel projectId="proj_123" />)
+    render(<ChatPanel projectId="proj_123" initialSessions={[]} />)
     
     // Find the trigger button (the floating action button)
     // It has the Bot icon. 
@@ -86,7 +96,7 @@ describe('ChatPanel Component', () => {
   })
 
   it('displays persistent messages', async () => {
-    render(<ChatPanel projectId="proj_123" />)
+    render(<ChatPanel projectId="proj_123" initialSessions={[]} />)
     const triggerBtn = screen.getByRole('button') 
     fireEvent.click(triggerBtn)
 
@@ -97,15 +107,15 @@ describe('ChatPanel Component', () => {
   })
 
   it('calls handleSubmit when sending a message', async () => {
-    render(<ChatPanel projectId="proj_123" />)
+    render(<ChatPanel projectId="proj_123" initialSessions={[]} />)
     const triggerBtn = screen.getByRole('button') 
     fireEvent.click(triggerBtn)
 
     await waitFor(() => {
-        expect(screen.getByPlaceholderText('Type a message...')).toBeInTheDocument()
+        expect(screen.getByPlaceholderText('Escribe un mensaje...')).toBeInTheDocument()
     })
 
-    const input = screen.getByPlaceholderText('Type a message...')
+    const input = screen.getByPlaceholderText('Escribe un mensaje...')
     fireEvent.change(input, { target: { value: 'New message' } })
     
     // Pressing Enter or clicking send
@@ -113,12 +123,12 @@ describe('ChatPanel Component', () => {
     // Assuming ChatInput uses the form submission or KeyDown
     
     // Let's assume there is a Send button.
-    const sendButton = screen.queryByTitle('Send message') // Check ChatInput implementation for aria-label or title
+    const sendButton = screen.queryByLabelText('Enviar mensaje')
     if (sendButton) {
         fireEvent.click(sendButton)
-        expect(mockHandleSubmit).toHaveBeenCalled()
-    } else {
-        // Fallback: helper function might trigger it
+        await waitFor(() => {
+            expect(mockSendMessage).toHaveBeenCalled()
+        })
     }
   })
 })

@@ -306,6 +306,8 @@
         "deleteListError": "Не удалось удалить список. Пожалуйста, убедитесь, что он пуст.",
         "create": "Создать",
         "cancel": "Отмена",
+        "collapseAll": "Свернуть все",
+        "expandAll": "Развернуть все",
         "tasksDeleted": "{count} задач удалено",
         "selected": "{count} выбрано"
     }

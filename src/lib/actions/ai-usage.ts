@@ -35,7 +35,8 @@ export async function logAiUsage(data: {
 
 export async function getAiUsageStats() {
   try {
-    const provider = process.env.AI_PROVIDER || 'gemini'
+    const { getProviderName } = await import('@/lib/ai/config')
+    const provider = getProviderName()
     const now = new Date()
     
     // Always calculate local usage stats as a baseline/fallback
@@ -51,7 +52,7 @@ export async function getAiUsageStats() {
     let remainingRequests: number | null = null
     let remainingTokens: number | null = null
 
-    if (provider === 'groq') {
+    if (provider === 'groq' || provider === 'openrouter') {
        const latestLog = await prisma.aiUsageLog.findFirst({
            where: { remainingRequests: { not: null } },
            orderBy: { createdAt: 'desc' }

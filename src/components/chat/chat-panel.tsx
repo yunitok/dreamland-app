@@ -12,6 +12,10 @@ import { saveMessage, getHistory, createChatSession, deleteChatSession } from '@
 import { ChatHistoryList, ChatSession } from './chat-history-list'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
+import { Loader2, RefreshCw } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { detectFinishedToolCalls } from '@/lib/ai/ai-utils'
 
 interface ChatPanelProps {
   projectId: string
@@ -19,9 +23,11 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ projectId, initialSessions }: ChatPanelProps) {
-  const [sessions, setSessions] = useState<ChatSession[]>(initialSessions)
+   const [sessions, setSessions] = useState<ChatSession[]>(initialSessions)
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
   const [showHistory, setShowHistory] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
+  const router = useRouter()
   
   // Ref to access current session in callbacks/closures without dependency issues
   const currentSessionIdRef = useRef<string | null>(null)
@@ -100,14 +106,13 @@ export function ChatPanel({ projectId, initialSessions }: ChatPanelProps) {
         body: { projectId, sessionId: currentSessionId }
     }),
     onFinish: async (result: any) => {
-        console.log('Chat onFinish result:', result);
         const message = result.message;
         const text = message.content || message.parts?.filter((p: any) => p.type === 'text').map((p: any) => p.text).join('')
 
         // Ensure we have a valid session before saving (though backend should handle it)
         const activeSessionId = currentSessionIdRef.current
         
-        // Guardar mensaje en BBDD (Persistencia desde cliente)
+         // Guardar mensaje en BBDD (Persistencia desde cliente)
         if (message.role === 'assistant') {
              try {
                  await saveMessage(projectId, {
@@ -133,6 +138,36 @@ export function ChatPanel({ projectId, initialSessions }: ChatPanelProps) {
     }
   })
 
+  // Ref to track which tool calls we've already refreshed for
+  const refreshedToolCallsRef = useRef<Set<string>>(new Set());
+
+  // Silent real-time refresh: watch messages for completed tool calls
+  useEffect(() => {
+    const assistantMessages = messages.filter(m => m.role === 'assistant');
+    
+    let needsRefresh = false;
+
+    assistantMessages.forEach((m: any) => {
+        const finishedIds = detectFinishedToolCalls(m);
+        
+        finishedIds.forEach(toolCallId => {
+            if (!refreshedToolCallsRef.current.has(toolCallId)) {
+                refreshedToolCallsRef.current.add(toolCallId);
+                needsRefresh = true;
+            }
+        });
+    });
+
+    if (needsRefresh) {
+        // Execute refresh silently after a short delay to ensure DB is written
+        const timeoutId = setTimeout(() => {
+            router.refresh();
+        }, 500);
+        
+        return () => clearTimeout(timeoutId);
+    }
+  }, [messages, router]);
+
   // Set initial messages if provided (and we haven't loaded a session yet)
   // Removed optimizations
 
@@ -144,24 +179,37 @@ export function ChatPanel({ projectId, initialSessions }: ChatPanelProps) {
 
   const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault()
-    if (!input.trim() || isLoading) return
+    if (isLoading) return
     
     let activeSessionId = currentSessionId
     
     // If no session selected, create one before sending
     if (!activeSessionId) {
+        console.log('[ChatPanel] No active session, CALLING createChatSession...')
         try {
             const newSession = await createChatSession(projectId)
+            console.log('[ChatPanel] createChatSession SUCCESS:', newSession?.id)
+            if (!newSession) throw new Error("createChatSession returned null")
+            
             setSessions([newSession, ...sessions])
             setCurrentSessionId(newSession.id)
             activeSessionId = newSession.id
-        } catch (error) {
-            console.error("Failed to init session", error)
+        } catch (error: any) {
+            console.log("[ChatPanel] createChatSession FAILED:", error)
+            toast.error("Error al iniciar sesión de chat: " + error.message)
+            return // Stop execution if we can't get a session
         }
     }
     
     // Send message with the (potentially new) session ID
-    sendMessage({ text: input }, { body: { sessionId: activeSessionId } })
+    try {
+      if (typeof sendMessage === 'function') {
+        sendMessage({ text: input }, { body: { sessionId: activeSessionId } })
+      }
+    } catch (error: any) {
+      toast.error("Error al enviar mensaje: " + error.message)
+    }
+    
     setInput('')
   }
   
@@ -239,9 +287,6 @@ export function ChatPanel({ projectId, initialSessions }: ChatPanelProps) {
                         Dreamland Assistant
                     </SheetTitle>
                 </div>
-                
-                {/* Optional: Add New Chat button here as well for quick access if sidebar closed? */}
-                {/* For now, stick to history toggle */}
             </SheetHeader>
             
             <div className="flex-1 overflow-y-auto p-4 space-y-6" ref={scrollRef}>

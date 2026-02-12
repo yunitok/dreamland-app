@@ -335,6 +335,8 @@
         "groupBy": "Group by",
         "groupByList": "Group by List",
         "groupByStatus": "Group by Status",
+        "collapseAll": "Collapse all",
+        "expandAll": "Expand all",
         "tasksDeleted": "{count} tasks deleted",
         "selected": "{count} selected",
         "columns": "Columns",

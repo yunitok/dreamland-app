@@ -306,6 +306,8 @@
         "deleteListError": "Liste konnte nicht gelöscht werden. Bitte stellen Sie sicher, dass sie leer ist.",
         "create": "Erstellen",
         "cancel": "Abbrechen",
+        "collapseAll": "Alle einklappen",
+        "expandAll": "Alle ausklappen",
         "tasksDeleted": "{count} Aufgaben gelöscht",
         "selected": "{count} ausgewählt"
     }

@@ -46,3 +46,7 @@ backup-data-mcp.json
 # debug logs
 chat-debug.log
 ai-debug.log
+
+# agentic skills
+.agent/skills
+.claude

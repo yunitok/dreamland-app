@@ -22,6 +22,7 @@ export async function executeAiTools(
   let generatedReport: { id: string, title: string, content: string, redirectUrl: string } | undefined = undefined
 
   for (const call of toolCalls) {
+    console.log(`[Executor] Processing tool: ${call.name}`, call.args)
     const args = call.args
     const { projectId, statuses } = context
 

@@ -140,6 +140,7 @@ export function ChatInput({ input, handleInputChange, handleSubmit, isLoading, s
                 <Button 
                     type="submit" 
                     size="icon" 
+                    aria-label="Enviar mensaje"
                     disabled={!input?.trim() || isListening}
                     className="rounded-xl h-10 w-10"
                 >

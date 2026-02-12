@@ -67,8 +67,8 @@ export function DeleteListDialog({ isOpen, onClose, list }: DeleteListDialogProp
           </div>
         )}
 
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+        <DialogFooter className="gap-3">
+          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="cursor-pointer">
             {t('cancel')}
           </Button>
           <Button 
@@ -76,6 +76,7 @@ export function DeleteListDialog({ isOpen, onClose, list }: DeleteListDialogProp
             variant="destructive" 
             onClick={handleDelete}
             disabled={isLoading || list.taskCount > 0}
+            className="cursor-pointer"
           >
             {isLoading ? t('deleting') : t('delete')}
           </Button>

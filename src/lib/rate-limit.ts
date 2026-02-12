@@ -91,14 +91,20 @@ export const AI_RATE_LIMITS = {
     tokensPerMinute: 32000,
     tokensPerDay: 1000000,
   },
+  openrouter: {
+    requestsPerMinute: 60,
+    requestsPerDay: 10000,
+    tokensPerMinute: 100000,
+    tokensPerDay: 2000000,
+  },
 } as const;
 
 /**
  * Check AI-specific rate limit
  */
 export function checkAIRateLimit(
-  userId: string, 
-  provider: 'groq' | 'gemini'
+  userId: string,
+  provider: 'groq' | 'gemini' | 'openrouter'
 ): RateLimitResult {
   const limits = AI_RATE_LIMITS[provider];
   const key = `ai:${provider}:${userId}`;
