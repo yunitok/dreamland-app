@@ -357,9 +357,6 @@ model ChatMessage {
   @@index([sessionId])
 }
 
-  @@index([sessionId])
-}
-
 
 // =============================================================================
 // SHERLOCK (AUDIT SYSTEM)
