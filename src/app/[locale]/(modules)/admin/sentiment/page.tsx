@@ -1,17 +1,17 @@
 import { getSession } from "@/lib/auth"
 import { hasPermission, UserSession } from "@/lib/permissions"
 import { Header } from "@/components/layout/header"
-import { SentimentChart } from "@/modules/admin/ui/sentiment/sentiment-chart"
-import { EmotionCards } from "@/modules/admin/ui/sentiment/emotion-cards"
+import { SentimentChart } from "@/modules/sentiment/ui/sentiment-chart"
+import { EmotionCards } from "@/modules/sentiment/ui/emotion-cards"
 import { prisma } from "@/lib/prisma"
 import { Card, CardContent } from "@/modules/shared/ui/card"
-import { AlertTriangle, CheckCircle, TrendingDown, TrendingUp, Plus } from "lucide-react"
+import { AlertTriangle, CheckCircle, TrendingDown, TrendingUp } from "lucide-react"
 import { getTranslations, setRequestLocale } from "next-intl/server"
 import { cn } from "@/lib/utils"
 import { Button } from "@/modules/shared/ui/button"
 import { Link } from "@/i18n/navigation"
-import { getDepartments } from "@/modules/admin/actions/sentiment"
-import { NewCheckInButton } from "@/modules/admin/ui/sentiment/new-check-in-button"
+import { getDepartments } from "@/modules/departments/actions/departments"
+import { NewCheckInButton } from "@/modules/sentiment/ui/new-check-in-button"
 
 async function getSentimentData() {
   // 1. Get all moods ordered by detection time
@@ -88,10 +88,12 @@ export default async function SentimentPage({
 
   const canManage = hasAuth || isLegacyAdmin
   
-  const [{ moods, avgScore, criticalDepts, stableDepts, healthyDepts, trend }, departments] = await Promise.all([
+  const [{ moods, avgScore, criticalDepts, stableDepts, healthyDepts, trend }, departmentsData] = await Promise.all([
     getSentimentData(),
     getDepartments()
   ])
+
+  const departmentNames = departmentsData.map(d => d.departmentName);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -102,23 +104,11 @@ export default async function SentimentPage({
         {canManage && (
             <div className="flex gap-2">
                 <Button variant="outline" size="sm" asChild className="hidden md:flex">
-                    {/* Updated Link to point to new Admin location if history page is moved there too. 
-                        Assuming history might be a sub-page or check-in modal. 
-                        For now, keeping /sentiment/history but might need update if I move history too. 
-                        Check if history page exists. I noticed files like `sentiment-history-table.tsx`.
-                        So likely there is a `/sentiment/history` route. 
-                        Plan didn't explicitly mention `history` route but files suggest it. 
-                        If so, I should probably move `history` too? 
-                        Yes, whole `sentiment` folder.
-                        So Link should point to `/admin/sentiment/history`? 
-                        
-                        I'll update it to `/admin/sentiment/history` assuming the route moves.
-                    */}
                     <Link href="/admin/sentiment/history">
                         Gestión (Admin)
                     </Link>
                 </Button>
-                <NewCheckInButton departments={departments} />
+                <NewCheckInButton departments={departmentNames} />
             </div>
         )}
       </Header>

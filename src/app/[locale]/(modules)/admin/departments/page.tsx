@@ -1,5 +1,5 @@
 import { Header } from "@/components/layout/header"
-import { DepartmentCards } from "@/modules/admin/ui/departments/department-cards"
+import { DepartmentCards } from "@/modules/departments/ui/department-cards"
 import { prisma } from "@/lib/prisma"
 import { setRequestLocale, getTranslations } from "next-intl/server"
 import { Button } from "@/modules/shared/ui/button"

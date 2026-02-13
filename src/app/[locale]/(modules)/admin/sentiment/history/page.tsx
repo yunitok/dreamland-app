@@ -1,6 +1,7 @@
 import { Header } from "@/components/layout/header";
-import { SentimentHistoryTable } from "@/modules/admin/ui/sentiment/sentiment-history-table";
-import { getTeamMoods, getDepartments } from "@/modules/admin/actions/sentiment";
+import { SentimentHistoryTable } from "@/modules/sentiment/ui/sentiment-history-table";
+import { getTeamMoods } from "@/modules/sentiment/actions/sentiment";
+import { getDepartments } from "@/modules/departments/actions/departments";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Button } from "@/modules/shared/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -14,10 +15,12 @@ export default async function SentimentHistoryPage({
   const { locale } = await params
   setRequestLocale(locale)
   
-  const [{ data: moods }, departments] = await Promise.all([
+  const [{ data: moods }, departmentsData] = await Promise.all([
     getTeamMoods(),
     getDepartments()
   ]);
+
+  const departmentNames = departmentsData.map(d => d.departmentName);
 
   const t = await getTranslations("sentiment");
 
@@ -39,7 +42,7 @@ export default async function SentimentHistoryPage({
       <div className="flex-1 p-4 md:p-6 space-y-6">
         <SentimentHistoryTable 
           moods={moods ?? []} 
-          departments={departments} 
+          departments={departmentNames} 
         />
       </div>
     </div>
