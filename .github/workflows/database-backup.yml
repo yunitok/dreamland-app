@@ -1,4 +1,4 @@
-name: DB Backup de PokemonPlay
+name: DB Backup
 
 on:
   schedule:
