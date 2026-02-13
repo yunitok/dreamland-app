@@ -1,7 +1,7 @@
 {
     "common": {
         "appName": "Dreamland App",
-        "dashboard": "Intelligence",
+        "dashboard": "Dashboard",
         "projects": "Projects",
         "departments": "Departments",
         "teamPulse": "Team Pulse",
@@ -31,7 +31,12 @@
         "currentlyInProgress": "Currently in progress",
         "recentActivity": "Recent Activity",
         "teamSentimentOverview": "Team Sentiment Overview",
-        "stressLevel": "Stress Level"
+        "stressLevel": "Stress Level",
+        "noAccess": {
+            "title": "Restricted Access",
+            "description": "You do not have the necessary permissions to view the dashboard.",
+            "message": "It seems your account does not have assigned permissions to view strategic metrics. Please contact your administrator to request access."
+        }
     },
     "projects": {
         "title": "Project Portfolio",

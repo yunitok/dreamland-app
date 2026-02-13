@@ -1,7 +1,7 @@
 {
     "common": {
         "appName": "Dreamland App",
-        "dashboard": "Intelligence",
+        "dashboard": "Панель управления",
         "projects": "Projects",
         "departments": "Departments",
         "teamPulse": "Team Pulse",
@@ -30,7 +30,11 @@
         "currentlyInProgress": "Currently in progress",
         "recentActivity": "Recent Activity",
         "teamSentimentOverview": "Team Sentiment Overview",
-        "stressLevel": "Stress Level"
+        "stressLevel": "Stress Level",
+        "noAccess": {
+            "title": "Доступ запрещен",
+            "message": "У вас нет прав для просмотра панели управления. Свяжитесь с администратором для получения доступа."
+        }
     },
     "projects": {
         "title": "Project Portfolio",

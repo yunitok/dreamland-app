@@ -1,9 +1,16 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 import path from 'path';
 import fs from 'fs/promises';
 import { hash } from 'bcryptjs';
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
+
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('🌱 Seeding database...');
@@ -31,9 +38,9 @@ async function main() {
   // 1. Create Permissions - Extended for task management
   const resources = [
     'projects', 'users', 'roles', 'departments', 'sentiment', 'admin',
-    'tasks', 'lists', 'comments', 'attachments', 'tags'
+    'tasks', 'lists', 'comments', 'attachments', 'tags', 'sherlock', 'reports'
   ];
-  const actions = ['view', 'create', 'edit', 'delete', 'manage'];
+  const actions = ['read', 'create', 'update', 'delete', 'manage'];
 
   const permissionsList: any[] = [];
   
@@ -93,9 +100,11 @@ async function main() {
           ...getPerms('comments'),
           ...getPerms('attachments'),
           ...getPerms('tags'),
-          ...getPerms('departments', ['view']),
-          ...getPerms('sentiment', ['view']),
-          ...getPerms('admin', ['view'])
+          ...getPerms('departments', ['read']),
+          ...getPerms('sentiment', ['read']),
+          ...getPerms('admin', ['read']),
+          ...getPerms('sherlock', ['read', 'create']),
+          ...getPerms('reports', ['read', 'create'])
         ]
       }
     }
@@ -112,15 +121,17 @@ async function main() {
       isSystem: false,
       permissions: {
         connect: [
-          ...getPerms('projects', ['view']),
+          ...getPerms('projects', ['read']),
           ...getPerms('tasks'),
-          ...getPerms('lists', ['view', 'create', 'edit']),
+          ...getPerms('lists', ['read', 'create', 'update']),
           ...getPerms('comments'),
           ...getPerms('attachments'),
-          ...getPerms('tags', ['view', 'create']),
-          ...getPerms('departments', ['view']),
-          ...getPerms('sentiment', ['view']),
-          ...getPerms('admin', ['view'])
+          ...getPerms('tags', ['read', 'create']),
+          ...getPerms('departments', ['read']),
+          ...getPerms('sentiment', ['read']),
+          ...getPerms('admin', ['read']),
+          ...getPerms('sherlock', ['read']),
+          ...getPerms('reports', ['read'])
         ]
       }
     }
@@ -137,13 +148,13 @@ async function main() {
       isSystem: false,
       permissions: {
         connect: [
-          ...getPerms('projects', ['view']),
-          ...getPerms('tasks', ['view', 'edit']),
-          ...getPerms('lists', ['view']),
-          ...getPerms('comments', ['view', 'create', 'edit']),
-          ...getPerms('attachments', ['view', 'create']),
-          ...getPerms('tags', ['view']),
-          ...getPerms('admin', ['view'])
+          ...getPerms('projects', ['read']),
+          ...getPerms('tasks', ['read', 'update']),
+          ...getPerms('lists', ['read']),
+          ...getPerms('comments', ['read', 'create', 'update']),
+          ...getPerms('attachments', ['read', 'create']),
+          ...getPerms('tags', ['read']),
+          ...getPerms('admin', ['read'])
         ]
       }
     }
@@ -162,9 +173,9 @@ async function main() {
         connect: [
           ...getPerms('sentiment'),
           ...getPerms('departments'),
-          ...getPerms('projects', ['view']),
-          ...getPerms('tasks', ['view']),
-          ...getPerms('admin', ['view'])
+          ...getPerms('projects', ['read']),
+          ...getPerms('tasks', ['read']),
+          ...getPerms('admin', ['read'])
         ]
       }
     }
@@ -181,12 +192,12 @@ async function main() {
       isSystem: false,
       permissions: {
         connect: [
-          ...getPerms('projects', ['view']),
-          ...getPerms('tasks', ['view']),
-          ...getPerms('lists', ['view']),
-          ...getPerms('sentiment', ['view']),
-          ...getPerms('departments', ['view']),
-          ...getPerms('admin', ['view'])
+          ...getPerms('projects', ['read']),
+          ...getPerms('tasks', ['read']),
+          ...getPerms('lists', ['read']),
+          ...getPerms('sentiment', ['read']),
+          ...getPerms('departments', ['read']),
+          ...getPerms('admin', ['read'])
         ]
       }
     }

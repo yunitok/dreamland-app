@@ -67,13 +67,13 @@ export function SidebarContent({ user }: SidebarContentProps) {
       href: "/sherlock",
       label: "Sherlock",
       icon: Shield,
-      permission: { action: "read", resource: "projects" } // Sherlock implies project view
+      permission: { action: "read", resource: "sherlock" }
     },
     {
       href: "/reports",
       label: t("reports"),
       icon: FileText,
-      permission: { action: "read", resource: "projects" } // Reports linked to projects
+      permission: { action: "read", resource: "reports" }
     },
     {
       href: "/departments",
@@ -157,7 +157,7 @@ export function SidebarContent({ user }: SidebarContentProps) {
            </Link>
         )}
 
-        <div className="flex items-center gap-3 pt-2 border-t border-border/50">
+        <div className={cn("flex items-center gap-3 pt-2", canSeeAdmin && "border-t border-border/50")}>
           <div className="h-9 w-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white text-xs font-bold">
             PM
           </div>

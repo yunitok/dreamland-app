@@ -1,7 +1,7 @@
 {
     "common": {
         "appName": "Dreamland App",
-        "dashboard": "Inteligencia",
+        "dashboard": "Panel de control",
         "projects": "Proyectos",
         "departments": "Departamentos",
         "teamPulse": "Pulso del Equipo",
@@ -31,7 +31,12 @@
         "currentlyInProgress": "Actualmente en progreso",
         "recentActivity": "Actividad Reciente",
         "teamSentimentOverview": "Resumen del Sentimiento del Equipo",
-        "stressLevel": "Nivel de Estrés"
+        "stressLevel": "Nivel de Estrés",
+        "noAccess": {
+            "title": "Acceso Restringido",
+            "description": "No tienes los permisos necesarios para ver el panel de control.",
+            "message": "Parece que tu cuenta no tiene permisos asignados para visualizar métricas estratégicas. Por favor, contacta con tu administrador para solicitar acceso."
+        }
     },
     "projects": {
         "title": "Portafolio de Proyectos",

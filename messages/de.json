@@ -1,7 +1,7 @@
 {
     "common": {
         "appName": "Dreamland App",
-        "dashboard": "Intelligence",
+        "dashboard": "Dashboard",
         "projects": "Projects",
         "departments": "Departments",
         "teamPulse": "Team Pulse",
@@ -30,7 +30,11 @@
         "currentlyInProgress": "Currently in progress",
         "recentActivity": "Recent Activity",
         "teamSentimentOverview": "Team Sentiment Overview",
-        "stressLevel": "Stress Level"
+        "stressLevel": "Stress Level",
+        "noAccess": {
+            "title": "Zugriff verweigert",
+            "message": "Sie haben keine Berechtigung, das Dashboard anzuzeigen. Bitte wenden Sie sich an einen Administrator."
+        }
     },
     "projects": {
         "title": "Project Portfolio",

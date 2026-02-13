@@ -6,9 +6,11 @@ import {
   FolderKanban, 
   AlertTriangle, 
   HeartCrack,
-  TrendingUp
+  TrendingUp,
+  Lock
 } from "lucide-react"
 import { getTranslations, setRequestLocale } from "next-intl/server"
+import { hasPermission } from "@/lib/actions/rbac"
 
 async function getDashboardData() {
   const [totalProjects, criticalProjects, recentProjects, teamMoods] = await Promise.all([
@@ -42,6 +44,30 @@ export default async function DashboardPage({
   setRequestLocale(locale)
   const t = await getTranslations("dashboard")
   
+  // Check permissions - Allow if user can view projects OR sentiment
+  const canViewProjects = await hasPermission('projects', 'read')
+  const canViewSentiment = await hasPermission('sentiment', 'read')
+  
+  if (!canViewProjects && !canViewSentiment) {
+    return (
+      <div className="flex flex-col ai-glow min-h-full">
+        {/* Header removed for restricted access */}
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="premium-card max-w-md w-full p-8 text-center space-y-6">
+            <div className="mx-auto w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20">
+              <Lock className="w-8 h-8 text-red-500" />
+            </div>
+            
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold">{t("noAccess.title")}</h2>
+              <p className="text-muted-foreground">{t("noAccess.message")}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const { totalProjects, criticalProjects, recentProjects, mostStressedDept } = 
     await getDashboardData()
 
