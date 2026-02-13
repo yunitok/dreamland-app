@@ -42,6 +42,8 @@ import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { getTask, updateTask, updateTaskProgress, addDependency, removeDependency } from '@/modules/projects/actions/tasks'
 import { createComment, deleteComment } from '@/modules/projects/actions/task-comments'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface TaskDetailSheetProps {
   taskId: string | null
@@ -329,9 +331,11 @@ export function TaskDetailSheet({
                       
                       <div className="mt-4 text-left">
                         {task.description ? (
-                          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                            {task.description}
-                          </p>
+                          <div className="text-sm text-muted-foreground leading-relaxed prose prose-sm prose-stone dark:prose-invert max-w-none">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {task.description}
+                            </ReactMarkdown>
+                          </div>
                         ) : (
                           <p className="text-sm text-muted-foreground/50 italic flex items-center gap-1.5">
                             <Plus className="h-3 w-3" />

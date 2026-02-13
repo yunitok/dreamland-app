@@ -1,0 +1,35 @@
+name: DB Backup de PokemonPlay
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Se ejecuta cada medianoche
+  workflow_dispatch:      # Permite ejecutarlo manualmente con un botón
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Instalar herramientas de Postgres
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Realizar Backup (pg_dump)
+        env:
+          # Aquí usamos el Secret que creaste (SUPABASE_DB_URL)
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }} 
+        run: |
+          # Creamos un nombre de archivo con la fecha de hoy
+          FILENAME="backup-$(date +'%Y-%m-%d_%H-%M-%S').sql"
+          pg_dump "$DATABASE_URL" > "$FILENAME"
+          echo "Backup generado: $FILENAME"
+
+      - name: Subir backup como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-file
+          path: ./*.sql
+          retention-days: 7 # Guarda el archivo en GitHub por 7 días

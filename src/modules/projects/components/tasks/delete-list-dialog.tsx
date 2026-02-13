@@ -76,7 +76,7 @@ export function DeleteListDialog({ isOpen, onClose, list }: DeleteListDialogProp
             variant="destructive" 
             onClick={handleDelete}
             disabled={isLoading || list.taskCount > 0}
-            className="cursor-pointer"
+            className="cursor-pointer text-white"
           >
             {isLoading ? t('deleting') : t('delete')}
           </Button>
