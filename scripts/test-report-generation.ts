@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { generateProjectReport } from '../src/app/actions/report-actions'
+import { generateProjectReport } from '../src/modules/reports/actions/report-actions'
 import { prisma } from '../src/lib/prisma'
 
 async function main() {

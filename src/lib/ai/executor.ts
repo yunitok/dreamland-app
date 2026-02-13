@@ -1,6 +1,6 @@
 import { createTaskList, deleteTaskList, updateTaskList } from '@/modules/projects/actions/task-lists'
 import { createTask, deleteTask, updateTask } from '@/modules/projects/actions/tasks'
-import { generateProjectReport } from '@/app/actions/report-actions'
+import { generateProjectReport } from '@/modules/reports/actions/report-actions'
 import { TaskStatus } from '@prisma/client'
 
 export interface ToolCall {

@@ -5,7 +5,7 @@ import { getTaskLists, createTaskList, deleteTaskList, updateTaskList } from '@/
 import { getTaskStatuses } from '@/modules/projects/actions/task-statuses';
 import { createTask, getTasks, deleteTask, updateTask } from '@/modules/projects/actions/tasks';
 import { getProjects, getProjectById } from '@/modules/projects/actions/projects';
-import { generateProjectReport } from '@/app/actions/report-actions';
+import { generateProjectReport } from '@/modules/reports/actions/report-actions';
 import { getLocale } from 'next-intl/server';
 import { getHistory, saveMessage } from '@/lib/actions/chat';
 import * as fs from 'fs';

@@ -13,7 +13,7 @@ export default async function ModulesLayout({
   return (
     <div className="relative flex min-h-screen w-full flex-col lg:flex-row">
       <Sidebar className="hidden lg:block lg:w-64" user={user as { name?: string | null; role?: string } | undefined} />
-      <main className="flex-1 w-full lg:pl-64 overflow-x-hidden p-6">
+      <main className="flex-1 w-full lg:pl-64 overflow-x-hidden">
         {children}
       </main>
     </div>

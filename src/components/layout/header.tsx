@@ -18,17 +18,19 @@ import { SidebarContent } from "./sidebar"
 interface HeaderProps {
   titleKey?: string
   descriptionKey?: string
+  title?: string
+  description?: string
   backHref?: string
   backLabelKey?: string
   children?: React.ReactNode
 }
 
-export function Header({ titleKey, descriptionKey, backHref, backLabelKey, children }: HeaderProps) {
+export function Header({ titleKey, descriptionKey, backHref, backLabelKey, children, ...props }: HeaderProps) {
   const t = useTranslations()
   const tCommon = useTranslations("common")
 
-  const title = titleKey ? t(titleKey) : "Dashboard"
-  const description = descriptionKey ? t(descriptionKey) : undefined
+  const title = props.title || (titleKey ? t(titleKey) : "Dashboard")
+  const description = props.description || (descriptionKey ? t(descriptionKey) : undefined)
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/80 px-4 md:px-8 backdrop-blur-sm">
@@ -48,11 +50,11 @@ export function Header({ titleKey, descriptionKey, backHref, backLabelKey, child
         </Sheet>
         
         {backHref && (
-          <div className="hidden md:block mr-2">
-            <Button variant="ghost" size="sm" className="pl-0 hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors" asChild>
-              <Link href={backHref}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                {backLabelKey ? t(backLabelKey) : tCommon('back')}
+          <div className="hidden md:block mr-1">
+            <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-foreground transition-colors" asChild>
+              <Link href={backHref} title={tCommon('backToApp')}>
+                <ArrowLeft className="h-5 w-5" />
+                <span className="sr-only">{backLabelKey && t(backLabelKey)}</span>
               </Link>
             </Button>
           </div>

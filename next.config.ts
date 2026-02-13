@@ -45,6 +45,11 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  // Redirects for legacy routes removed - relying on component updates and proxy handling.
+  /* async redirects() {
+    return [];
+  }, */
   
   // Logging for production debugging
   logging: {

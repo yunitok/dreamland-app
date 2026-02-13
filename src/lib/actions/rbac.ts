@@ -9,7 +9,7 @@ import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getCachedRoles } from './cached-queries'
 
-export type Resource = 'projects' | 'tasks' | 'users' | 'roles' | 'sentiment' | 'ai'
+export type Resource = 'projects' | 'tasks' | 'users' | 'roles' | 'sentiment' | 'departments' | 'ai' | 'admin'
 export type Action = 'create' | 'read' | 'update' | 'delete' | 'manage'
 
 // Session user type (from auth.ts)
