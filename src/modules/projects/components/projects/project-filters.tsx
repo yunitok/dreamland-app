@@ -44,7 +44,7 @@ export function ProjectFilters({ departments, onFiltersChange, totalCount, filte
   const types = [
     { value: "Problem", label: t("problem") },
     { value: "Idea", label: t("idea") },
-    { value: "Opportunity", label: t("opportunity") },
+    { value: "Initiative", label: t("initiative") },
   ]
   
   const statuses = [

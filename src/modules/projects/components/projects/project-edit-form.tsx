@@ -35,7 +35,9 @@ interface ProjectEditFormProps {
 }
 
 const PRIORITIES = ["High", "Medium", "Low"] as const
-const TYPES = ["Problem", "Idea"] as const
+const TYPES = ["Problem", "Idea", "Initiative"] as const
+// ...
+
 const STATUSES = ["Active", "Pending", "Done"] as const
 
 export function ProjectEditForm({
@@ -46,6 +48,12 @@ export function ProjectEditForm({
   mode,
 }: ProjectEditFormProps) {
   const t = useTranslations("projects")
+  
+  const labels: Record<string, string> = {
+    Problem: t("problem"),
+    Idea: t("idea"),
+    Initiative: t("initiative"),
+  }
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)

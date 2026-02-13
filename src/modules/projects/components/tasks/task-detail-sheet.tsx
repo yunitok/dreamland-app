@@ -354,12 +354,16 @@ export function TaskDetailSheet({
                        <div 
                           className={cn(
                              "p-3 rounded-md border border-muted/50 transition-colors cursor-text min-h-[80px]",
-                             task.technicalNotes ? "bg-muted/30 font-mono text-xs" : "bg-transparent hover:bg-muted/30"
+                             task.technicalNotes ? "bg-muted/30 text-sm" : "bg-transparent hover:bg-muted/30"
                           )}
                           onClick={() => setIsEditing(true)}
                        >
                           {task.technicalNotes ? (
-                             <p className="whitespace-pre-wrap">{task.technicalNotes}</p>
+                             <div className="text-sm text-foreground leading-relaxed prose prose-sm prose-stone dark:prose-invert max-w-none">
+                               <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                 {task.technicalNotes}
+                               </ReactMarkdown>
+                             </div>
                           ) : (
                              <p className="text-muted-foreground/40 italic text-sm">{t('technicalNotesPlaceholder') || 'Add technical notes...'}</p>
                           )}

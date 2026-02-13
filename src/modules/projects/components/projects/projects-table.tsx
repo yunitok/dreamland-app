@@ -72,6 +72,7 @@ const statusStyles = {
 const typeStyles = {
   Problem: "bg-red-500/5 text-red-400",
   Idea: "bg-violet-500/5 text-violet-400",
+  Initiative: "bg-blue-500/5 text-blue-400",
 }
 
 export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
@@ -220,6 +221,7 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
     const labels: Record<string, string> = {
       Problem: t("problem"),
       Idea: t("idea"),
+      Initiative: t("initiative"),
     }
     return labels[type] || type
   }

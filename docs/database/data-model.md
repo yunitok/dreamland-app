@@ -504,6 +504,6 @@ npx prisma migrate deploy
 ## Further Reading
 
 - [System Overview](../architecture/system-overview.md)
-- [RBAC System](../features/rbac/overview.md)
+- [RBAC System](../modules/admin/rbac.md)
 - [Seeding Guide](./seeding.md)
 - [Maintenance Scripts](./maintenance-scripts.md)

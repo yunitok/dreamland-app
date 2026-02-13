@@ -544,5 +544,5 @@ if (missingInEn.length) console.error('Missing in EN:', missingInEn);
 ## Further Reading
 
 - [System Overview](../architecture/system-overview.md)
-- [Voice Assistant](../features/voice-assistant/architecture.md)
+- [Voice Assistant](../capabilities/ai-assistant/architecture.md)
 - [next-intl Documentation](https://next-intl-docs.vercel.app/)

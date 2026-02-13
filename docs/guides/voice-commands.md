@@ -289,6 +289,6 @@ The following are **not yet supported** but planned for future releases:
 
 ## Further Reading
 
-- [Voice Assistant Architecture](../features/voice-assistant/architecture.md)
-- [Groq Integration](../features/voice-assistant/groq-integration.md)
-- [Gemini Integration](../features/voice-assistant/gemini-integration.md)
+- [Voice Assistant Architecture](../capabilities/ai-assistant/architecture.md)
+- [Groq Integration](../capabilities/ai-assistant/groq-integration.md)
+- [Gemini Integration](../capabilities/ai-assistant/gemini-integration.md)

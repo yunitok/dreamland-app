@@ -54,6 +54,7 @@
         "done": "Done",
         "problem": "Problem",
         "idea": "Idea",
+        "initiative": "Initiative",
         "opportunity": "Opportunity",
         "noProjectsMatch": "No projects match the selected filters",
         "description": "Description",

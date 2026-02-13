@@ -65,42 +65,20 @@ The presentation layer built with modern React:
 - Client-side interactivity with React Server Components
 - Responsive design with mobile-first approach
 
-### 2. **Application Layer**
-The business logic and routing layer:
+### 2. **Application Layer (Modular Monolith)**
+The business logic is structured as a Modular Monolith in `src/modules`:
 
-#### App Router (Next.js 16)
-- File-based routing with `/app/[locale]` structure
-- Support for internationalization at the routing level
-- Nested layouts for consistent UI structure
-- Loading and error states handling
+#### Modules
+- **Projects**: Core project management logic.
+- **Admin**: User management and RBAC.
+- **Sherlock**: AI Investigation module.
+- **Reports**: AI generation of project reports.
+- **Shared**: Common utilities and UI components.
+
+For more details, see [Modular Monolith Architecture](./modular-monolith.md).
 
 #### Server Actions
-All backend logic is exposed through Server Actions in `/src/lib/actions`:
-- **Type-safe**: Full TypeScript support
-- **Automatic serialization**: No need for API routes
-- **Direct database access**: Via Prisma ORM
-- **Built-in validation**: Input validation with custom schemas
-
-**Key Action Modules**:
-- `projects.ts`: Project CRUD operations
-- `tasks.ts`: Task management, dependencies, subtasks
-- `users.ts`: User management
-- `roles.ts`: RBAC role management
-- `sentiment.ts`: Team mood tracking
-- `voice.ts`: Voice command processing
-
-#### Authentication & Sessions
-- **Custom session-based auth**: No external dependencies
-- **Password hashing**: bcryptjs for secure storage
-- **JWT tokens**: jose library for secure session tokens
-- **Middleware protection**: Route-level access control
-
-#### RBAC (Role-Based Access Control)
-Granular permission system with:
-- **Resources**: Projects, Users, Departments, Tasks, etc.
-- **Actions**: View, Create, Edit, Delete
-- **Role matrix**: Flexible permission assignment
-- **Permission checks**: Server-side validation on every action
+All backend logic is exposed through Server Actions co-located within their respective modules (e.g., `src/modules/projects/actions`).
 
 ### 3. **AI Layer**
 Voice command processing with provider abstraction:
@@ -345,6 +323,6 @@ npm start
 ## Further Reading
 
 - [Data Model Documentation](../database/data-model.md)
-- [Voice Assistant Architecture](../features/voice-assistant/architecture.md)
-- [RBAC System Overview](../features/rbac/overview.md)
+- [Voice Assistant Architecture](../capabilities/ai-assistant/voice-architecture.md)
+- [RBAC System Overview](../modules/admin/rbac.md)
 - [API Reference](../api-reference/server-actions.md)

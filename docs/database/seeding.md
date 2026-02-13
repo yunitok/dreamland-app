@@ -337,4 +337,4 @@ async function hashPassword(password: string): Promise<string> {
 
 - [Data Model](./data-model.md)
 - [Maintenance Scripts](./maintenance-scripts.md)
-- [RBAC System](../features/rbac/overview.md)
+- [RBAC System](../modules/admin/rbac.md)
