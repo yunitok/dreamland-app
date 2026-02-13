@@ -23,7 +23,7 @@ jobs:
 
       - name: Realizar Backup (pg_dump)
         env:
-          DATABASE_URL: ${{ secrets.DB_URL }} 
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }} 
         run: |
           FILENAME="backup-$(date +'%Y-%m-%d_%H-%M-%S').sql"
           # Usamos explícitamente pg_dump de la versión 17
