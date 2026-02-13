@@ -2,8 +2,8 @@ name: DB Backup
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Se ejecuta cada medianoche
-  workflow_dispatch:      # Permite ejecutarlo manualmente con un botón
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
   backup:
@@ -12,19 +12,22 @@ jobs:
       - name: Checkout del código
         uses: actions/checkout@v4
 
-      - name: Instalar herramientas de Postgres
+      - name: Instalar herramientas de Postgres 17
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-client
+          sudo apt-get install -y wget gnupg2
+          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
 
       - name: Realizar Backup (pg_dump)
         env:
-          # Aquí usamos el Secret que creaste (SUPABASE_DB_URL)
-          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }} 
+          DATABASE_URL: ${{ secrets.DB_URL }} 
         run: |
-          # Creamos un nombre de archivo con la fecha de hoy
           FILENAME="backup-$(date +'%Y-%m-%d_%H-%M-%S').sql"
-          pg_dump "$DATABASE_URL" > "$FILENAME"
+          # Usamos explícitamente pg_dump de la versión 17
+          /usr/lib/postgresql/17/bin/pg_dump "$DATABASE_URL" > "$FILENAME"
           echo "Backup generado: $FILENAME"
 
       - name: Subir backup como artefacto
@@ -32,4 +35,4 @@ jobs:
         with:
           name: db-backup-file
           path: ./*.sql
-          retention-days: 7 # Guarda el archivo en GitHub por 7 días
+          retention-days: 7
