@@ -484,11 +484,11 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
         </div>
         
         {/* Filters Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex items-center gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex items-center gap-4">
           {/* Group By Selector */}
           <div className="col-span-1 md:w-auto">
             <Select value={groupBy} onValueChange={(v: 'list' | 'status') => setGroupBy(v)}>
-              <SelectTrigger className="w-full lg:w-[180px] h-10">
+              <SelectTrigger className="w-full lg:w-[200px] !h-10">
                 <FolderKanban className="h-4 w-4 mr-2 flex-shrink-0" />
                 <SelectValue placeholder={t('groupBy')} />
               </SelectTrigger>
@@ -501,8 +501,7 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
           
           <Button 
             variant="outline" 
-            size="icon" 
-            className="h-10 w-10 shrink-0 cursor-pointer"
+            className="h-10 w-10 p-0 shrink-0 cursor-pointer"
             onClick={toggleAllLists}
             title={allListsExpanded ? t('collapseAll') || 'Collapse All' : t('expandAll') || 'Expand All'}
           >
@@ -513,12 +512,12 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
             )}
           </Button>
 
-          <Separator orientation="vertical" className="hidden lg:block h-8" />
+
 
           {/* Status Filter */}
           <div className="col-span-1 md:w-auto">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full lg:w-[180px] h-10">
+              <SelectTrigger className="w-full lg:w-[200px] !h-10">
                 <Filter className="h-4 w-4 mr-2 flex-shrink-0" />
                 <SelectValue placeholder={t('status')} />
               </SelectTrigger>
@@ -542,7 +541,7 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
           {/* Tag Filter */}
           <div className="col-span-1 md:w-auto">
              <Select value={selectedTag} onValueChange={setSelectedTag}>
-              <SelectTrigger className="w-full lg:w-[200px] h-10">
+              <SelectTrigger className="w-full lg:w-[200px] !h-10">
                  <div className="flex items-center gap-2 truncate">
                    <Tags className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                    <SelectValue placeholder={t('filterByTag')} />
@@ -568,7 +567,7 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
           {/* Assignee Filter */}
           <div className="col-span-1 md:w-auto">
             <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
-              <SelectTrigger className="w-full lg:w-[180px] h-10">
+              <SelectTrigger className="w-full lg:w-[200px] !h-10">
                 <SelectValue placeholder={t('assignee')} />
               </SelectTrigger>
               <SelectContent>
