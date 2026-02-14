@@ -296,6 +296,8 @@
         },
         "backToProjects": "Zurück zu Projekten",
         "searchTasks": "Search tasks...",
+        "searchUsers": "Benutzer suchen...",
+        "noUsersFound": "Keine Benutzer gefunden.",
         "status": "Status",
         "assignee": "Assignee",
         "dueDate": "Due Date",

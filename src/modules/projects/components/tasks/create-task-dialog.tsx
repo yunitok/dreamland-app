@@ -18,7 +18,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/modules/shared/ui/select'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/modules/shared/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/modules/shared/ui/popover"
 import { Badge } from '@/modules/shared/ui/badge'
+import { Check, ChevronsUpDown } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { useTranslations } from 'next-intl'
 import { createTask } from '@/modules/projects/actions/tasks'
 import { useRouter } from 'next/navigation'
@@ -51,6 +66,7 @@ export function CreateTaskDialog({
   const [description, setDescription] = useState('')
   const [statusId, setStatusId] = useState(defaultStatusId || '')
   const [assigneeId, setAssigneeId] = useState<string>('')
+  const [openAssignee, setOpenAssignee] = useState(false)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [dueDate, setDueDate] = useState('')
   const [estimatedHours, setEstimatedHours] = useState('')
@@ -157,22 +173,67 @@ export function CreateTaskDialog({
               </Select>
             </div>
 
-            {/* Assignee */}
-            <div className="space-y-2">
+            {/* Assignee (Combobox) */}
+            <div className="space-y-2 flex flex-col">
               <Label>{t('assignee')}</Label>
-              <Select value={assigneeId} onValueChange={setAssigneeId}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('selectAssignee')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t('unassigned')}</SelectItem>
-                  {users.map(user => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name || user.username}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={openAssignee} onOpenChange={setOpenAssignee}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openAssignee}
+                    className="w-full justify-between font-normal"
+                  >
+                    {assigneeId
+                      ? users.find((user) => user.id === assigneeId)?.name || users.find((user) => user.id === assigneeId)?.username
+                      : t('selectAssignee')}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[200px] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder={t('searchUsers')} />
+                    <CommandList>
+                      <CommandEmpty>{t('noUsersFound')}</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="unassigned"
+                          onSelect={() => {
+                            setAssigneeId("")
+                            setOpenAssignee(false)
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              assigneeId === "" ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {t('unassigned')}
+                        </CommandItem>
+                        {users.map((user) => (
+                          <CommandItem
+                            key={user.id}
+                            value={user.name || user.username}
+                            onSelect={() => {
+                              setAssigneeId(user.id === assigneeId ? "" : user.id)
+                              setOpenAssignee(false)
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                assigneeId === user.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {user.name || user.username}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 

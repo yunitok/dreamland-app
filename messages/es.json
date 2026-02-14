@@ -306,6 +306,8 @@
         },
         "backToProjects": "Volver a Proyectos",
         "searchTasks": "Buscar tareas...",
+        "searchUsers": "Buscar usuarios...",
+        "noUsersFound": "No se encontraron usuarios.",
         "status": "Estado",
         "assignee": "Asignado",
         "startDate": "Fecha de inicio",

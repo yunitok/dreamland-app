@@ -303,6 +303,8 @@
         },
         "backToProjects": "Back to Projects",
         "searchTasks": "Search tasks...",
+        "searchUsers": "Search users...",
+        "noUsersFound": "No users found.",
         "status": "Status",
         "assignee": "Assignee",
         "startDate": "Start Date",

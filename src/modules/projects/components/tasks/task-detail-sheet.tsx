@@ -44,6 +44,20 @@ import { getTask, updateTask, updateTaskProgress, addDependency, removeDependenc
 import { createComment, deleteComment } from '@/modules/projects/actions/task-comments'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/modules/shared/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/modules/shared/ui/popover"
+import { Check, ChevronsUpDown } from "lucide-react"
 
 interface TaskDetailSheetProps {
   taskId: string | null
@@ -460,30 +474,67 @@ export function TaskDetailSheet({
                     <User className="h-3.5 w-3.5" />
                     {t('assignee')}
                   </span>
-                  <Select 
-                    value={task.assignee?.id || 'unassigned'} 
-                    onValueChange={handleAssigneeChange}
-                  >
-                    <SelectTrigger className="w-full h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="unassigned">{t('unassigned')}</SelectItem>
-                      {users.map(user => (
-                        <SelectItem key={user.id} value={user.id}>
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-5 w-5">
-                              <AvatarImage src={user.image || undefined} />
-                              <AvatarFallback className="text-xs">
-                                {user.name?.charAt(0) || '?'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="truncate">{user.name || user.username}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between h-9 font-normal"
+                      >
+                        {task.assignee ? (
+                           <div className="flex items-center gap-2">
+                             <Avatar className="h-5 w-5">
+                               <AvatarImage src={task.assignee.image || undefined} />
+                               <AvatarFallback className="text-xs">
+                                 {task.assignee.name?.charAt(0) || '?'}
+                               </AvatarFallback>
+                             </Avatar>
+                             <span className="truncate">{task.assignee.name || task.assignee.username}</span>
+                           </div>
+                        ) : (
+                          <span className="text-muted-foreground">{t('unassigned')}</span>
+                        )}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder={t('searchUsers')} />
+                        <CommandList>
+                          <CommandEmpty>{t('noUsersFound')}</CommandEmpty>
+                          <CommandGroup>
+                            <CommandItem
+                              value="unassigned"
+                              onSelect={() => handleAssigneeChange("unassigned")}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  !task.assignee ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {t('unassigned')}
+                            </CommandItem>
+                            {users.map((user) => (
+                              <CommandItem
+                                key={user.id}
+                                value={user.name || user.username}
+                                onSelect={() => handleAssigneeChange(user.id)}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    task.assignee?.id === user.id ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {user.name || user.username}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 {/* Start Date */}
