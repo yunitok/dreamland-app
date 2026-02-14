@@ -12,7 +12,8 @@
         "preferences": "Preferences",
         "theme": "Theme",
         "language": "Language",
-        "backToApp": "Back to App"
+        "backToApp": "Back to App",
+        "viewProfile": "View profile"
     },
     "dashboard": {
         "title": "Strategic Intelligence",
@@ -400,6 +401,60 @@
         "taskDeleted": "Task deleted.",
         "executed": "Executed: {actions}",
         "didNotUnderstand": "I didn't understand that."
+    },
+    "profile": {
+        "title": "My Profile",
+        "subtitle": "Manage your personal information and preferences",
+        "tabs": {
+            "personalInfo": "Personal Information",
+            "security": "Security",
+            "avatar": "Avatar",
+            "role": "Role & Permissions"
+        },
+        "personalInfo": {
+            "name": "Full name",
+            "username": "Username",
+            "email": "Email address",
+            "save": "Save changes",
+            "saved": "Profile updated successfully",
+            "description": "Update your personal information",
+            "errors": {
+                "usernameTaken": "This username is already taken",
+                "emailTaken": "This email is already in use",
+                "usernameShort": "Username must be at least 3 characters",
+                "invalidEmail": "Invalid email format",
+                "failedToUpdate": "Failed to update profile"
+            }
+        },
+        "avatar": {
+            "title": "Avatar",
+            "subtitle": "Customize your profile picture",
+            "upload": "Upload avatar",
+            "delete": "Delete avatar",
+            "dragDrop": "Drag an image here or click to select",
+            "maxSize": "Max size: 5MB",
+            "acceptedFormats": "Formats: JPG, PNG, WebP",
+            "uploaded": "Avatar updated successfully",
+            "deleted": "Avatar deleted successfully",
+            "errors": {
+                "tooLarge": "Image is too large (max 5MB)",
+                "invalidType": "Unsupported format. Use JPG, PNG or WebP",
+                "uploadFailed": "Failed to upload avatar",
+                "deleteFailed": "Failed to delete avatar",
+                "noFile": "No file selected",
+                "noAvatar": "You have no avatar to delete",
+                "unauthorized": "Unauthorized"
+            }
+        },
+        "security": {
+            "description": "Change your password"
+        },
+        "role": {
+            "title": "Role & Permissions",
+            "yourRole": "Your role",
+            "permissions": "Permissions",
+            "description": "Your role and permissions in the system"
+        }
     },
     "changePassword": {
         "title": "Security Check",

@@ -12,7 +12,8 @@
         "preferences": "Preferencias",
         "theme": "Tema",
         "language": "Idioma",
-        "backToApp": "Volver a la App"
+        "backToApp": "Volver a la App",
+        "viewProfile": "Ver perfil"
     },
     "dashboard": {
         "title": "Inteligencia Estratégica",
@@ -403,6 +404,60 @@
         "taskDeleted": "Tarea eliminada.",
         "executed": "Ejecutado: {actions}",
         "didNotUnderstand": "No he entendido eso."
+    },
+    "profile": {
+        "title": "Mi Perfil",
+        "subtitle": "Gestiona tu información personal y preferencias",
+        "tabs": {
+            "personalInfo": "Información Personal",
+            "security": "Seguridad",
+            "avatar": "Avatar",
+            "role": "Rol y Permisos"
+        },
+        "personalInfo": {
+            "name": "Nombre completo",
+            "username": "Nombre de usuario",
+            "email": "Correo electrónico",
+            "save": "Guardar cambios",
+            "saved": "Perfil actualizado correctamente",
+            "description": "Actualiza tu información personal",
+            "errors": {
+                "usernameTaken": "Este nombre de usuario ya está en uso",
+                "emailTaken": "Este correo electrónico ya está en uso",
+                "usernameShort": "El nombre de usuario debe tener al menos 3 caracteres",
+                "invalidEmail": "Formato de correo electrónico inválido",
+                "failedToUpdate": "Error al actualizar el perfil"
+            }
+        },
+        "avatar": {
+            "title": "Avatar",
+            "subtitle": "Personaliza tu imagen de perfil",
+            "upload": "Subir avatar",
+            "delete": "Eliminar avatar",
+            "dragDrop": "Arrastra una imagen aquí o haz clic para seleccionar",
+            "maxSize": "Tamaño máximo: 5MB",
+            "acceptedFormats": "Formatos: JPG, PNG, WebP",
+            "uploaded": "Avatar actualizado correctamente",
+            "deleted": "Avatar eliminado correctamente",
+            "errors": {
+                "tooLarge": "La imagen es demasiado grande (máx 5MB)",
+                "invalidType": "Formato no soportado. Usa JPG, PNG o WebP",
+                "uploadFailed": "Error al subir el avatar",
+                "deleteFailed": "Error al eliminar el avatar",
+                "noFile": "No se seleccionó ningún archivo",
+                "noAvatar": "No tienes avatar para eliminar",
+                "unauthorized": "No autorizado"
+            }
+        },
+        "security": {
+            "description": "Cambia tu contraseña"
+        },
+        "role": {
+            "title": "Rol y Permisos",
+            "yourRole": "Tu rol",
+            "permissions": "Permisos",
+            "description": "Tu rol y permisos en el sistema"
+        }
     },
     "changePassword": {
         "title": "Control de Seguridad",

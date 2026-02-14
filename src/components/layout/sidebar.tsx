@@ -45,6 +45,7 @@ function hasPermission(user: SidebarContentProps['user'], action: string, resour
 export function SidebarContent({ user }: SidebarContentProps) {
   const pathname = usePathname()
   const t = useTranslations("common")
+  const tCommon = useTranslations("common")
   const tAdmin = useTranslations("admin")
   const tFooter = useTranslations("footer")
   const router = useRouter()
@@ -158,17 +159,24 @@ export function SidebarContent({ user }: SidebarContentProps) {
         )}
 
         <div className={cn("flex items-center gap-3 pt-2", canSeeAdmin && "border-t border-border/50")}>
-          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white text-xs font-bold">
-            PM
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <p className="truncate text-sm font-medium text-sidebar-foreground">
-              {user?.role || tFooter("strategicPM")}
-            </p>
-            <p className="truncate text-xs text-sidebar-foreground/70">
-              {user?.name || tFooter("enterprise")}
-            </p>
-          </div>
+          <Link
+            href="/profile"
+            className="flex items-center gap-3 flex-1 rounded-lg px-2 py-2 hover:bg-sidebar-accent/50 transition-colors group"
+          >
+            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+              {user?.name
+                ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
+                : "PM"}
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <p className="truncate text-sm font-medium text-sidebar-foreground">
+                {user?.name || user?.role || tFooter("strategicPM")}
+              </p>
+              <p className="truncate text-xs text-sidebar-foreground/70 group-hover:text-sidebar-foreground/90 transition-colors">
+                {tCommon("viewProfile")}
+              </p>
+            </div>
+          </Link>
           <Button 
             variant="ghost" 
             size="icon" 

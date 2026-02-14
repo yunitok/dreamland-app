@@ -11,7 +11,8 @@
         "preferences": "Preferences",
         "theme": "Theme",
         "language": "Language",
-        "backToApp": "Back to App"
+        "backToApp": "Back to App",
+        "viewProfile": "Profil anzeigen"
     },
     "dashboard": {
         "title": "Strategic Intelligence",
@@ -362,5 +363,65 @@
         "expandAll": "Alle ausklappen",
         "tasksDeleted": "{count} Aufgaben gelöscht",
         "selected": "{count} ausgewählt"
+    },
+    "profile": {
+        "title": "Me in Profil",
+        "subtitle": "Verwalten Sie Ihre persönlichen Informationen und Einstellungen",
+        "tabs": {
+            "personalInfo": "Persönliche Informationen",
+            "security": "Sicherheit",
+            "avatar": "Profilbild",
+            "role": "Rolle & Berechtigungen"
+        },
+        "personalInfo": {
+            "description": "Aktualisieren Sie Ihre persönlichen Informationen",
+            "name": "Vollständiger Name",
+            "username": "Benutzername",
+            "email": "E-Mail",
+            "save": "Änderungen speichern",
+            "saved": "Profil erfolgreich aktualisiert",
+            "errors": {
+                "usernameTaken": "Dieser Benutzername ist bereits vergeben",
+                "emailTaken": "Diese E-Mail-Adresse wird bereits verwendet",
+                "invalid Email": "Ungültige E-Mail-Adresse",
+                "usernameShort": "Benutzername muss mindestens 3 Zeichen lang sein",
+                "failedToUpdate": "Profil konnte nicht aktualisiert werden",
+                "unauthorized": "Unbefugter Zugriff"
+            }
+        },
+        "avatar": {
+            "subtitle": "Passen Sie Ihr Profilbild an",
+            "upload": "Profilbild hochladen",
+            "delete": "Profilbild löschen",
+            "dragDrop": "Ziehen Sie ein Bild hierher oder klicken Sie, um eines auszuwählen",
+            "maxSize": "Maximale Größe: 5MB",
+            "acceptedFormats": "Formate: JPG, PNG, WebP",
+            "uploaded": "Profilbild erfolgreich hochgeladen",
+            "deleted": "Profilbild erfolgreich gelöscht",
+            "errors": {
+                "noFile": "Keine Datei ausgewählt",
+                "invalidType": "Nur JPG, PNG und WebP Dateien sind erlaubt",
+                "tooLarge": "Datei ist zu groß (max. 5MB)",
+                "uploadFailed": "Hochladen fehlgeschlagen",
+                "deleteFailed": "Löschen fehlgeschlagen",
+                "noAvatar": "Kein Profilbild zum Löschen",
+                "unauthorized": "Unbefugter Zugriff"
+            }
+        },
+        "security": {
+            "description": "Ändern Sie Ihr Passwort"
+        },
+        "role": {
+            "title": "Rolle & Berechtigungen",
+            "description": "Ihre Rolle und Berechtigungen im System",
+            "yourRole": "Ihre Rolle",
+            "permissions": "Berechtigungen",
+            "roles": {
+                "super-admin": "Super Administrator",
+                "admin": "Administrator",
+                "manager": "Manager",
+                "user": "Benutzer"
+            }
+        }
     }
 }

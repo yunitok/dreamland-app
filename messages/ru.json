@@ -11,7 +11,8 @@
         "preferences": "Preferences",
         "theme": "Theme",
         "language": "Language",
-        "backToApp": "Back to App"
+        "backToApp": "Back to App",
+        "viewProfile": "Просмотреть профиль"
     },
     "dashboard": {
         "title": "Strategic Intelligence",
@@ -362,5 +363,65 @@
         "expandAll": "Развернуть все",
         "tasksDeleted": "{count} задач удалено",
         "selected": "{count} выбрано"
+    },
+    "profile": {
+        "title": "Мой Профиль",
+        "subtitle": "Управляйте своей личной информацией и настройками",
+        "tabs": {
+            "personalInfo": "Личная информация",
+            "security": "Безопасность",
+            "avatar": "Фото профиля",
+            "role": "Роль и права"
+        },
+        "personalInfo": {
+            "description": "Обновите свою личную информацию",
+            "name": "Полное имя",
+            "username": "Имя пользователя",
+            "email": "Электронная почта",
+            "save": "Сохранить изменения",
+            "saved": "Профиль успешно обновлен",
+            "errors": {
+                "usernameTaken": "Это имя пользователя уже занято",
+                "emailTaken": "Эта электронная почта уже используется",
+                "invalidEmail": "Неверный адрес электронной почты",
+                "usernameShort": "Имя пользователя должно содержать не менее 3 символов",
+                "failedToUpdate": "Не удалось обновить профиль",
+                "unauthorized": "Несанкционированный доступ"
+            }
+        },
+        "avatar": {
+            "subtitle": "Настройте свое фото профиля",
+            "upload": "Загрузить фото",
+            "delete": "Удалить фото",
+            "dragDrop": "Перетащите изображение сюда или нажмите, чтобы выбрать",
+            "maxSize": "Максимальный размер: 5MB",
+            "acceptedFormats": "Форматы: JPG, PNG, WebP",
+            "uploaded": "Фото профиля успешно загружено",
+            "deleted": "Фото профиля успешно удалено",
+            "errors": {
+                "noFile": "Файл не выбран",
+                "invalidType": "Допускаются только файлы JPG, PNG и WebP",
+                "tooLarge": "Файл слишком большой (макс. 5MB)",
+                "uploadFailed": "Не удалось загрузить",
+                "deleteFailed": "Не удалось удалить",
+                "noAvatar": "Нет фото профиля для удаления",
+                "unauthorized": "Несанкционированный доступ"
+            }
+        },
+        "security": {
+            "description": "Измените свой пароль"
+        },
+        "role": {
+            "title": "Роль и права",
+            "description": "Ваша роль и права в системе",
+            "yourRole": "Ваша роль",
+            "permissions": "Права доступа",
+            "roles": {
+                "super-admin": "Супер администратор",
+                "admin": "Администратор",
+                "manager": "Менеджер",
+                "user": "Пользователь"
+            }
+        }
     }
 }

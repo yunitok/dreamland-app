@@ -11,7 +11,8 @@
         "preferences": "Preferences",
         "theme": "Theme",
         "language": "Language",
-        "backToApp": "Back to App"
+        "backToApp": "Back to App",
+        "viewProfile": "Voir le profil"
     },
     "dashboard": {
         "title": "Strategic Intelligence",
@@ -362,5 +363,65 @@
         "expandAll": "Tout développer",
         "tasksDeleted": "{count} tâches supprimées",
         "selected": "{count} sélectionné(s)"
+    },
+    "profile": {
+        "title": "Mon Profil",
+        "subtitle": "Gérez vos informations personnelles et préférences",
+        "tabs": {
+            "personalInfo": "Informations Personnelles",
+            "security": "Sécurité",
+            "avatar": "Photo de profil",
+            "role": "Rôle & Permissions"
+        },
+        "personalInfo": {
+            "description": "Mettez à jour vos informations personnelles",
+            "name": "Nom complet",
+            "username": "Nom d'utilisateur",
+            "email": "E-mail",
+            "save": "Enregistrer les modifications",
+            "saved": "Profil mis à jour avec succès",
+            "errors": {
+                "usernameTaken": "Ce nom d'utilisateur est déjà pris",
+                "emailTaken": "Cet e-mail est déjà utilisé",
+                "invalidEmail": "Adresse e-mail invalide",
+                "usernameShort": "Le nom d'utilisateur doit contenir au moins 3 caractères",
+                "failedToUpdate": "Impossible de mettre à jour le profil",
+                "unauthorized": "Accès non autorisé"
+            }
+        },
+        "avatar": {
+            "subtitle": "Personnalisez votre photo de profil",
+            "upload": "Télécharger une photo",
+            "delete": "Supprimer la photo",
+            "dragDrop": "Glissez une image ici ou cliquez pour en sélectionner une",
+            "maxSize": "Taille maximale : 5MB",
+            "acceptedFormats": "Formats : JPG, PNG, WebP",
+            "uploaded": "Photo de profil téléchargée avec succès",
+            "deleted": "Photo de profil supprimée avec succès",
+            "errors": {
+                "noFile": "Aucun fichier sélectionné",
+                "invalidType": "Seuls les fichiers JPG, PNG et WebP sont autorisés",
+                "tooLarge": "Le fichier est trop volumineux (max. 5MB)",
+                "uploadFailed": "Échec du téléchargement",
+                "deleteFailed": "Échec de la suppression",
+                "noAvatar": "Aucune photo de profil à supprimer",
+                "unauthorized": "Accès non autorisé"
+            }
+        },
+        "security": {
+            "description": "Changez votre mot de passe"
+        },
+        "role": {
+            "title": "Rôle & Permissions",
+            "description": "Votre rôle et permissions dans le système",
+            "yourRole": "Votre rôle",
+            "permissions": "Permissions",
+            "roles": {
+                "super-admin": "Super Administrateur",
+                "admin": "Administrateur",
+                "manager": "Gestionnaire",
+                "user": "Utilisateur"
+            }
+        }
     }
 }
