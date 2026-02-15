@@ -7,8 +7,8 @@ export const routing = defineRouting({
   // Used when no locale matches (Spanish as default)
   defaultLocale: 'es',
 
-  // Don't prefix the default locale (optional, cleaner URLs)
-  localePrefix: 'as-needed'
+  // Always prefix the default locale (avoids redirect loops with /docs)
+  localePrefix: 'always'
 });
 
 export type Locale = (typeof routing.locales)[number];

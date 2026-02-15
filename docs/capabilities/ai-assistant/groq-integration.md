@@ -1,3 +1,8 @@
+---
+title: Groq Integration
+description: Groq AI provider with Llama 3.3 70B model
+---
+
 # Groq Integration - Dreamland Manager
 
 ## Overview

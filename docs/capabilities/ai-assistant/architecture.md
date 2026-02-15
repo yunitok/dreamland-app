@@ -1,3 +1,8 @@
+---
+title: AI Assistant Architecture
+description: Provider pattern for AI services with Groq and Gemini integration
+---
+
 # Voice Assistant Architecture - Dreamland Manager
 
 ## Overview

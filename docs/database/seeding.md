@@ -1,3 +1,8 @@
+---
+title: Database Seeding
+description: Initial data setup and customization scripts
+---
+
 # Database Seeding - Dreamland Manager
 
 ## Overview

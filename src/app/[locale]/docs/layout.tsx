@@ -1,6 +1,6 @@
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import type { ReactNode } from 'react';
-import { sherlock } from '@/source';
+import { docs } from '@/source';
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import { setRequestLocale } from 'next-intl/server';
 import 'fumadocs-ui/style.css';
@@ -18,9 +18,9 @@ export default async function Layout({
   return (
     <RootProvider>
       <DocsLayout
-        tree={sherlock.pageTree}
+        tree={docs.pageTree}
         nav={{
-          title: '📚 Sherlock Documentation',
+          title: '📚 Dreamland Documentation',
           url: `/${locale}/docs`,
         }}
         sidebar={{

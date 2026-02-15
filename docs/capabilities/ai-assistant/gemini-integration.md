@@ -1,3 +1,8 @@
+---
+title: Gemini Integration
+description: Google Gemini AI provider implementation
+---
+
 # Google Gemini Integration - Dreamland Manager
 
 ## Overview

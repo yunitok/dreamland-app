@@ -1,3 +1,8 @@
+---
+title: Chat Agent
+description: Conversational AI interface for project management
+---
+
 # AI Chat Agent - Dreamland Manager
 
 ## Overview

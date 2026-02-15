@@ -1,3 +1,8 @@
+---
+title: Role-Based Access Control
+description: Permission system and role management
+---
+
 # RBAC System Overview - Dreamland Manager
 
 ## Introduction

@@ -1,3 +1,8 @@
+---
+title: Internationalization
+description: Multi-language support with next-intl for 6 languages
+---
+
 # Internationalization (i18n) - Dreamland Manager
 
 ## Overview

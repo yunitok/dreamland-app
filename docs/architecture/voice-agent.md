@@ -1,3 +1,8 @@
+---
+title: Hybrid Voice/Chat Agent Architecture
+description: Conversational interface for managing projects with text and voice input using Chain of Thought reasoning
+---
+
 # Hybrid Voice/Chat Agent Architecture
 
 This document details the architecture of the **Hybrid Voice/Chat Agent** implemented in Dreamland. The system provides a conversational interface for managing projects, lists, and tasks, supporting both text and voice input with "Chain of Thought" reasoning.

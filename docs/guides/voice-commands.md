@@ -1,3 +1,8 @@
+---
+title: Voice Commands
+description: Using voice input for project management tasks
+---
+
 # Voice Commands Reference - Dreamland Manager
 
 ## Overview

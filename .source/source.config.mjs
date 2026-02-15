@@ -1,7 +1,7 @@
 // source.config.ts
 import { defineDocs, defineConfig } from "fumadocs-mdx/config";
-var sherlock = defineDocs({
-  dir: "docs/modules/sherlock"
+var docs = defineDocs({
+  dir: "docs"
 });
 var source_config_default = defineConfig({
   mdxOptions: {
@@ -11,5 +11,5 @@ var source_config_default = defineConfig({
 });
 export {
   source_config_default as default,
-  sherlock
+  docs
 };

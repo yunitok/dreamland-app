@@ -1,3 +1,8 @@
+---
+title: Deployment Guide
+description: Production deployment instructions for Vercel, Railway, and AWS
+---
+
 # Deployment Guide - Dreamland Manager
 
 ## Prerequisites

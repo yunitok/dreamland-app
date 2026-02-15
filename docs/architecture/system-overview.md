@@ -1,3 +1,8 @@
+---
+title: System Overview
+description: High-level architecture combining project management, team wellness monitoring, and AI-powered voice commands
+---
+
 # System Overview - Dreamland Manager
 
 ## Introduction

@@ -1,4 +1,4 @@
-import { sherlock } from '@/source';
+import { docs } from '@/source';
 import { DocsPage, DocsBody } from 'fumadocs-ui/page';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -16,7 +16,7 @@ export default async function Page({ params }: PageProps) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
   
-  const page = sherlock.getPage(slug);
+  const page = docs.getPage(slug);
 
   if (!page) notFound();
 
@@ -44,7 +44,7 @@ export async function generateStaticParams() {
     params.push({ locale, slug: undefined });
     
     // Add all pages for each locale
-    for (const page of sherlock.getPages()) {
+    for (const page of docs.getPages()) {
       params.push({ locale, slug: page.slugs });
     }
   }
@@ -54,7 +54,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const page = sherlock.getPage(slug);
+  const page = docs.getPage(slug);
 
   if (!page) notFound();
 

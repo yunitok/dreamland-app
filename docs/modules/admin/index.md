@@ -1,3 +1,8 @@
+---
+title: Admin Module
+description: User management, RBAC, and system settings
+---
+
 # Admin Module - Dreamland Manager
 
 ## Overview

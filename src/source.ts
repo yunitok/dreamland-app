@@ -1,7 +1,7 @@
 import { loader } from 'fumadocs-core/source';
-import { sherlock as sherlockSource } from '../.source/server';
+import { docs as docsSource } from '../.source/server';
 
-export const sherlock = loader({
+export const docs = loader({
   baseUrl: '/docs',
-  source: sherlockSource.toFumadocsSource(),
+  source: docsSource.toFumadocsSource(),
 });

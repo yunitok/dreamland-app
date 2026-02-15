@@ -1,3 +1,8 @@
+---
+title: Reports Module
+description: AI-generated status reports and project analysis
+---
+
 # Project Reports System - Dreamland Manager
 
 ## Overview

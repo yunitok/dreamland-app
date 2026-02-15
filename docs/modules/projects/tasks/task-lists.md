@@ -1,3 +1,8 @@
+---
+title: Task Lists
+description: Managing task lists and views (Board, Calendar, Gantt, Timeline)
+---
+
 # Task List Management
 
 ## Overview

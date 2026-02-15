@@ -1,3 +1,8 @@
+---
+title: Modular Monolith Architecture
+description: Detailed guide to the modular monolith architecture pattern and src/modules structure
+---
+
 # Modular Monolith Architecture - Dreamland Manager
 
 ## Overview

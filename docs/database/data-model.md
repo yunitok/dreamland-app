@@ -1,3 +1,8 @@
+---
+title: Data Model
+description: Complete database schema with entity relationships
+---
+
 # Data Model - Dreamland Manager
 
 ## Overview

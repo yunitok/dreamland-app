@@ -1,3 +1,8 @@
+---
+title: Task Details
+description: Detailed task view with comments, attachments, and dependencies
+---
+
 # Task Details - Dreamland Manager
 
 ## Overview

@@ -1,3 +1,8 @@
+---
+title: Documentation Index
+description: Comprehensive guide covering all aspects of the Dreamland Manager application
+---
+
 # Documentation Index
 
 Welcome to the Dreamland Manager documentation! This comprehensive guide covers all aspects of the application.

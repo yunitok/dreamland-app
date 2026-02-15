@@ -1,3 +1,8 @@
+---
+title: Authentication & User Management
+description: Secure credential-based login, session management, and role-based access control
+---
+
 # Authentication & User Management
 
 ## Overview

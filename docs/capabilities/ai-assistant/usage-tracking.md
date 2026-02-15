@@ -1,3 +1,8 @@
+---
+title: AI Usage Tracking
+description: Rate limiting and usage monitoring for AI providers
+---
+
 # AI Usage Tracking - Dreamland Manager
 
 ## Overview
