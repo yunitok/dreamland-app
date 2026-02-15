@@ -1,3 +1,7 @@
+---
+title: Design Decisions
+---
+
 # 🏗️ Decisiones de Diseño del Esquema Sherlock
 
 ## Resumen

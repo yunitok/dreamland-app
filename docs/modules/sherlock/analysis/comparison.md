@@ -1,4 +1,8 @@
-# 🔍 Análisis Comparativo: Yurest vs Gstock vs Sherlock
+---
+title: Integration Comparison
+---
+
+# 📊 Sherlock: Análisis Comparativo de Integracionest vs Gstock vs Sherlock
 
 ## Tabla Comparativa de Entidades y Campos
 

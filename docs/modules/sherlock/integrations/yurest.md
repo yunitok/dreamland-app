@@ -1,3 +1,7 @@
+---
+title: Yurest Integration Guide
+---
+
 # 🔌 Guía de Integración: Yurest
 
 ## Resumen
@@ -25,9 +29,9 @@ const headers = {
 1. Contactar con soporte de Yurest
 2. Solicitar token de API para tu restaurante
 3. Añadir a `.env`:
-   ```env
+   ```bash
    YUREST_API_URL=https://api.yurest.com
-   YUREST_TOKEN=your_unique_token_here
+   YUREST_TOKEN=your_token_here
    ```
 
 ---

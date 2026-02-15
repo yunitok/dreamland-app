@@ -1,3 +1,7 @@
+---
+title: Gstock Integration Guide
+---
+
 # 🔌 Guía de Integración: Gstock
 
 ## Resumen
@@ -79,10 +83,10 @@ export async function fetchGstock(endpoint: string) {
 
 ### Variables de Entorno
 
-```env
+```bash
 GSTOCK_API_URL=https://api.gstock.es
-GSTOCK_CLIENT_ID=your_client_id_here
-GSTOCK_CLIENT_SECRET=your_client_secret_here
+GSTOCK_CLIENT_ID=your_client_id
+GSTOCK_CLIENT_SECRET=your_secret
 GSTOCK_WEBHOOK_SECRET=your_webhook_secret_for_hmac
 ```
 

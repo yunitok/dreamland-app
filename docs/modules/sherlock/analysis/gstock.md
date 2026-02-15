@@ -1,4 +1,8 @@
-# 📦 Análisis de Gstock: Plataforma de Gestión de Inventario y Compras
+---
+title: Gstock API Analysis
+---
+
+# 🕵️ Sherlock: Análisis de Integración con Gstock: Plataforma de Gestión de Inventario y Compras
 
 ## Resumen Ejecutivo
 

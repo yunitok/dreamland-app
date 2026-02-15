@@ -1,3 +1,7 @@
+---
+title: Entity Relationships
+---
+
 # 📊 Diagramas de Entidad-Relación
 
 Este documento contiene los diagramas visuales del esquema de base de datos de Sherlock.

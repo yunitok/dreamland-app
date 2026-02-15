@@ -1,3 +1,8 @@
+---
+title: Quick Start Guide
+description: Guía rápida para comenzar con Sherlock
+---
+
 # 📖 Sherlock Module - README
 
 **Gestión Integral de Restaurantes con IA**

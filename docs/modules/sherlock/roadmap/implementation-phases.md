@@ -1,8 +1,12 @@
-# 🗓️ Roadmap de Implementación Sherlock
+---
+title: Implementation Roadmap
+---
+
+# 🗺️ Sherlock: Fases de Implementación y Roadmap
 
 ## Visión General
 
-Este documento detalla las fases de implementación del módulo Sherlock, desde la infraestructura base hasta las características avanzadas de IA.
+Este documento detalla el módulo Sherlock, desde la infraestructura base hasta las características avanzadas de IA.
 
 ---
 
@@ -97,7 +101,7 @@ Este documento detalla las fases de implementación del módulo Sherlock, desde 
 - [ ] Solicitar credenciales Yurest (token API)
 - [ ] Solicitar credenciales Gstock (OAuth2 client_id/secret)
 - [ ] Configurar variables de entorno
-  ```env
+  ```bash
   YUREST_API_URL=https://api.yurest.com
   YUREST_TOKEN=your_token_here
   

@@ -1,3 +1,7 @@
+---
+title: Prisma Schema Reference
+---
+
 # Prisma Schema - Sherlock Module
 
 Este documento contiene el esquema completo de base de datos de Sherlock en formato Prisma.

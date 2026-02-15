@@ -1,3 +1,8 @@
+---
+title: Sherlock Module Overview
+description: Gestión integral de restaurantes con IA - Documentación completa
+---
+
 # 🕵️ Módulo Sherlock - Visión General
 
 ## Executive Summary
