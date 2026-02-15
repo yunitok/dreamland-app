@@ -526,6 +526,19 @@
         "settings": {
             "title": "Настройки Sherlock",
             "description": "Единицы измерения, категории, поставщики и глобальные параметры."
+        },
+        "sandbox": {
+            "title": "Песочница интеграций",
+            "description": "Исследование и тестирование внешних API",
+            "selectEndpoint": "Выберите endpoint",
+            "selectEndpointHint": "Выберите доступный endpoint API",
+            "execute": "Выполнить",
+            "rawResponse": "Сырой ответ",
+            "mappedView": "Сопоставленный вид",
+            "info": "Информация",
+            "noData": "Данные не доступны",
+            "loading": "Загрузка...",
+            "error": "Ошибка"
         }
     }
 }

@@ -527,6 +527,19 @@
         "settings": {
             "title": "Sherlock-Einstellungen",
             "description": "Einheiten, Kategorien, Lieferanten und globale Parameter."
+        },
+        "sandbox": {
+            "title": "Integrations-Sandbox",
+            "description": "Externe APIs erkunden und testen",
+            "selectEndpoint": "Endpoint auswählen",
+            "selectEndpointHint": "Wählen Sie einen verfügbaren API-Endpoint",
+            "execute": "Ausführen",
+            "rawResponse": "Rohe Antwort",
+            "mappedView": "Zugeordnete Ansicht",
+            "info": "Info",
+            "noData": "Keine Daten verfügbar",
+            "loading": "Wird geladen...",
+            "error": "Fehler"
         }
     }
 }

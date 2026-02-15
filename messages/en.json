@@ -514,6 +514,19 @@
         "settings": {
             "title": "Sherlock Settings",
             "description": "Units, categories, suppliers, and global parameters."
+        },
+        "sandbox": {
+            "title": "Integrations Sandbox",
+            "description": "Explore and test external APIs connected to Sherlock.",
+            "selectEndpoint": "Select an endpoint to explore",
+            "selectEndpointHint": "Select an endpoint from the left panel and click Execute",
+            "execute": "Execute",
+            "rawResponse": "Raw Response",
+            "mappedView": "Mapped View",
+            "info": "Info",
+            "noData": "Execute a request to see results",
+            "loading": "Loading...",
+            "error": "Connection error"
         }
     }
 }

@@ -8,7 +8,8 @@ import {
   Settings,
   TrendingUp,
   AlertTriangle,
-  History
+  History,
+  Plug
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/modules/shared/ui/card";
 import { Header } from "@/components/layout/header";
@@ -64,6 +65,14 @@ export default async function SherlockDashboard() {
       icon: Settings,
       color: "text-slate-500",
       bg: "bg-slate-500/10",
+    },
+    {
+      title: "Sandbox de Integraciones",
+      description: "Explora y prueba las APIs de Yurest y GStock.",
+      href: "/sherlock/sandbox",
+      icon: Plug,
+      color: "text-teal-500",
+      bg: "bg-teal-500/10",
     },
   ];
 
