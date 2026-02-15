@@ -474,5 +474,37 @@
         "failedToUpdate": "Error al actualizar la contraseña",
         "unauthorized": "Acceso no autorizado",
         "footer": "Dreamland v2.0 • Acceso Seguro"
+    },
+    "sherlock": {
+        "title": "Sherlock AI",
+        "description": "Sistema integral de gestión de cocina, costes y auditoría inteligente.",
+        "ingredients": {
+            "title": "Ingredientes",
+            "description": "Gestión de fichas técnicas, precios y alérgenos.",
+            "new": "Nuevo Ingrediente",
+            "edit": "Editar Ingrediente"
+        },
+        "recipes": {
+            "title": "Recetario & Escandallos",
+            "description": "Recetas detalladas, sub-recetas y costes teóricos.",
+            "new": "Nueva Receta",
+            "edit": "Editar Receta"
+        },
+        "inventory": {
+            "title": "Inventario & Stock",
+            "description": "Control de existencias, lotes y caducidades."
+        },
+        "waste": {
+            "title": "Control de Mermas",
+            "description": "Registro de desperdicios y análisis de causas."
+        },
+        "audits": {
+            "title": "Auditoría IA",
+            "description": "Verificación de procesos por voz y detección de anomalías."
+        },
+        "settings": {
+            "title": "Configuración Sherlock",
+            "description": "Unidades, categorías, proveedores y parámetros globales."
+        }
     }
 }
