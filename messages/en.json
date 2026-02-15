@@ -292,7 +292,11 @@
         "viewReport": "View Full Report",
         "deleteReport": "Delete Report",
         "deleteConfirmation": "Are you sure you want to delete this report?",
-        "deleteDescription": "This action cannot be undone."
+        "deleteDescription": "This action cannot be undone.",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "noReports": "No reports generated",
+        "noReportsDescription": "Use the voice assistant by saying \"Generate a report\" to create your first intelligence report."
     },
     "tasks": {
         "views": {
@@ -489,7 +493,15 @@
         },
         "inventory": {
             "title": "Inventory & Stock",
-            "description": "Stock control, batches, and expiration dates."
+            "description": "Stock control, batches, and expiration dates.",
+            "new": {
+                "title": "New Inventory Record",
+                "description": "Add ingredient stock to the warehouse."
+            },
+            "edit": {
+                "title": "Edit Inventory Record",
+                "description": "Modify the inventory record data."
+            }
         },
         "waste": {
             "title": "Waste Control",

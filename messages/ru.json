@@ -12,7 +12,8 @@
         "theme": "Theme",
         "language": "Language",
         "backToApp": "Back to App",
-        "viewProfile": "Просмотреть профиль"
+        "viewProfile": "Просмотреть профиль",
+        "reports": "Отчеты"
     },
     "dashboard": {
         "title": "Strategic Intelligence",
@@ -34,7 +35,8 @@
         "stressLevel": "Stress Level",
         "noAccess": {
             "title": "Доступ запрещен",
-            "message": "У вас нет прав для просмотра панели управления. Свяжитесь с администратором для получения доступа."
+            "message": "У вас нет прав для просмотра панели управления. Свяжитесь с администратором для получения доступа.",
+            "description": "У вас нет необходимых разрешений для просмотра панели мониторинга."
         }
     },
     "projects": {
@@ -85,7 +87,24 @@
         "titlePlaceholder": "Project title",
         "descriptionPlaceholder": "Describe the project or proposal...",
         "sourceQuotePlaceholder": "Source quote or reference...",
-        "create": "Create"
+        "create": "Create",
+        "manageProject": "Управление проектом",
+        "allTags": "Все теги",
+        "manageTags": "Управление тегами",
+        "views": {
+            "list": "Список",
+            "timeline": "Хронология"
+        },
+        "timeline": {
+            "scale": "Масштаб",
+            "days": "Дни",
+            "months": "Месяцы",
+            "years": "Годы",
+            "today": "Сегодня",
+            "projects": "Проекты",
+            "projectsAndTasks": "Проекты и задачи",
+            "detail": "Детали"
+        }
     },
     "sentiment": {
         "title": "Team Pulse",
@@ -243,7 +262,13 @@
         "importing": "Importing...",
         "importSuccess": "Data imported successfully!",
         "jsonFormatReference": "JSON Format Reference",
-        "jsonDescription": "The expected JSON structure should contain projects and/or teamMoods arrays."
+        "jsonDescription": "The expected JSON structure should contain projects and/or teamMoods arrays.",
+        "filters": "Фильтры",
+        "of": "из",
+        "clearFilters": "Очистить фильтры",
+        "searchPlaceholder": "Поиск по имени или email...",
+        "allRoles": "Все роли",
+        "noRole": "Без роли"
     },
     "footer": {
         "strategicPM": "Strategic PM",
@@ -276,7 +301,10 @@
         "passwordMismatch": "Пароли не совпадают",
         "passwordTooShort": "Пароль должен содержать не менее 6 символов",
         "passwordPlaceholder": "••••••••",
-        "footer": "Dreamland v2.0 • Безопасный доступ"
+        "footer": "Dreamland v2.0 • Безопасный доступ",
+        "unexpectedError": "Произошла непредвиденная ошибка",
+        "failedToUpdate": "Не удалось обновить пароль",
+        "unauthorized": "Несанкционированный доступ"
     },
     "reports": {
         "title": "Отчет по аналитике",
@@ -285,7 +313,11 @@
         "viewReport": "Посмотреть полный отчет",
         "deleteReport": "Удалить отчет",
         "deleteConfirmation": "Вы уверены, что хотите удалить этот отчет?",
-        "deleteDescription": "Это действие нельзя отменить."
+        "deleteDescription": "Это действие нельзя отменить.",
+        "cancel": "Отмена",
+        "delete": "Удалить",
+        "noReports": "Отчеты не созданы",
+        "noReportsDescription": "Используйте голосовой помощник, сказав «Создать отчет», чтобы создать свой первый аналитический отчет."
     },
     "tasks": {
         "views": {
@@ -362,7 +394,28 @@
         "collapseAll": "Свернуть все",
         "expandAll": "Развернуть все",
         "tasksDeleted": "{count} задач удалено",
-        "selected": "{count} выбрано"
+        "selected": "{count} выбрано",
+        "startDate": "Дата начала",
+        "completed": "Завершено",
+        "inProgress": "В процессе",
+        "boardInitialized": "Доска проекта успешно инициализирована",
+        "filterByTag": "Фильтр по тегу",
+        "allTags": "Все теги",
+        "manageTags": "Управление тегами",
+        "save": "Сохранить",
+        "groupBy": "Группировать по",
+        "groupByList": "Группировать по списку",
+        "groupByStatus": "Группировать по статусу",
+        "columns": "Столбцы",
+        "toggleColumns": "Переключить столбцы",
+        "hideColumn": "Скрыть столбец",
+        "taskMoved": "Задача успешно перемещена",
+        "failedToMoveTask": "Не удалось переместить задачу",
+        "errorMovingTask": "Не удалось переместить задачу",
+        "assigneeRequiredToMove": "Требуется исполнитель",
+        "assignTaskFirstDescription": "Задачи должны иметь исполнителя перед перемещением из Backlog",
+        "cannotRemoveAssignee": "Невозможно удалить исполнителя",
+        "moveToBacklogFirstDescription": "Чтобы удалить исполнителя, сначала переместите задачу в Backlog"
     },
     "profile": {
         "title": "Мой Профиль",
@@ -406,7 +459,8 @@
                 "deleteFailed": "Не удалось удалить",
                 "noAvatar": "Нет фото профиля для удаления",
                 "unauthorized": "Несанкционированный доступ"
-            }
+            },
+            "title": "Аватар"
         },
         "security": {
             "description": "Измените свой пароль"
@@ -422,6 +476,56 @@
                 "manager": "Менеджер",
                 "user": "Пользователь"
             }
+        }
+    },
+    "Voice": {
+        "listCreated": "Список создан: \"{name}\"",
+        "listUpdated": "Список обновлен: \"{name}\"",
+        "listDeleted": "Список удален.",
+        "taskCreated": "Задача создана: \"{title}\"",
+        "taskUpdated": "Задача обновлена: \"{title}\"",
+        "taskDeleted": "Задача удалена.",
+        "executed": "Выполнено: {actions}",
+        "didNotUnderstand": "Я не понял этого."
+    },
+    "sherlock": {
+        "title": "Sherlock AI",
+        "description": "Комплексное управление кухней, расходами и интеллектуальная система аудита.",
+        "ingredients": {
+            "title": "Ингредиенты",
+            "description": "Управление техническими картами, ценами и аллергенами.",
+            "new": "Новый ингредиент",
+            "edit": "Редактировать ингредиент"
+        },
+        "recipes": {
+            "title": "Книга рецептов и калькуляция",
+            "description": "Подробные рецепты, подрецепты и теоретическая стоимость.",
+            "new": "Новый рецепт",
+            "edit": "Редактировать рецепт"
+        },
+        "inventory": {
+            "title": "Инвентаризация и запасы",
+            "description": "Учет запасов, партий и сроков годности.",
+            "new": {
+                "title": "Новая запись инвентаризации",
+                "description": "Добавить запас ингредиентов на склад."
+            },
+            "edit": {
+                "title": "Редактировать запись инвентаризации",
+                "description": "Изменить данные записи инвентаризации."
+            }
+        },
+        "waste": {
+            "title": "Контроль списаний",
+            "description": "Учет отходов и анализ причин."
+        },
+        "audits": {
+            "title": "AI Аудит",
+            "description": "Голосовая проверка процессов и обнаружение аномалий."
+        },
+        "settings": {
+            "title": "Настройки Sherlock",
+            "description": "Единицы измерения, категории, поставщики и глобальные параметры."
         }
     }
 }

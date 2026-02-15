@@ -28,12 +28,14 @@ import { useTranslations } from "next-intl"
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  searchKey?: string
   searchPlaceholder?: string
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  searchKey = "name",
   searchPlaceholder,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
@@ -57,13 +59,13 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      {searchPlaceholder && table.getColumn("name") && (
+      {searchPlaceholder && table.getColumn(searchKey) && (
         <div className="flex items-center py-4">
           <Input
             placeholder={searchPlaceholder}
-            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
+              table.getColumn(searchKey)?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />

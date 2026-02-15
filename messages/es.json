@@ -281,6 +281,7 @@
         "viewReport": "Ver Reporte Completo",
         "deleteReport": "Eliminar Informe",
         "deleteConfirmation": "¿Estás seguro de que quieres eliminar este informe?",
+        "deleteDescription": "Esta acción no se puede deshacer.",
         "cancel": "Cancelar",
         "delete": "Eliminar",
         "noReports": "No hay informes generados",
@@ -492,7 +493,15 @@
         },
         "inventory": {
             "title": "Inventario & Stock",
-            "description": "Control de existencias, lotes y caducidades."
+            "description": "Control de existencias, lotes y caducidades.",
+            "new": {
+                "title": "Nuevo Registro de Inventario",
+                "description": "Añade existencias de un ingrediente al almacén."
+            },
+            "edit": {
+                "title": "Editar Registro de Inventario",
+                "description": "Modifica los datos del registro de inventario."
+            }
         },
         "waste": {
             "title": "Control de Mermas",
