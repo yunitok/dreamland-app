@@ -1,3 +1,8 @@
+---
+title: Estándar de Estimación y Planificación
+description: Guía oficial de estimación IA-Optimized para Dreamland App.
+---
+
 # Estandard de Estimación y Planificación (IA-Optimized)
 
 Este documento define el estándar oficial para la estimación de tareas en Dreamland App, ajustado a la realidad de velocidad y eficiencia que proporciona el desarrollo asistido por Inteligencia Artificial.
