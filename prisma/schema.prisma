@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
@@ -10,268 +7,207 @@ datasource db {
   provider = "postgresql"
 }
 
-// =============================================================================
-// PROJECT MANAGEMENT
-// =============================================================================
-
 model Project {
-  id          String  @id @default(cuid())
-  title       String
-  department  String
-  type        String // "Problem" | "Idea" | "Initiative"
-  priority    String // "High" | "Medium" | "Low"
-  status      String  @default("Pending") // "Active" | "Pending" | "Done"
-  description String
-  sourceQuote String?
-
-  // Project Management Fields
-  startDate DateTime?
-  dueDate   DateTime?
-  progress  Int       @default(0) // 0-100%
-  color     String? // For visual identification (hex color)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  risks          ProjectRisk[]
-  lists          TaskList[]
-  tags           Tag[]
+  id             String          @id @default(cuid())
+  title          String
+  department     String
+  type           String
+  priority       String
+  status         String          @default("Pending")
+  description    String
+  sourceQuote    String?
+  startDate      DateTime?
+  dueDate        DateTime?
+  progress       Int             @default(0)
+  color          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
   chatSessions   ChatSession[]
+  risks          ProjectRisk[]
   reports        Report[]
   sherlockAudits SherlockAudit[]
+  tags           Tag[]
+  lists          TaskList[]
 }
 
 model TaskList {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   name        String
   description String?
-  position    Int     @default(0) // For ordering lists
-  color       String? // Hex color for visual identification
+  position    Int      @default(0)
+  color       String?
+  projectId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tasks       Task[]
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  projectId String
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  tasks Task[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([projectId]) // Get lists for a project
-  @@index([projectId, position]) // Ordered lists
+  @@index([projectId])
+  @@index([projectId, position])
 }
 
 model Task {
-  id             String  @id @default(cuid())
+  id             String           @id @default(cuid())
   title          String
   description    String?
-  technicalNotes String? // Acceptance criteria or technical details
-  position       Int     @default(0) // For ordering within list
-
-  // Dates
-  startDate DateTime?
-  dueDate   DateTime?
-
-  // Estimation & Tracking
+  position       Int              @default(0)
+  startDate      DateTime?
+  dueDate        DateTime?
   estimatedHours Float?
   actualHours    Float?
   storyPoints    Int?
+  progress       Int              @default(0)
+  parentId       String?
+  listId         String
+  statusId       String
+  assigneeId     String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  technicalNotes String?
+  assignee       User?            @relation("AssignedTasks", fields: [assigneeId], references: [id])
+  list           TaskList         @relation(fields: [listId], references: [id], onDelete: Cascade)
+  parent         Task?            @relation("TaskSubtasks", fields: [parentId], references: [id], onDelete: Cascade)
+  subtasks       Task[]           @relation("TaskSubtasks")
+  status         TaskStatus       @relation(fields: [statusId], references: [id])
+  attachments    TaskAttachment[]
+  comments       TaskComment[]
+  successors     TaskDependency[] @relation("PredecessorTask")
+  predecessors   TaskDependency[] @relation("SuccessorTask")
+  tags           Tag[]            @relation("TagToTask")
 
-  // Progress (0-100)
-  progress Int @default(0)
-
-  // Hierarchy - Self-referential for subtasks
-  parentId String?
-  parent   Task?   @relation("TaskSubtasks", fields: [parentId], references: [id], onDelete: Cascade)
-  subtasks Task[]  @relation("TaskSubtasks")
-
-  // Relations
-  listId String
-  list   TaskList @relation(fields: [listId], references: [id], onDelete: Cascade)
-
-  statusId String
-  status   TaskStatus @relation(fields: [statusId], references: [id])
-
-  assigneeId String?
-  assignee   User?   @relation("AssignedTasks", fields: [assigneeId], references: [id], onDelete: SetNull)
-
-  // Dependencies
-  predecessors TaskDependency[] @relation("SuccessorTask")
-  successors   TaskDependency[] @relation("PredecessorTask")
-
-  // Collaboration
-  comments    TaskComment[]
-  attachments TaskAttachment[]
-  tags        Tag[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Performance indexes for frequent queries
-  @@index([listId]) // Filter tasks by list
-  @@index([statusId]) // Filter by status (Kanban view)
-  @@index([assigneeId]) // "My tasks" queries
-  @@index([parentId]) // Subtask queries
-  @@index([dueDate]) // Sort/filter by due date
-  @@index([listId, position]) // Ordering within lists
+  @@index([listId])
+  @@index([statusId])
+  @@index([assigneeId])
+  @@index([parentId])
+  @@index([dueDate])
+  @@index([listId, position])
 }
 
 model TaskStatus {
   id        String  @id @default(cuid())
-  name      String  @unique // Global status name
-  color     String  @default("#6B7280") // gray-500
-  position  Int     @default(0) // For ordering columns in Kanban
-  isDefault Boolean @default(false) // Default status for new tasks
-  isClosed  Boolean @default(false) // Marks task as "done"
-
-  tasks Task[]
+  name      String  @unique
+  color     String  @default("#6B7280")
+  position  Int     @default(0)
+  isDefault Boolean @default(false)
+  isClosed  Boolean @default(false)
+  tasks     Task[]
 }
 
 model TaskDependency {
-  id String @id @default(cuid())
-
-  // The task that must be completed first
+  id            String   @id @default(cuid())
   predecessorId String
-  predecessor   Task   @relation("PredecessorTask", fields: [predecessorId], references: [id], onDelete: Cascade)
-
-  // The task that depends on the predecessor
-  successorId String
-  successor   Task   @relation("SuccessorTask", fields: [successorId], references: [id], onDelete: Cascade)
-
-  // Dependency types:
-  // FS = Finish-to-Start (most common - successor starts after predecessor finishes)
-  // SS = Start-to-Start (both start together)
-  // FF = Finish-to-Finish (both finish together)
-  // SF = Start-to-Finish (successor finishes when predecessor starts)
-  type String @default("FS")
-
-  // Lag days (positive = delay, negative = lead time)
-  lagDays Int @default(0)
-
-  createdAt DateTime @default(now())
+  successorId   String
+  type          String   @default("FS")
+  lagDays       Int      @default(0)
+  createdAt     DateTime @default(now())
+  predecessor   Task     @relation("PredecessorTask", fields: [predecessorId], references: [id], onDelete: Cascade)
+  successor     Task     @relation("SuccessorTask", fields: [successorId], references: [id], onDelete: Cascade)
 
   @@unique([predecessorId, successorId])
 }
 
 model TaskComment {
-  id      String @id @default(cuid())
-  content String
-
-  taskId String
-  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
-
-  authorId String
-  author   User   @relation("TaskComments", fields: [authorId], references: [id], onDelete: Cascade)
-
+  id        String   @id @default(cuid())
+  content   String
+  taskId    String
+  authorId  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  author    User     @relation("TaskComments", fields: [authorId], references: [id], onDelete: Cascade)
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
 }
 
 model TaskAttachment {
-  id       String @id @default(cuid())
-  filename String
-  filepath String // Path to stored file
-  filesize Int // Size in bytes
-  mimetype String
-
-  taskId String
-  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
-
+  id         String   @id @default(cuid())
+  filename   String
+  filepath   String
+  filesize   Int
+  mimetype   String
+  taskId     String
   uploaderId String
-  uploader   User   @relation("TaskAttachments", fields: [uploaderId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  uploader   User     @relation("TaskAttachments", fields: [uploaderId], references: [id], onDelete: Cascade)
 }
 
 model Tag {
-  id    String @id @default(cuid())
-  name  String
-  color String @default("#3B82F6") // blue-500
-
+  id        String  @id @default(cuid())
+  name      String
+  color     String  @default("#3B82F6")
   projectId String
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  tasks Task[]
+  tasks     Task[]  @relation("TagToTask")
 
   @@unique([projectId, name])
 }
 
-// =============================================================================
-// TEAM SENTIMENT
-// =============================================================================
-
 model TeamMood {
   id              String   @id @default(cuid())
   departmentName  String
-  sentimentScore  Int // 0-100 (100 = very happy, 0 = very stressed)
+  sentimentScore  Int
   dominantEmotion String
   keyConcerns     String?
   detectedAt      DateTime @default(now())
 
-  @@index([departmentName]) // Filter by department
-  @@index([detectedAt]) // Historical queries
+  @@index([departmentName])
+  @@index([detectedAt])
 }
 
 model ProjectRisk {
   id        String  @id @default(cuid())
   projectId String
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  riskLevel String // "High" | "Medium" | "Low"
+  riskLevel String
   reason    String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Report {
-  id       String @id @default(cuid())
-  title    String
-  type     String @default("Weekly") // "Weekly", "Risk", "Financial", "SentimentAnalysis", "ProjectCatalog"
-  content  String @db.Text
-  metadata Json?
-
+  id        String   @id @default(cuid())
+  title     String
+  type      String   @default("Weekly")
+  content   String
   projectId String?
-  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
-
-  authorId String?
-  author   User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
-
+  authorId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  metadata  Json?
+  author    User?    @relation(fields: [authorId], references: [id])
+  project   Project? @relation(fields: [projectId], references: [id])
 
   @@index([projectId])
   @@index([authorId])
 }
 
 model User {
-  id                 String   @id @default(cuid())
+  id                 String           @id @default(cuid())
   name               String?
-  username           String   @unique
-  email              String?  @unique
+  username           String           @unique
+  email              String?          @unique
   password           String
   image              String?
   roleId             String
-  role               Role     @relation(fields: [roleId], references: [id])
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  mustChangePassword Boolean  @default(false)
-
-  // Task Management Relations
-  assignedTasks  Task[]           @relation("AssignedTasks")
-  comments       TaskComment[]    @relation("TaskComments")
-  attachments    TaskAttachment[] @relation("TaskAttachments")
-  chatSessions   ChatSession[]
-  reports        Report[]
-  sherlockAudits SherlockAudit[]  @relation("SherlockAudits")
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  mustChangePassword Boolean          @default(false)
+  chatSessions       ChatSession[]
+  reports            Report[]
+  sherlockAudits     SherlockAudit[]  @relation("SherlockAudits")
+  assignedTasks      Task[]           @relation("AssignedTasks")
+  attachments        TaskAttachment[] @relation("TaskAttachments")
+  comments           TaskComment[]    @relation("TaskComments")
+  role               Role             @relation(fields: [roleId], references: [id])
 }
 
 model Role {
   id          String       @id @default(cuid())
-  code        String       @unique // System Code: SUPER_ADMIN, STRATEGIC_PM, TEAM_LEAD, TEAM_MEMBER
-  name        String // Display Name: Super Admin, Team Lead
+  code        String       @unique
+  name        String
   description String?
   isSystem    Boolean      @default(false)
-  users       User[]
-  permissions Permission[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  users       User[]
+  permissions Permission[] @relation("PermissionToRole")
 }
 
 model Permission {
@@ -279,261 +215,174 @@ model Permission {
   action      String
   resource    String
   description String?
-  roles       Role[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  roles       Role[]   @relation("PermissionToRole")
 
   @@unique([action, resource])
 }
 
-// =============================================================================
-// AI USAGE TRACKING
-// =============================================================================
-
 model AiUsageLog {
-  id         String @id @default(cuid())
-  modelName  String
-  actionType String // e.g., "VoiceCommand"
-
-  // Token Usage
-  promptTokens     Int @default(0)
-  completionTokens Int @default(0)
-  totalTokens      Int @default(0)
-
-  // Metadata
-  projectId String?
-  userId    String?
-
-  // Provider Snapshot
+  id                String   @id @default(cuid())
+  modelName         String
+  actionType        String
+  promptTokens      Int      @default(0)
+  completionTokens  Int      @default(0)
+  totalTokens       Int      @default(0)
+  projectId         String?
+  userId            String?
+  createdAt         DateTime @default(now())
   remainingRequests Int?
   remainingTokens   Int?
 
-  createdAt DateTime @default(now())
-
-  @@index([createdAt]) // Analytics queries by date
-  @@index([modelName]) // Filter by AI provider
-  @@index([userId]) // User usage tracking
+  @@index([createdAt])
+  @@index([modelName])
+  @@index([userId])
 }
 
-// =============================================================================
-// CHAT & AI AGENT
-// =============================================================================
-
 model ChatSession {
-  id    String  @id @default(cuid())
-  title String? // Optional title for the conversation
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id        String        @id @default(cuid())
+  title     String?
+  userId    String
   projectId String
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  messages ChatMessage[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  messages  ChatMessage[]
+  project   Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([projectId])
 }
 
 model ChatMessage {
-  id String @id @default(cuid())
-
-  sessionId String
-  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-
-  role    String // system, user, assistant, data
-  content String @db.Text
-
-  // Store tool invocations/results as JSON structure
+  id              String      @id @default(cuid())
+  sessionId       String
+  role            String
+  content         String
   toolInvocations Json?
-
-  createdAt DateTime @default(now())
+  createdAt       DateTime    @default(now())
+  session         ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId])
 }
 
-// =============================================================================
-// SHERLOCK (AUDIT SYSTEM)
-// =============================================================================
-
 model SherlockAudit {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
   description String?
-  status      String  @default("DRAFT") // DRAFT, IN_PROGRESS, COMPLETED
-
-  // Relations
-  projectId String?
-  project   Project? @relation(fields: [projectId], references: [id])
-
-  authorId String
-  author   User   @relation("SherlockAudits", fields: [authorId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status      String   @default("DRAFT")
+  projectId   String?
+  authorId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  author      User     @relation("SherlockAudits", fields: [authorId], references: [id])
+  project     Project? @relation(fields: [projectId], references: [id])
 
   @@index([projectId])
   @@index([authorId])
 }
 
-// ============================================================================
-// GESTIÓN DE UNIDADES DE MEDIDA (Adoptado de Gstock)
-// ============================================================================
-
 model MeasureUnit {
-  id               String   @id @default(cuid())
-  name             String // "Kilogramo", "Litro", "Unidad"
-  abbreviation     String   @unique // "Kg", "L", "Ud"
-  type             UnitType
-  conversionFactor Float? // Conversión a unidad base del tipo
-  isBase           Boolean  @default(false) // true para Kg, L, Ud básicas
-
+  id                String             @id @default(cuid())
+  name              String
+  abbreviation      String             @unique
+  type              UnitType
+  conversionFactor  Float?
+  isBase            Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
   ingredients       Ingredient[]
   recipeIngredients RecipeIngredient[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@map("measure_units")
 }
 
-enum UnitType {
-  WEIGHT // Peso (Kg, g, mg)
-  VOLUME // Volumen (L, mL, cl)
-  UNIT // Unidad (Ud, docena, caja)
-}
-
-// ============================================================================
-// GESTIÓN DE CATEGORÍAS
-// ============================================================================
-
 model Category {
-  id          String     @id @default(cuid())
+  id          String       @id @default(cuid())
   name        String
   description String?
-  parentId    String? // Para jerarquías
-  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children    Category[] @relation("CategoryHierarchy")
-
+  parentId    String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  parent      Category?    @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[]   @relation("CategoryHierarchy")
   ingredients Ingredient[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@index([parentId])
   @@map("categories")
 }
 
 model RecipeCategory {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   name        String
   description String?
-
-  recipes Recipe[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  recipes     Recipe[]
 
   @@map("recipe_categories")
 }
 
 model RecipeFamily {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   name        String
   description String?
-
-  recipes Recipe[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  recipes     Recipe[]
 
   @@map("recipe_families")
 }
 
-// ============================================================================
-// GESTIÓN DE PROVEEDORES
-// ============================================================================
-
 model Supplier {
-  id      String  @id @default(cuid())
-  name    String
-  code    String? @unique // Código interno
-  email   String?
-  phone   String?
-  address String?
-  taxId   String? // CIF/NIF
-
-  // Condiciones comerciales
-  paymentTerms String? // "30 días", "contado", etc.
-  minOrder     Float? // Pedido mínimo
-
-  ingredients Ingredient[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String       @id @default(cuid())
+  name         String
+  code         String?      @unique
+  email        String?
+  phone        String?
+  address      String?
+  taxId        String?
+  paymentTerms String?
+  minOrder     Float?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  ingredients  Ingredient[]
 
   @@map("suppliers")
 }
 
-// ============================================================================
-// GESTIÓN DE INGREDIENTES/PRODUCTOS
-// ============================================================================
-
 model Ingredient {
-  id             String  @id @default(cuid())
-  name           String
-  normalizedName String? // 🚀 IA: nombre canónico para búsquedas
-  description    String?
-  reference      String? @unique // SKU/código de producto
-
-  // Categorización (Gstock)
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
-
-  // Unidad de medida (Gstock)
-  unitTypeId String
-  unitType   MeasureUnit @relation(fields: [unitTypeId], references: [id])
-
-  // Precios y costes (Yurest + Gstock)
-  cost    Float // Precio de coste actual
-  taxRate Float @default(0.10) // IVA (10% por defecto)
-
-  // Flags de compra/venta (Gstock)
-  isBuyable  Boolean @default(true)
-  isSellable Boolean @default(false)
-
-  // Inventario (Gstock)
-  currentStock Float?
-  minStock     Float? // Alerta de bajo stock
-  maxStock     Float? // Stock máximo recomendado
-
-  // Trazabilidad y conservación (Yurest)
-  shelfLife   Int? // Días de vida útil
-  storageTemp Float? // Temperatura de conservación (°C)
-  yield       Float? // Rendimiento tras limpieza (0-1, ej: 0.85 = 85%)
-
-  // Proveedor (Gstock)
-  supplierId String?
-  supplier   Supplier? @relation(fields: [supplierId], references: [id])
-
-  // 🚀 Sherlock exclusivo: Normalización IA
-  aiNormalizedGroup String? // Grupo de ingredientes similares
-  aiConfidence      Float? // Confianza de la normalización (0-1)
-
-  // Estado
-  status IngredientStatus @default(ACTIVE)
-
-  // Relaciones
-  recipeIngredients RecipeIngredient[]
+  id                String             @id @default(cuid())
+  name              String
+  normalizedName    String?
+  description       String?
+  reference         String?            @unique
+  categoryId        String
+  unitTypeId        String
+  cost              Float
+  taxRate           Float              @default(0.10)
+  isBuyable         Boolean            @default(true)
+  isSellable        Boolean            @default(false)
+  currentStock      Float?
+  minStock          Float?
+  maxStock          Float?
+  shelfLife         Int?
+  storageTemp       Float?
+  yield             Float?
+  supplierId        String?
+  aiNormalizedGroup String?
+  aiConfidence      Float?
+  status            IngredientStatus   @default(ACTIVE)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  category          Category           @relation(fields: [categoryId], references: [id])
+  supplier          Supplier?          @relation(fields: [supplierId], references: [id])
+  unitType          MeasureUnit        @relation(fields: [unitTypeId], references: [id])
   inventoryRecords  InventoryRecord[]
-  wasteRecords      WasteRecord[]
   priceHistory      PriceHistory[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  recipeIngredients RecipeIngredient[]
+  wasteRecords      WasteRecord[]
 
   @@index([categoryId])
   @@index([supplierId])
@@ -542,65 +391,36 @@ model Ingredient {
   @@map("ingredients")
 }
 
-enum IngredientStatus {
-  ACTIVE
-  INACTIVE
-  DISCONTINUED
-}
-
-// ============================================================================
-// GESTIÓN DE RECETAS
-// ============================================================================
-
 model Recipe {
-  id          String  @id @default(cuid())
-  name        String
-  description String? @db.Text
-
-  // Categorización (Yurest + Gstock)
-  categoryId String
-  category   RecipeCategory @relation(fields: [categoryId], references: [id])
-  familyId   String?
-  family     RecipeFamily?  @relation(fields: [familyId], references: [id])
-
-  // Detalles de preparación (Yurest)
-  prepTime Int? // Minutos de preparación
-  cookTime Int? // Minutos de cocción
-  servings Int? // Número de raciones
-
-  // Instrucciones (Yurest)
-  steps String[] // Array de pasos detallados
-
-  // Multimedia (Yurest)
-  photos String[] // URLs de fotos
-  videos String[] // URLs de videos
-
-  // Costes (Yurest + Gstock)
-  theoreticalCost Float? // Calculado automáticamente
-  realCost        Float? // Coste real del sistema
-  variance        Float? // Diferencia (desperdicio potencial)
-  variancePercent Float? // % de variación
-
-  // 🚀 Sherlock exclusivo: Protocolo de Sala
-  protocoloDeSala String? @db.Text // Instrucciones de servicio, emplatado, alergias
-
-  // 🚀 Sherlock exclusivo: IA
-  aiGenerated Boolean @default(false) // Generada por Chef GPT
-  aiPrompt    String? @db.Text // Prompt usado para generar
-  aiVersion   String? // Versión del modelo IA usado
-
-  // Estado y ciclo de vida (Yurest)
-  status RecipeStatus @default(DRAFT)
-
-  // Relaciones
-  ingredients     RecipeIngredient[]
-  subrecipesUsed  RecipeSubrecipe[]  @relation("ParentRecipe") // Subrecetas que usa esta receta
-  usedInRecipes   RecipeSubrecipe[]  @relation("ChildRecipe") // Recetas que usan esta como subreceta
-  voiceAudits     VoiceAudit[]
+  id              String             @id @default(cuid())
+  name            String
+  description     String?
+  categoryId      String
+  familyId        String?
+  prepTime        Int?
+  cookTime        Int?
+  servings        Int?
+  steps           String[]
+  photos          String[]
+  videos          String[]
+  theoreticalCost Float?
+  realCost        Float?
+  variance        Float?
+  variancePercent Float?
+  protocoloDeSala String?
+  aiGenerated     Boolean            @default(false)
+  aiPrompt        String?
+  aiVersion       String?
+  status          RecipeStatus       @default(DRAFT)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
   productionBatch ProductionBatch[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  ingredients     RecipeIngredient[]
+  usedInRecipes   RecipeSubrecipe[]  @relation("ChildRecipe")
+  subrecipesUsed  RecipeSubrecipe[]  @relation("ParentRecipe")
+  category        RecipeCategory     @relation(fields: [categoryId], references: [id])
+  family          RecipeFamily?      @relation(fields: [familyId], references: [id])
+  voiceAudits     VoiceAudit[]
 
   @@index([categoryId])
   @@index([familyId])
@@ -609,34 +429,19 @@ model Recipe {
   @@map("recipes")
 }
 
-enum RecipeStatus {
-  DRAFT // Borrador
-  ACTIVE // Activa
-  ARCHIVED // Archivada
-}
-
-// ============================================================================
-// RELACIONES RECETAS-INGREDIENTES
-// ============================================================================
-
 model RecipeIngredient {
   id           String      @id @default(cuid())
   recipeId     String
-  recipe       Recipe      @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   ingredientId String
-  ingredient   Ingredient  @relation(fields: [ingredientId], references: [id])
   quantity     Float
   unitId       String
+  notes        String?
+  order        Int         @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  ingredient   Ingredient  @relation(fields: [ingredientId], references: [id])
+  recipe       Recipe      @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   unit         MeasureUnit @relation(fields: [unitId], references: [id])
-
-  // Notas opcionales
-  notes String? // "picado fino", "en juliana", etc.
-
-  // Orden en la receta
-  order Int @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@unique([recipeId, ingredientId])
   @@index([recipeId])
@@ -644,53 +449,36 @@ model RecipeIngredient {
   @@map("recipe_ingredients")
 }
 
-// ============================================================================
-// SUBRECETAS (Gstock: Soporte jerárquico)
-// ============================================================================
-
 model RecipeSubrecipe {
-  id       String @id @default(cuid())
-  parentId String // Receta que usa la subreceta
-  parent   Recipe @relation("ParentRecipe", fields: [parentId], references: [id], onDelete: Cascade)
-  childId  String // Subreceta usada
-  child    Recipe @relation("ChildRecipe", fields: [childId], references: [id])
-  quantity Float
-
-  // Notas
-  notes String?
-
+  id        String   @id @default(cuid())
+  parentId  String
+  childId   String
+  quantity  Float
+  notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  child     Recipe   @relation("ChildRecipe", fields: [childId], references: [id])
+  parent    Recipe   @relation("ParentRecipe", fields: [parentId], references: [id], onDelete: Cascade)
 
   @@unique([parentId, childId])
   @@map("recipe_subrecipes")
 }
 
-// ============================================================================
-// CONTROL DE INVENTARIO
-// ============================================================================
-
 model InventoryRecord {
-  id           String     @id @default(cuid())
-  ingredientId String
-  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
-
-  quantity Float
-  location String? // Almacén, cámara, congelador, etc.
-
-  // Trazabilidad (Yurest)
+  id             String          @id @default(cuid())
+  ingredientId   String
+  quantity       Float
+  location       String?
   expiryDate     DateTime?
   productionDate DateTime?
   freezeDate     DateTime?
   openDate       DateTime?
   lotNumber      String?
   batchNumber    String?
-
-  // Estado
-  status InventoryStatus @default(AVAILABLE)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status         InventoryStatus @default(AVAILABLE)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  ingredient     Ingredient      @relation(fields: [ingredientId], references: [id])
 
   @@index([ingredientId])
   @@index([expiryDate])
@@ -698,35 +486,18 @@ model InventoryRecord {
   @@map("inventory_records")
 }
 
-enum InventoryStatus {
-  AVAILABLE // Disponible para uso
-  RESERVED // Reservado para producción
-  EXPIRED // Caducado
-  QUARANTINE // En cuarentena (calidad)
-}
-
-// ============================================================================
-// CONTROL DE MERMAS/DESPERDICIOS
-// ============================================================================
-
 model WasteRecord {
-  id           String     @id @default(cuid())
-  ingredientId String
-  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
-
-  quantity Float
-  reason   WasteReason
-  notes    String?
-
-  // Responsabilidad
+  id                String      @id @default(cuid())
+  ingredientId      String
+  quantity          Float
+  reason            WasteReason
+  notes             String?
   responsibleUserId String?
-
-  // 🚀 Sherlock exclusivo: Detección IA
-  detectedByAI    Boolean @default(false) // Detectado por auditoría IA
-  audioTranscript String? @db.Text // Transcripción del audio de la auditoría
-  confidenceScore Float? // Confianza de la detección (0-1)
-
-  createdAt DateTime @default(now())
+  detectedByAI      Boolean     @default(false)
+  audioTranscript   String?
+  confidenceScore   Float?
+  createdAt         DateTime    @default(now())
+  ingredient        Ingredient  @relation(fields: [ingredientId], references: [id])
 
   @@index([ingredientId])
   @@index([reason])
@@ -735,62 +506,32 @@ model WasteRecord {
   @@map("waste_records")
 }
 
-enum WasteReason {
-  EXPIRED // Caducado
-  BURNED // Quemado
-  SPOILED // Estropeado
-  QUALITY_ISSUE // Problema de calidad
-  OVERPRODUCTION // Sobreproducción
-  YIELD_LOSS // Pérdida por rendimiento (limpieza, deshuese)
-  OTHER // Otro motivo
-}
-
-// ============================================================================
-// HISTÓRICO DE PRECIOS
-// ============================================================================
-
 model PriceHistory {
   id           String     @id @default(cuid())
   ingredientId String
+  price        Float
+  effectiveAt  DateTime   @default(now())
+  supplierId   String?
+  reason       String?
   ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
-
-  price       Float
-  effectiveAt DateTime @default(now())
-  supplierId  String? // Opcional: precio de proveedor específico
-
-  // Contexto
-  reason String? // "Cambio de proveedor", "Subida IPC", etc.
 
   @@index([ingredientId])
   @@index([effectiveAt])
   @@map("price_history")
 }
 
-// ============================================================================
-// 🚀 SHERLOCK EXCLUSIVO: AUDITORÍA POR VOZ
-// ============================================================================
-
 model VoiceAudit {
-  id       String @id @default(cuid())
-  recipeId String
-  recipe   Recipe @relation(fields: [recipeId], references: [id])
-
-  // Audio y transcripción
-  audioUrl      String
-  transcription String @db.Text
-
-  // Análisis IA
-  discrepancies Json // Diferencias detectadas (JSON)
-  score         Float // 0-100 (calidad de adherencia a receta)
-
-  // IA metadata
-  modelVersion String? // Versión del modelo Whisper
-
-  // Contexto
-  auditorUserId     String? // Usuario que realizó la auditoría
+  id                String   @id @default(cuid())
+  recipeId          String
+  audioUrl          String
+  transcription     String
+  discrepancies     Json
+  score             Float
+  modelVersion      String?
+  auditorUserId     String?
   productionBatchId String?
-
-  createdAt DateTime @default(now())
+  createdAt         DateTime @default(now())
+  recipe            Recipe   @relation(fields: [recipeId], references: [id])
 
   @@index([recipeId])
   @@index([score])
@@ -798,30 +539,19 @@ model VoiceAudit {
   @@map("voice_audits")
 }
 
-// ============================================================================
-// PRODUCCIÓN
-// ============================================================================
-
 model ProductionBatch {
-  id       String @id @default(cuid())
-  recipeId String
-  recipe   Recipe @relation(fields: [recipeId], references: [id])
-
-  quantity     Float // Cantidad producida
-  plannedDate  DateTime?
-  producedDate DateTime?
-
-  // Costes
-  plannedCost Float? // Coste planificado
-  actualCost  Float? // Coste real
-
-  // Responsable
+  id               String           @id @default(cuid())
+  recipeId         String
+  quantity         Float
+  plannedDate      DateTime?
+  producedDate     DateTime?
+  plannedCost      Float?
+  actualCost       Float?
   supervisorUserId String?
-
-  status ProductionStatus @default(PLANNED)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status           ProductionStatus @default(PLANNED)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  recipe           Recipe           @relation(fields: [recipeId], references: [id])
 
   @@index([recipeId])
   @@index([status])
@@ -829,15 +559,44 @@ model ProductionBatch {
   @@map("production_batches")
 }
 
-enum ProductionStatus {
-  PLANNED // Planificado
-  IN_PROGRESS // En producción
-  COMPLETED // Completado
-  CANCELLED // Cancelado
+enum UnitType {
+  WEIGHT
+  VOLUME
+  UNIT
 }
 
-// ============================================================================
-// GESTIÓN DE ENUMS Y LISTAS
-// ============================================================================
+enum IngredientStatus {
+  ACTIVE
+  INACTIVE
+  DISCONTINUED
+}
 
-// Razones de merma ya definidas en WasteReason enum
+enum RecipeStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum InventoryStatus {
+  AVAILABLE
+  RESERVED
+  EXPIRED
+  QUARANTINE
+}
+
+enum WasteReason {
+  EXPIRED
+  BURNED
+  SPOILED
+  QUALITY_ISSUE
+  OVERPRODUCTION
+  YIELD_LOSS
+  OTHER
+}
+
+enum ProductionStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}

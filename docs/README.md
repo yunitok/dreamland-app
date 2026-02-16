@@ -41,6 +41,7 @@ Cross-cutting features used across the application.
 
 #### Developer Guides
 - [Deployment](./guides/deployment.md) - Production deployment instructions
+- [Estimation Standard](./guides/estimation-standard.md) - AI-driven SP and scheduling guidelines
 - [Environment Variables](./guides/environment-variables.md) - Configuration reference
 
 ---
