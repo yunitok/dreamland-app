@@ -299,6 +299,7 @@
         "rememberMe": "Recuérdame"
     },
     "tasks": {
+        "list": "Lista",
         "views": {
             "list": "Lista",
             "board": "Tablero",
@@ -314,6 +315,20 @@
         "assignee": "Asignado",
         "startDate": "Fecha de inicio",
         "dueDate": "Fecha límite",
+        "statuses": {
+            "Backlog": "Backlog",
+            "On Hold": "En Espera",
+            "Blocked": "Bloqueado",
+            "Pendientes": "Pendientes",
+            "Por Hacer": "Por Hacer",
+            "En Curso": "En Curso",
+            "Revisión": "Revisión",
+            "En Revisión": "En Revisión",
+            "Bloqueado": "Bloqueado",
+            "En Pausa": "En Pausa",
+            "Finalizado": "Finalizado",
+            "Completado": "Completado"
+        },
         "progress": "Progreso",
         "completed": "Completado",
         "inProgress": "En Progreso",
@@ -392,9 +407,9 @@
         "failedToMoveTask": "Error al mover la tarea",
         "errorMovingTask": "No se pudo mover la tarea",
         "assigneeRequiredToMove": "Se requiere asignado",
-        "assignTaskFirstDescription": "Las tareas deben tener un usuario asignado antes de moverlas fuera del Backlog",
+        "assignTaskFirstDescription": "Las tareas deben tener un usuario asignado antes de moverlas fuera de Pendientes",
         "cannotRemoveAssignee": "No se puede quitar el asignado",
-        "moveToBacklogFirstDescription": "Para quitar el asignado, primero mueve la tarea al Backlog"
+        "moveToBacklogFirstDescription": "Para quitar el asignado, primero mueve la tarea a Pendientes"
     },
     "Voice": {
         "listCreated": "Lista creada: \"{name}\"",

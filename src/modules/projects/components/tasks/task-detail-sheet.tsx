@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/modules/shared/ui/select'
-import { 
+import {
   Calendar,
   User,
   Tag,
@@ -71,12 +71,12 @@ interface TaskDetailSheetProps {
   lists: Array<{ id: string; name: string }>
 }
 
-export function TaskDetailSheet({ 
-  taskId, 
-  isOpen, 
-  onClose, 
-  statuses, 
-  tags, 
+export function TaskDetailSheet({
+  taskId,
+  isOpen,
+  onClose,
+  statuses,
+  tags,
   users,
   currentUserId,
   allTasks = [],
@@ -115,7 +115,7 @@ export function TaskDetailSheet({
 
   const handleStatusChange = async (statusId: string) => {
     if (!task) return
-    
+
     // Client-side validation: check if task has assignee before moving out of Backlog
     const targetStatus = statuses.find(s => s.id === statusId)
     const isMovingToNonBacklog = targetStatus && targetStatus.name !== 'Backlog'
@@ -126,7 +126,7 @@ export function TaskDetailSheet({
       })
       return
     }
-    
+
     try {
       await updateTask(task.id, { statusId })
       setTask({ ...task, status: targetStatus })
@@ -154,9 +154,9 @@ export function TaskDetailSheet({
 
   const handleAssigneeChange = async (assigneeId: string) => {
     if (!task) return
-    
+
     const newAssigneeId = assigneeId === 'unassigned' ? null : assigneeId
-    
+
     // Client-side validation: cannot remove assignee from tasks outside Backlog
     if (newAssigneeId === null && task.status?.name !== 'Backlog') {
       toast.warning(t('cannotRemoveAssignee'), {
@@ -165,7 +165,7 @@ export function TaskDetailSheet({
       })
       return
     }
-    
+
     try {
       await updateTask(task.id, { assigneeId: newAssigneeId })
       const assignee = users.find(u => u.id === newAssigneeId)
@@ -191,8 +191,8 @@ export function TaskDetailSheet({
     if (!task) return
     try {
       const technicalNotes = task.technicalNotes
-      await updateTask(task.id, { 
-        title: editedTitle, 
+      await updateTask(task.id, {
+        title: editedTitle,
         description: editedDescription,
         technicalNotes
       })
@@ -208,9 +208,9 @@ export function TaskDetailSheet({
     setSubmittingComment(true)
     try {
       const comment = await createComment(task.id, newComment, currentUserId)
-      setTask({ 
-        ...task, 
-        comments: [comment, ...task.comments] 
+      setTask({
+        ...task,
+        comments: [comment, ...task.comments]
       })
       setNewComment('')
     } catch (error) {
@@ -297,24 +297,24 @@ export function TaskDetailSheet({
                     />
                   </div>
                   <div className="space-y-4">
-                     <label className="text-xs font-medium text-muted-foreground uppercase flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                        {t('technicalNotes')}
-                     </label>
-                     <Textarea
-                        value={task.technicalNotes || ''}
-                        onChange={(e) => setTask({...task, technicalNotes: e.target.value})}
-                        placeholder={t('technicalNotesPlaceholder') || 'Technical implementation details...'}
-                        rows={4}
-                        className="resize-none font-mono text-xs bg-muted/20 focus-visible:ring-1"
-                     />
+                    <label className="text-xs font-medium text-muted-foreground uppercase flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                      {t('technicalNotes')}
+                    </label>
+                    <Textarea
+                      value={task.technicalNotes || ''}
+                      onChange={(e) => setTask({ ...task, technicalNotes: e.target.value })}
+                      placeholder={t('technicalNotesPlaceholder') || 'Technical implementation details...'}
+                      rows={4}
+                      className="resize-none font-mono text-xs bg-muted/20 focus-visible:ring-1"
+                    />
                   </div>
                   <div className="flex justify-end gap-2 pt-2">
                     <Button variant="ghost" size="sm" onClick={() => {
-                        setIsEditing(false)
-                        setEditedTitle(task.title)
-                        setEditedDescription(task.description || '')
-                      }}>
+                      setIsEditing(false)
+                      setEditedTitle(task.title)
+                      setEditedDescription(task.description || '')
+                    }}>
                       {t('cancel')}
                     </Button>
                     <Button size="sm" onClick={handleSaveEdit}>
@@ -323,67 +323,67 @@ export function TaskDetailSheet({
                   </div>
                 </div>
               ) : (
-                  <div className="flex-1 space-y-6 mr-8">
-                    <div 
-                      className="group cursor-pointer -ml-2 p-2 rounded-md hover:bg-muted/50 transition-colors"
-                      onClick={() => setIsEditing(true)}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <SheetTitle className="text-xl font-bold break-words leading-tight text-left">
-                            {task.title}
-                          </SheetTitle>
-                          {/* Story Points Badge */}
-                          {task.storyPoints !== null && task.storyPoints !== undefined && (
-                             <Badge variant="secondary" className="mt-2 text-xs font-normal">
-                               {task.storyPoints} {t('storyPoints')}
-                             </Badge>
-                          )}
-                        </div>
-                        <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-1 shrink-0" />
-                      </div>
-                      
-                      <div className="mt-4 text-left">
-                        {task.description ? (
-                          <div className="text-sm text-muted-foreground leading-relaxed prose prose-sm prose-stone dark:prose-invert max-w-none">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                              {task.description}
-                            </ReactMarkdown>
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground/50 italic flex items-center gap-1.5">
-                            <Plus className="h-3 w-3" />
-                            {t('clickToAddDescription')}
-                          </p>
+                <div className="flex-1 space-y-6 mr-8">
+                  <div
+                    className="group cursor-pointer -ml-2 p-2 rounded-md hover:bg-muted/50 transition-colors"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <SheetTitle className="text-xl font-bold break-words leading-tight text-left">
+                          {task.title}
+                        </SheetTitle>
+                        {/* Story Points Badge */}
+                        {task.storyPoints !== null && task.storyPoints !== undefined && (
+                          <Badge variant="secondary" className="mt-2 text-xs font-normal">
+                            {task.storyPoints} {t('storyPoints')}
+                          </Badge>
                         )}
                       </div>
+                      <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-1 shrink-0" />
                     </div>
 
-                    {/* Technical Notes - Always Visible */}
-                    <div className="space-y-2">
-                       <h4 className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/50"></span>
-                          {t('technicalNotes')}
-                       </h4>
-                       <div 
-                          className={cn(
-                             "p-3 rounded-md border border-muted/50 transition-colors cursor-text min-h-[80px]",
-                             task.technicalNotes ? "bg-muted/30 text-sm" : "bg-transparent hover:bg-muted/30"
-                          )}
-                          onClick={() => setIsEditing(true)}
-                       >
-                          {task.technicalNotes ? (
-                             <div className="text-sm text-foreground leading-relaxed prose prose-sm prose-stone dark:prose-invert max-w-none">
-                               <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                 {task.technicalNotes}
-                               </ReactMarkdown>
-                             </div>
-                          ) : (
-                             <p className="text-muted-foreground/40 italic text-sm">{t('technicalNotesPlaceholder') || 'Add technical notes...'}</p>
-                          )}
-                       </div>
+                    <div className="mt-4 text-left">
+                      {task.description ? (
+                        <div className="text-sm text-muted-foreground leading-relaxed prose prose-sm prose-stone dark:prose-invert max-w-none">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {task.description}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground/50 italic flex items-center gap-1.5">
+                          <Plus className="h-3 w-3" />
+                          {t('clickToAddDescription')}
+                        </p>
+                      )}
                     </div>
                   </div>
+
+                  {/* Technical Notes - Always Visible */}
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/50"></span>
+                      {t('technicalNotes')}
+                    </h4>
+                    <div
+                      className={cn(
+                        "p-3 rounded-md border border-muted/50 transition-colors cursor-text min-h-[80px]",
+                        task.technicalNotes ? "bg-muted/30 text-sm" : "bg-transparent hover:bg-muted/30"
+                      )}
+                      onClick={() => setIsEditing(true)}
+                    >
+                      {task.technicalNotes ? (
+                        <div className="text-sm text-foreground leading-relaxed prose prose-sm prose-stone dark:prose-invert max-w-none">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {task.technicalNotes}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground/40 italic text-sm">{t('technicalNotesPlaceholder') || 'Add technical notes...'}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
               )}
             </SheetHeader>
 
@@ -394,11 +394,11 @@ export function TaskDetailSheet({
                 <div className="flex flex-col gap-1.5">
                   <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                     <FolderKanban className="h-3.5 w-3.5" />
-                    List
+                    {t('list')}
                   </span>
                   <Select value={task.list?.id} onValueChange={handleListChange}>
                     <SelectTrigger className="w-full h-9">
-                       <SelectValue />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {lists.map(list => (
@@ -418,7 +418,7 @@ export function TaskDetailSheet({
                   <Select value={task.status.id} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-full h-9">
                       <div className="flex items-center gap-2">
-                        <div 
+                        <div
                           className="w-2 h-2 rounded-full"
                           style={{ backgroundColor: task.status.color }}
                         />
@@ -429,11 +429,11 @@ export function TaskDetailSheet({
                       {statuses.map(status => (
                         <SelectItem key={status.id} value={status.id}>
                           <div className="flex items-center gap-2">
-                            <div 
+                            <div
                               className="w-2 h-2 rounded-full"
                               style={{ backgroundColor: status.color }}
                             />
-                            {status.name}
+                            {t(`statuses.${status.name}`)}
                           </div>
                         </SelectItem>
                       ))}
@@ -482,15 +482,15 @@ export function TaskDetailSheet({
                         className="w-full justify-between h-9 font-normal"
                       >
                         {task.assignee ? (
-                           <div className="flex items-center gap-2">
-                             <Avatar className="h-5 w-5">
-                               <AvatarImage src={task.assignee.image || undefined} />
-                               <AvatarFallback className="text-xs">
-                                 {task.assignee.name?.charAt(0) || '?'}
-                               </AvatarFallback>
-                             </Avatar>
-                             <span className="truncate">{task.assignee.name || task.assignee.username}</span>
-                           </div>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-5 w-5">
+                              <AvatarImage src={task.assignee.image || undefined} />
+                              <AvatarFallback className="text-xs">
+                                {task.assignee.name?.charAt(0) || '?'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="truncate">{task.assignee.name || task.assignee.username}</span>
+                          </div>
                         ) : (
                           <span className="text-muted-foreground">{t('unassigned')}</span>
                         )}
@@ -599,11 +599,11 @@ export function TaskDetailSheet({
                   </span>
                   <div className="flex flex-wrap gap-1">
                     {task.tags.map((tag: any) => (
-                      <Badge 
+                      <Badge
                         key={tag.id}
                         variant="outline"
                         className="text-xs"
-                        style={{ 
+                        style={{
                           backgroundColor: `${tag.color}20`,
                           borderColor: tag.color,
                           color: tag.color
@@ -618,78 +618,78 @@ export function TaskDetailSheet({
 
               {/* Dependencies */}
               <div className="flex items-start gap-4">
-                 <span className="text-sm text-muted-foreground w-24 shrink-0 pt-1">
-                   <Link2 className="h-4 w-4 inline mr-1" />
-                   {t('dependencies')}
-                 </span>
-                 <div className="flex-1 space-y-2">
-                   {/* Existing Dependencies */}
-                   {task.predecessors?.map((dep: any) => (
-                      <div key={dep.id} className="flex items-center justify-between text-sm bg-muted/50 p-2 rounded-md">
-                        <div className="flex items-center gap-2">
-                           <span className="text-xs font-medium text-muted-foreground">{t('blockedBy')}</span>
-                           <span className="truncate max-w-[150px]">{dep.predecessor.title}</span>
-                           <Badge 
-                            variant="secondary" 
-                            className="text-[10px] h-4"
-                            style={{ 
-                              backgroundColor: `${dep.predecessor.status.color}20`,
-                              color: dep.predecessor.status.color
-                            }}
-                          >
-                            {dep.predecessor.status.name}
-                          </Badge>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                          onClick={() => handleRemoveDependency(dep.predecessor.id)}
+                <span className="text-sm text-muted-foreground w-24 shrink-0 pt-1">
+                  <Link2 className="h-4 w-4 inline mr-1" />
+                  {t('dependencies')}
+                </span>
+                <div className="flex-1 space-y-2">
+                  {/* Existing Dependencies */}
+                  {task.predecessors?.map((dep: any) => (
+                    <div key={dep.id} className="flex items-center justify-between text-sm bg-muted/50 p-2 rounded-md">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-muted-foreground">{t('blockedBy')}</span>
+                        <span className="truncate max-w-[150px]">{dep.predecessor.title}</span>
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] h-4"
+                          style={{
+                            backgroundColor: `${dep.predecessor.status.color}20`,
+                            color: dep.predecessor.status.color
+                          }}
                         >
-                          <X className="h-3 w-3" />
-                        </Button>
+                          {t(`statuses.${dep.predecessor.status.name}`)}
+                        </Badge>
                       </div>
-                   ))}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleRemoveDependency(dep.predecessor.id)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
 
-                   {/* Add Dependency Control */}
-                   {isAddingDependency ? (
-                     <div className="flex items-center gap-2">
-                       <Select onValueChange={handleAddDependency}>
-                         <SelectTrigger className="h-8 text-xs">
-                           <SelectValue placeholder="Select task..." />
-                         </SelectTrigger>
-                         <SelectContent>
-                           {allTasks
-                             .filter(t => t.id !== task.id && !task.predecessors?.find((p: any) => p.predecessor.id === t.id))
-                             .map(t => (
-                               <SelectItem key={t.id} value={t.id} className="text-xs">
-                                 {t.title}
-                               </SelectItem>
-                             ))
-                           }
-                         </SelectContent>
-                       </Select>
-                       <Button 
-                         variant="ghost" 
-                         size="icon" 
-                         className="h-8 w-8"
-                         onClick={() => setIsAddingDependency(false)}
-                       >
-                         <X className="h-4 w-4" />
-                       </Button>
-                     </div>
-                   ) : (
-                     <Button 
-                       variant="outline" 
-                       size="sm" 
-                       className="h-7 text-xs"
-                       onClick={() => setIsAddingDependency(true)}
-                     >
-                       <Plus className="h-3 w-3 mr-1" />
-                       {t('addDependency')}
-                     </Button>
-                   )}
-                 </div>
+                  {/* Add Dependency Control */}
+                  {isAddingDependency ? (
+                    <div className="flex items-center gap-2">
+                      <Select onValueChange={handleAddDependency}>
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Select task..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {allTasks
+                            .filter(t => t.id !== task.id && !task.predecessors?.find((p: any) => p.predecessor.id === t.id))
+                            .map(t => (
+                              <SelectItem key={t.id} value={t.id} className="text-xs">
+                                {t.title}
+                              </SelectItem>
+                            ))
+                          }
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setIsAddingDependency(false)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setIsAddingDependency(true)}
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      {t('addDependency')}
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -701,11 +701,11 @@ export function TaskDetailSheet({
                 </h4>
                 <div className="space-y-2">
                   {task.subtasks.map((subtask: any) => (
-                    <div 
+                    <div
                       key={subtask.id}
                       className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 cursor-pointer"
                     >
-                      <div 
+                      <div
                         className="w-2 h-2 rounded-full shrink-0"
                         style={{ backgroundColor: subtask.status.color }}
                       />
@@ -735,7 +735,7 @@ export function TaskDetailSheet({
                 <MessageSquare className="h-4 w-4" />
                 {t('comments')} ({task.comments?.length || 0})
               </h4>
-              
+
               {/* Add Comment */}
               <div className="flex gap-2 mb-4">
                 <Textarea
@@ -745,8 +745,8 @@ export function TaskDetailSheet({
                   rows={2}
                   className="flex-1"
                 />
-                <Button 
-                  size="icon" 
+                <Button
+                  size="icon"
                   disabled={!newComment.trim() || submittingComment}
                   onClick={handleAddComment}
                 >

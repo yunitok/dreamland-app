@@ -23,18 +23,18 @@ interface GanttGridProps {
 
 const DAY_WIDTH = 40
 
-export function GanttGrid({ 
-  lists, 
-  dateRange, 
-  dayCount, 
-  zoom, 
+export function GanttGrid({
+  lists,
+  dateRange,
+  dayCount,
+  zoom,
   onTaskClick,
   rowHeight,
   headerHeight,
   onScroll
 }: GanttGridProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  
+
   const scaledDayWidth = DAY_WIDTH * zoom
   const chartWidth = dayCount * scaledDayWidth
 
@@ -42,7 +42,7 @@ export function GanttGrid({
   const days = useMemo(() => {
     const result = []
     const current = new Date(dateRange.start)
-    
+
     for (let i = 0; i < dayCount; i++) {
       result.push(new Date(current))
       current.setDate(current.getDate() + 1)
@@ -59,7 +59,7 @@ export function GanttGrid({
 
     days.forEach((day, index) => {
       const monthKey = day.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' })
-      
+
       if (monthKey !== currentMonth) {
         if (currentMonth) {
           result.push({ month: currentMonth, days: currentDays, startIndex })
@@ -71,7 +71,7 @@ export function GanttGrid({
         currentDays++
       }
     })
-    
+
     if (currentMonth) {
       result.push({ month: currentMonth, days: currentDays, startIndex })
     }
@@ -86,8 +86,18 @@ export function GanttGrid({
     const start = task.startDate ? new Date(task.startDate) : new Date(task.dueDate!)
     const end = task.dueDate ? new Date(task.dueDate) : new Date(task.startDate!)
 
-    const startDiff = Math.floor((start.getTime() - dateRange.start.getTime()) / (1000 * 60 * 60 * 24))
-    const duration = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1)
+    // Normalize to start of day for accurate day-based calculations
+    const startOfDay = new Date(start)
+    startOfDay.setHours(0, 0, 0, 0)
+
+    const endOfDay = new Date(end)
+    endOfDay.setHours(0, 0, 0, 0)
+
+    const baselineOfDay = new Date(dateRange.start)
+    baselineOfDay.setHours(0, 0, 0, 0)
+
+    const startDiff = Math.floor((startOfDay.getTime() - baselineOfDay.getTime()) / (1000 * 60 * 60 * 24))
+    const duration = Math.max(1, Math.round((endOfDay.getTime() - startOfDay.getTime()) / (1000 * 60 * 60 * 24)) + 1)
 
     return {
       left: startDiff * scaledDayWidth,
@@ -100,14 +110,14 @@ export function GanttGrid({
   }
 
   return (
-    <div 
+    <div
       className="flex-1 overflow-auto"
       onScroll={handleScroll}
       ref={containerRef}
     >
       <div style={{ width: chartWidth, minHeight: '100%' }}>
         {/* Header with months and days */}
-        <div 
+        <div
           className="sticky top-0 bg-muted/30 border-b z-20 bg-background"
           style={{ height: headerHeight }}
         >
@@ -123,13 +133,13 @@ export function GanttGrid({
               </div>
             ))}
           </div>
-          
+
           {/* Days row */}
           <div className="flex h-[30px]">
             {days.map((day, i) => {
               const isWeekend = day.getDay() === 0 || day.getDay() === 6
               const isToday = day.toDateString() === new Date().toDateString()
-              
+
               return (
                 <div
                   key={i}
@@ -155,7 +165,7 @@ export function GanttGrid({
             const daysDiff = Math.floor((today.getTime() - dateRange.start.getTime()) / (1000 * 60 * 60 * 24))
             if (daysDiff >= 0 && daysDiff < dayCount) {
               return (
-                <div 
+                <div
                   className="absolute top-0 bottom-0 w-0.5 bg-primary z-10"
                   style={{ left: daysDiff * scaledDayWidth + scaledDayWidth / 2 }}
                 />
@@ -167,17 +177,17 @@ export function GanttGrid({
           {lists.map(list => (
             <div key={list.id}>
               {/* List row (empty placeholder matching sidebar) */}
-              <div 
+              <div
                 className="bg-muted/50 border-b"
                 style={{ height: rowHeight }}
               />
-              
+
               {/* Task rows */}
               {list.tasks.map((task) => {
                 const position = getTaskPosition(task)
-                
+
                 return (
-                  <div 
+                  <div
                     key={task.id}
                     className="relative border-b"
                     style={{ height: rowHeight }}
@@ -190,14 +200,14 @@ export function GanttGrid({
                         <div
                           key={i}
                           className="absolute top-0 bottom-0 bg-muted/30"
-                          style={{ 
+                          style={{
                             left: i * scaledDayWidth,
                             width: scaledDayWidth
                           }}
                         />
                       )
                     })}
-                    
+
                     {/* Task bar */}
                     {position && (
                       <GanttTaskBar

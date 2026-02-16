@@ -89,7 +89,7 @@ export function CreateTaskDialog({
         storyPoints: storyPoints ? parseInt(storyPoints) : undefined,
         tagIds: selectedTags.length > 0 ? selectedTags : undefined,
       })
-      
+
       // Reset form
       setTitle('')
       setDescription('')
@@ -98,7 +98,7 @@ export function CreateTaskDialog({
       setDueDate('')
       setEstimatedHours('')
       setStoryPoints('')
-      
+
       onClose()
       router.refresh()
     } catch (error) {
@@ -109,8 +109,8 @@ export function CreateTaskDialog({
   }
 
   const toggleTag = (tagId: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tagId) 
+    setSelectedTags(prev =>
+      prev.includes(tagId)
         ? prev.filter(id => id !== tagId)
         : [...prev, tagId]
     )
@@ -122,7 +122,7 @@ export function CreateTaskDialog({
         <DialogHeader>
           <DialogTitle>{t('createTask')}</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Title */}
           <div className="space-y-2">
@@ -161,11 +161,11 @@ export function CreateTaskDialog({
                   {statuses.map(status => (
                     <SelectItem key={status.id} value={status.id}>
                       <div className="flex items-center gap-2">
-                        <div 
+                        <div
                           className="w-2 h-2 rounded-full"
                           style={{ backgroundColor: status.color }}
                         />
-                        {status.name}
+                        {t(`statuses.${status.name}`)}
                       </div>
                     </SelectItem>
                   ))}

@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import * as React from 'react'
 import {
-  DndContext, 
+  DndContext,
   DragOverlay,
   closestCorners,
   KeyboardSensor,
@@ -54,10 +54,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel
 } from '@/modules/shared/ui/dropdown-menu'
-import { 
-  Plus, 
-  Search, 
-  ChevronRight, 
+import {
+  Plus,
+  Search,
+  ChevronRight,
   ChevronDown,
   ChevronsDownUp,
   ChevronsUpDown,
@@ -145,14 +145,14 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
   const [groupBy, setGroupBy] = useState<'list' | 'status'>('list')
   const [tasks, setTasks] = useState<Task[]>([])
   const [activeTask, setActiveTask] = useState<Task | null>(null)
-  
+
   useEffect(() => {
-     const start = performance.now()
-     setTasks(project.lists.flatMap(l => l.tasks))
-     // Use setTimeout to measure after render cycle completes
-     setTimeout(() => {
-        console.log(`[PERF-CLIENT] TaskListView mount+render: ${(performance.now() - start).toFixed(2)}ms`)
-     }, 0)
+    const start = performance.now()
+    setTasks(project.lists.flatMap(l => l.tasks))
+    // Use setTimeout to measure after render cycle completes
+    setTimeout(() => {
+      console.log(`[PERF-CLIENT] TaskListView mount+render: ${(performance.now() - start).toFixed(2)}ms`)
+    }, 0)
   }, [project.lists])
 
   const sensors = useSensors(
@@ -167,14 +167,14 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
   const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTask, setSelectedTask] = useState<string | null>(null)
-  
+
   // Dialog States
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isCreateListOpen, setIsCreateListOpen] = useState(false)
-  const [editingList, setEditingList] = useState<{id: string, name: string, color: string | null} | null>(null)
-  const [deletingList, setDeletingList] = useState<{id: string, name: string, taskCount: number} | null>(null)
+  const [editingList, setEditingList] = useState<{ id: string, name: string, color: string | null } | null>(null)
+  const [deletingList, setDeletingList] = useState<{ id: string, name: string, taskCount: number } | null>(null)
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
-  
+
   const [createInListId, setCreateInListId] = useState<string | null>(null)
   const [createInStatusId, setCreateInStatusId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -190,11 +190,11 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
         id: list.id,
         name: list.name,
         color: list.color,
-        tasks: tasks.filter(t => t.listId === list.id).sort((a,b) => a.position - b.position),
+        tasks: tasks.filter(t => t.listId === list.id).sort((a, b) => a.position - b.position),
         isCustomList: true
       }))
     }
-    
+
     // Group by status
     return statuses.map(status => ({
       id: status.id,
@@ -262,23 +262,23 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
-        const matchesSearch = 
+        const matchesSearch =
           task.title.toLowerCase().includes(query) ||
           task.description?.toLowerCase().includes(query)
         if (!matchesSearch) return false
       }
-      
+
       // Status filter
       if (statusFilter !== 'all' && task.status.id !== statusFilter) {
         return false
       }
-      
+
       // Assignee filter
       if (assigneeFilter !== 'all') {
         if (assigneeFilter === 'unassigned' && task.assignee) return false
         if (assigneeFilter !== 'unassigned' && task.assignee?.id !== assigneeFilter) return false
       }
-      
+
       // Tag filter
       if (selectedTag !== 'all') {
         if (!task.tags.some(t => t.id === selectedTag)) return false
@@ -334,26 +334,26 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
   }
 
   const handleDragOver = (event: DragOverEvent) => {
-     // Optimistic updates are strictly for visual reordering
-     // For a list view, exact reordering is complex because of grouping.
-     // We can skip complex onDragOver reordering and rely on onDragEnd for the commit
-     // BUT dnd-kit visual feedback works best if the items actually move in the DOM.
-     // Given the grouping (derived from state), if we update the task properties (listId/statusId) in `tasks` state, it will jump to the new group.
-     const { active, over } = event
-     if (!over) return
+    // Optimistic updates are strictly for visual reordering
+    // For a list view, exact reordering is complex because of grouping.
+    // We can skip complex onDragOver reordering and rely on onDragEnd for the commit
+    // BUT dnd-kit visual feedback works best if the items actually move in the DOM.
+    // Given the grouping (derived from state), if we update the task properties (listId/statusId) in `tasks` state, it will jump to the new group.
+    const { active, over } = event
+    if (!over) return
 
-     const activeId = active.id as string
-     const overId = over.id as string
-     
-     if (activeId === overId) return
+    const activeId = active.id as string
+    const overId = over.id as string
 
-     // Find the containers (Group IDs)
-     // The `SortableContext` should probably be the tasks themselves.
-     // Dropping ONTO a task in another group vs ONTO the group header/empty area.
-     // We need to know which group the `over` element belongs to.
-     
-     // Simplification: Let's only handle DragEnd for the logical move first.
-     // To allow dragging between lists, we need the "over" target to tell us the new list.
+    if (activeId === overId) return
+
+    // Find the containers (Group IDs)
+    // The `SortableContext` should probably be the tasks themselves.
+    // Dropping ONTO a task in another group vs ONTO the group header/empty area.
+    // We need to know which group the `over` element belongs to.
+
+    // Simplification: Let's only handle DragEnd for the logical move first.
+    // To allow dragging between lists, we need the "over" target to tell us the new list.
   }
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -364,11 +364,11 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
 
     const activeId = active.id as string
     const overId = over.id as string
-    
+
     // Find source and destination
     const activeTaskIndex = tasks.findIndex(t => t.id === activeId)
     const activeTask = tasks[activeTaskIndex]
-    
+
     if (!activeTask) return
 
     // Identify target group
@@ -376,20 +376,20 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
     // If overId is a Group ID (container), we move to that group.
     let targetGroupId: string | undefined
     let targetTaskId: string | undefined
-    
+
     // Check if over a task
     const overTask = tasks.find(t => t.id === overId)
-    
+
     if (overTask) {
-       targetGroupId = groupBy === 'list' ? overTask.listId : overTask.status.id
-       targetTaskId = overTask.id
+      targetGroupId = groupBy === 'list' ? overTask.listId : overTask.status.id
+      targetTaskId = overTask.id
     } else {
-       // Check if over a container (we need to make containers droppable)
-       // Assuming container ID is the List ID or Status ID
-       const isGroup = project.lists.some(l => l.id === overId) || statuses.some(s => s.id === overId)
-       if (isGroup) {
-         targetGroupId = overId
-       }
+      // Check if over a container (we need to make containers droppable)
+      // Assuming container ID is the List ID or Status ID
+      const isGroup = project.lists.some(l => l.id === overId) || statuses.some(s => s.id === overId)
+      if (isGroup) {
+        targetGroupId = overId
+      }
     }
 
     if (!targetGroupId) return
@@ -402,31 +402,31 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
     const newTasks = [...tasks]
     const taskIndex = newTasks.findIndex(t => t.id === activeId)
     if (taskIndex !== -1) {
-       if (groupBy === 'list') {
-         newTasks[taskIndex] = { ...newTasks[taskIndex], listId: targetGroupId }
-       } else {
-         // Need to find the status object
-         const newStatus = statuses.find(s => s.id === targetGroupId)
-         if (newStatus) {
-            newTasks[taskIndex] = { ...newTasks[taskIndex], status: { ...newTasks[taskIndex].status, ...newStatus } }
-         }
-       }
-       setTasks(newTasks)
+      if (groupBy === 'list') {
+        newTasks[taskIndex] = { ...newTasks[taskIndex], listId: targetGroupId }
+      } else {
+        // Need to find the status object
+        const newStatus = statuses.find(s => s.id === targetGroupId)
+        if (newStatus) {
+          newTasks[taskIndex] = { ...newTasks[taskIndex], status: { ...newTasks[taskIndex].status, ...newStatus } }
+        }
+      }
+      setTasks(newTasks)
     }
 
     // Update Server
     try {
       if (groupBy === 'list') {
-         if (isDifferentGroup) {
-            // Move to new list
-            await moveTask(activeId, targetGroupId, 0) 
-            toast.success('Task moved')
-         }
+        if (isDifferentGroup) {
+          // Move to new list
+          await moveTask(activeId, targetGroupId, 0)
+          toast.success('Task moved')
+        }
       } else if (groupBy === 'status') {
-         if (isDifferentGroup) {
-            await updateTask(activeId, { statusId: targetGroupId })
-             toast.success('Task status updated')
-         }
+        if (isDifferentGroup) {
+          await updateTask(activeId, { statusId: targetGroupId })
+          toast.success('Task status updated')
+        }
       }
     } catch (error) {
       toast.error('Failed to move task')
@@ -438,7 +438,7 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
 
   // Initialize expanded sets when grouping changes
   useMemo(() => {
-    const listIds = groupBy === 'list' 
+    const listIds = groupBy === 'list'
       ? project.lists.map(l => l.id)
       : statuses.map(s => s.id)
     setExpandedLists(new Set(listIds))
@@ -482,7 +482,7 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
             className="pl-10 h-10"
           />
         </div>
-        
+
         {/* Filters Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex items-center gap-4">
           {/* Group By Selector */}
@@ -498,9 +498,9 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
               </SelectContent>
             </Select>
           </div>
-          
-          <Button 
-            variant="outline" 
+
+          <Button
+            variant="outline"
             className="h-10 w-10 p-0 shrink-0 cursor-pointer"
             onClick={toggleAllLists}
             title={allListsExpanded ? t('collapseAll') || 'Collapse All' : t('expandAll') || 'Expand All'}
@@ -526,11 +526,11 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
                 {statuses.map(status => (
                   <SelectItem key={status.id} value={status.id}>
                     <div className="flex items-center gap-2">
-                      <div 
-                        className="w-2 h-2 rounded-full" 
+                      <div
+                        className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: status.color }}
                       />
-                      {status.name}
+                      {t(`statuses.${status.name}`)}
                     </div>
                   </SelectItem>
                 ))}
@@ -540,21 +540,21 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
 
           {/* Tag Filter */}
           <div className="col-span-1 md:w-auto">
-             <Select value={selectedTag} onValueChange={setSelectedTag}>
+            <Select value={selectedTag} onValueChange={setSelectedTag}>
               <SelectTrigger className="w-full lg:w-[200px] !h-10">
-                 <div className="flex items-center gap-2 truncate">
-                   <Tags className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                   <SelectValue placeholder={t('filterByTag')} />
-                 </div>
+                <div className="flex items-center gap-2 truncate">
+                  <Tags className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <SelectValue placeholder={t('filterByTag')} />
+                </div>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('allTags')}</SelectItem>
                 {tags.map((tag) => (
                   <SelectItem key={tag.id} value={tag.id}>
                     <div className="flex items-center gap-2">
-                      <div 
-                        className="w-2 h-2 rounded-full" 
-                        style={{ backgroundColor: tag.color }} 
+                      <div
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: tag.color }}
                       />
                       {tag.name}
                     </div>
@@ -584,11 +584,11 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
 
           {/* Action Buttons */}
           <div className="col-span-1 sm:col-span-2 lg:ml-auto flex flex-wrap items-center justify-between lg:justify-end gap-2 mt-2 lg:mt-0">
-             <Button variant="outline" size="sm" onClick={() => setIsTagsOpen(true)} className="h-10">
+            <Button variant="outline" size="sm" onClick={() => setIsTagsOpen(true)} className="h-10">
               <Tags className="w-4 h-4 mr-2" />
-              {t('manageTags') || 'Manage Tags'} 
+              {t('manageTags') || 'Manage Tags'}
             </Button>
-            
+
             <span className="text-xs text-muted-foreground mr-2 hidden xl:inline">
               {totalTasks} {t('tasks')}
             </span>
@@ -647,25 +647,25 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
             )
           })}
         </div>
-        
+
         <DragOverlay>
           {activeTask ? (
-             <Table>
-               <TableBody>
-                 <TaskRow
-                    task={activeTask}
-                    level={0}
-                    isExpanded={false}
-                    isSelected={false}
-                    onToggle={() => {}}
-                    onSelect={() => {}}
-                    onClick={() => {}}
-                    formatDate={formatDate}
-                    lists={project.lists.map(l => ({ id: l.id, name: l.name, color: l.color }))}
-                    className="bg-background border rounded-lg shadow-xl opacity-80"
-                 />
-               </TableBody>
-             </Table>
+            <Table>
+              <TableBody>
+                <TaskRow
+                  task={activeTask}
+                  level={0}
+                  isExpanded={false}
+                  isSelected={false}
+                  onToggle={() => { }}
+                  onSelect={() => { }}
+                  onClick={() => { }}
+                  formatDate={formatDate}
+                  lists={project.lists.map(l => ({ id: l.id, name: l.name, color: l.color }))}
+                  className="bg-background border rounded-lg shadow-xl opacity-80"
+                />
+              </TableBody>
+            </Table>
           ) : null}
         </DragOverlay>
       </DndContext>
@@ -677,9 +677,9 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
             {t('selected', { count: selectedTasks.size })}
           </span>
           <Separator orientation="vertical" className="h-4 bg-background/20" />
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="h-8 hover:bg-background/20 hover:text-background"
             onClick={handleBulkDelete}
             disabled={isBulkDeleting}
@@ -687,11 +687,11 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
             <Trash2 className="h-4 w-4 mr-2" />
             {isBulkDeleting ? t('deleting') : t('delete')}
           </Button>
-          <Button 
-             variant="ghost" 
-             size="icon" 
-             className="h-6 w-6 ml-2 hover:bg-background/20 hover:text-background rounded-full"
-             onClick={() => setSelectedTasks(new Set())}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 ml-2 hover:bg-background/20 hover:text-background rounded-full"
+            onClick={() => setSelectedTasks(new Set())}
           >
             <X className="h-3 w-3" />
           </Button>
@@ -751,16 +751,16 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
 }
 
 // Droppable List Group Component
-function TaskListGroup({ 
-  group, 
-  isExpanded, 
-  filteredTasks, 
-  toggleList, 
-  groupBy, 
-  handleCreateTask, 
-  t, 
-  setEditingList, 
-  setDeletingList, 
+function TaskListGroup({
+  group,
+  isExpanded,
+  filteredTasks,
+  toggleList,
+  groupBy,
+  handleCreateTask,
+  t,
+  setEditingList,
+  setDeletingList,
   expandedTasks,
   selectedTasks,
   toggleTask,
@@ -778,12 +778,12 @@ function TaskListGroup({
   })
 
   return (
-    <div 
+    <div
       ref={setNodeRef}
       className="rounded-xl border bg-card/50 backdrop-blur-sm overflow-hidden"
     >
       {/* List Header */}
-      <div 
+      <div
         className="flex items-center gap-3 px-4 py-3 bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
         onClick={() => toggleList(group.id)}
       >
@@ -794,19 +794,19 @@ function TaskListGroup({
             <ChevronRight className="h-4 w-4" />
           )}
         </Button>
-        <div 
+        <div
           className="w-3 h-3 rounded-full shrink-0"
           style={{ backgroundColor: group.color || '#6B7280' }}
         />
-        <h3 className="font-semibold">{group.name}</h3>
+        <h3 className="font-semibold">{groupBy === 'status' ? t(`statuses.${group.name}`) : group.name}</h3>
         <Badge variant="secondary" className="text-xs">
           {group.tasks.length}
         </Badge>
-        
+
         <div className="ml-auto flex items-center gap-1">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="h-7"
             onClick={(e) => {
               e.stopPropagation()
@@ -825,9 +825,9 @@ function TaskListGroup({
           {group.isCustomList && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-7 w-7"
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -842,7 +842,7 @@ function TaskListGroup({
                   <Pencil className="h-4 w-4 mr-2" />
                   {t('editList')}
                 </DropdownMenuItem>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   className="text-destructive focus:text-destructive cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation()
@@ -884,8 +884,8 @@ function TaskListGroup({
                 </TableCell>
               </TableRow>
             ) : (
-              <SortableContext 
-                items={filteredTasks.map((t: Task) => t.id)} 
+              <SortableContext
+                items={filteredTasks.map((t: Task) => t.id)}
                 strategy={verticalListSortingStrategy}
                 id={group.id} // Important for dnd-kit context
               >
@@ -931,13 +931,13 @@ function SortableTaskRow({ task, ...props }: TaskRowProps) {
   }
 
   return (
-    <TaskRow 
-      ref={setNodeRef} 
-      style={style} 
+    <TaskRow
+      ref={setNodeRef}
+      style={style}
       dragAttributes={attributes}
       dragListeners={listeners}
-      task={task} 
-      {...props} 
+      task={task}
+      {...props}
     />
   )
 }
@@ -960,244 +960,245 @@ interface TaskRowProps {
 // Forward ref to allow dnd-kit to attach to the TR
 const TaskRow = React.forwardRef<HTMLTableRowElement, TaskRowProps & React.HTMLAttributes<HTMLTableRowElement>>(
   ({ task, level, isExpanded, isSelected, onToggle, onSelect, onClick, formatDate, lists, style, className, dragAttributes, dragListeners, ...props }, ref) => {
-  const router = useRouter()
-  const hasSubtasks = (task._count?.subtasks || 0) > 0
-  const hasDependencies = (task.predecessors?.length || 0) > 0 || (task.successors?.length || 0) > 0
+    const t = useTranslations('tasks')
+    const router = useRouter()
+    const hasSubtasks = (task._count?.subtasks || 0) > 0
+    const hasDependencies = (task.predecessors?.length || 0) > 0 || (task.successors?.length || 0) > 0
 
-  // ... (handlers kept same)
-  const handleDelete = async () => {
-    try {
-      await deleteTask(task.id)
-      toast.success('Task deleted')
-      router.refresh()
-    } catch (error) {
-      toast.error('Failed to delete task')
+    // ... (handlers kept same)
+    const handleDelete = async () => {
+      try {
+        await deleteTask(task.id)
+        toast.success('Task deleted')
+        router.refresh()
+      } catch (error) {
+        toast.error('Failed to delete task')
+      }
     }
-  }
 
-  const handleMove = async (listId: string) => {
-    try {
-      await moveTask(task.id, listId, 0) // Move to top of target list
-      toast.success('Task moved')
-      router.refresh()
-    } catch (error) {
-      toast.error('Failed to move task')
+    const handleMove = async (listId: string) => {
+      try {
+        await moveTask(task.id, listId, 0) // Move to top of target list
+        toast.success('Task moved')
+        router.refresh()
+      } catch (error) {
+        toast.error('Failed to move task')
+      }
     }
-  }
 
-  return (
-    <>
-      <TableRow 
-        ref={ref}
-        style={style}
-        className={cn(
-          "cursor-pointer hover:bg-muted/50 group transition-colors",
-          isSelected && "bg-muted/40",
-          className
-        )}
-        onClick={onClick}
-        {...props}
-      >
-        <TableCell className="w-[30px] px-1 py-2">
-           <div 
-             {...dragAttributes} 
-             {...dragListeners} 
-             className="cursor-grab hover:text-foreground text-muted-foreground/50 flex items-center justify-center p-1 rounded hover:bg-muted"
-             onClick={(e) => e.stopPropagation()}
-           >
-              <GripVertical className="h-4 w-4" />
-           </div>
-        </TableCell>
-        <TableCell className="py-2">
-          {hasSubtasks && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-6 w-6"
-              onClick={(e) => {
-                e.stopPropagation()
-                onToggle()
-              }}
-            >
-              {isExpanded ? (
-                <ChevronDown className="h-3.5 w-3.5" />
-              ) : (
-                <ChevronRight className="h-3.5 w-3.5" />
-              )}
-            </Button>
+    return (
+      <>
+        <TableRow
+          ref={ref}
+          style={style}
+          className={cn(
+            "cursor-pointer hover:bg-muted/50 group transition-colors",
+            isSelected && "bg-muted/40",
+            className
           )}
-        </TableCell>
-        <TableCell className="py-2">
-          <div 
-            className="flex items-center gap-3"
-            style={{ paddingLeft: level * 20 }}
-          >
-            <Checkbox 
-              checked={isSelected}
-              onCheckedChange={() => onSelect()}
+          onClick={onClick}
+          {...props}
+        >
+          <TableCell className="w-[30px] px-1 py-2">
+            <div
+              {...dragAttributes}
+              {...dragListeners}
+              className="cursor-grab hover:text-foreground text-muted-foreground/50 flex items-center justify-center p-1 rounded hover:bg-muted"
               onClick={(e) => e.stopPropagation()}
-              className="shrink-0 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-            />
-            <div className="flex flex-col min-w-0">
-               <div className="flex items-center gap-2">
-                 <span className={cn(
-                   "font-medium truncate max-w-[250px] sm:max-w-[400px]",
-                   task.status.isClosed && "line-through text-muted-foreground"
-                 )}>
-                   {task.title}
-                 </span>
-                 {hasDependencies && (
+            >
+              <GripVertical className="h-4 w-4" />
+            </div>
+          </TableCell>
+          <TableCell className="py-2">
+            {hasSubtasks && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onToggle()
+                }}
+              >
+                {isExpanded ? (
+                  <ChevronDown className="h-3.5 w-3.5" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5" />
+                )}
+              </Button>
+            )}
+          </TableCell>
+          <TableCell className="py-2">
+            <div
+              className="flex items-center gap-3"
+              style={{ paddingLeft: level * 20 }}
+            >
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={() => onSelect()}
+                onClick={(e) => e.stopPropagation()}
+                className="shrink-0 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+              />
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className={cn(
+                    "font-medium truncate max-w-[250px] sm:max-w-[400px]",
+                    task.status.isClosed && "line-through text-muted-foreground"
+                  )}>
+                    {task.title}
+                  </span>
+                  {hasDependencies && (
                     <div className="flex items-center text-muted-foreground" title="Has dependencies">
                       <Link2 className="h-3.5 w-3.5" />
                     </div>
-                 )}
-               </div>
-            </div>
-            {task.tags.length > 0 && (
-              <div className="flex items-center gap-1 ml-2">
-                {task.tags.slice(0, 2).map(tag => (
-                  <Badge 
-                    key={tag.id}
-                    variant="outline" 
-                    className="text-[10px] px-1.5 py-0 h-4"
-                    style={{ 
-                      backgroundColor: `${tag.color}20`,
-                      borderColor: tag.color,
-                      color: tag.color
-                    }}
-                  >
-                    {tag.name}
-                  </Badge>
-                ))}
-                {task.tags.length > 2 && (
-                  <span className="text-xs text-muted-foreground">+{task.tags.length - 2}</span>
+                  )}
+                </div>
+              </div>
+              {task.tags.length > 0 && (
+                <div className="flex items-center gap-1 ml-2">
+                  {task.tags.slice(0, 2).map(tag => (
+                    <Badge
+                      key={tag.id}
+                      variant="outline"
+                      className="text-[10px] px-1.5 py-0 h-4"
+                      style={{
+                        backgroundColor: `${tag.color}20`,
+                        borderColor: tag.color,
+                        color: tag.color
+                      }}
+                    >
+                      {tag.name}
+                    </Badge>
+                  ))}
+                  {task.tags.length > 2 && (
+                    <span className="text-xs text-muted-foreground">+{task.tags.length - 2}</span>
+                  )}
+                </div>
+              )}
+              <div className="flex items-center gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground">
+                {(task._count?.comments || 0) > 0 && (
+                  <span className="flex items-center gap-0.5 text-xs">
+                    <MessageSquare className="h-3 w-3" />
+                    {task._count?.comments}
+                  </span>
+                )}
+                {(task._count?.attachments || 0) > 0 && (
+                  <span className="flex items-center gap-0.5 text-xs">
+                    <Paperclip className="h-3 w-3" />
+                    {task._count?.attachments}
+                  </span>
                 )}
               </div>
+            </div>
+          </TableCell>
+          <TableCell className="py-2 hidden sm:table-cell">
+            <Badge
+              variant="secondary"
+              className="text-xs"
+              style={{
+                backgroundColor: `${task.status.color}20`,
+                color: task.status.color
+              }}
+            >
+              {t(`statuses.${task.status.name}`)}
+            </Badge>
+          </TableCell>
+          <TableCell className="py-2 hidden md:table-cell">
+            {task.assignee ? (
+              <Avatar className="h-7 w-7">
+                <AvatarImage src={task.assignee.image || undefined} />
+                <AvatarFallback className="text-xs">
+                  {task.assignee.name?.charAt(0) || '?'}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <span className="text-muted-foreground text-sm">—</span>
             )}
-            <div className="flex items-center gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground">
-              {(task._count?.comments || 0) > 0 && (
-                <span className="flex items-center gap-0.5 text-xs">
-                  <MessageSquare className="h-3 w-3" />
-                  {task._count?.comments}
-                </span>
-              )}
-              {(task._count?.attachments || 0) > 0 && (
-                <span className="flex items-center gap-0.5 text-xs">
-                  <Paperclip className="h-3 w-3" />
-                  {task._count?.attachments}
-                </span>
-              )}
-            </div>
-          </div>
-        </TableCell>
-        <TableCell className="py-2 hidden sm:table-cell">
-          <Badge
-            variant="secondary"
-            className="text-xs"
-            style={{ 
-              backgroundColor: `${task.status.color}20`,
-              color: task.status.color
-            }}
-          >
-            {task.status.name}
-          </Badge>
-        </TableCell>
-        <TableCell className="py-2 hidden md:table-cell">
-          {task.assignee ? (
-            <Avatar className="h-7 w-7">
-              <AvatarImage src={task.assignee.image || undefined} />
-              <AvatarFallback className="text-xs">
-                {task.assignee.name?.charAt(0) || '?'}
-              </AvatarFallback>
-            </Avatar>
-          ) : (
-            <span className="text-muted-foreground text-sm">—</span>
-          )}
-        </TableCell>
-        <TableCell className="py-2 hidden lg:table-cell">
-          <span className={cn(
-            "text-sm",
-            task.dueDate && new Date(task.dueDate) < new Date() && !task.status.isClosed
-              ? "text-red-500 font-medium"
-              : "text-muted-foreground"
-          )}>
-            {formatDate(task.dueDate)}
-          </span>
-        </TableCell>
-        <TableCell className="py-2 hidden sm:table-cell">
-          <div className="flex items-center gap-2">
-            <div className="w-12 h-1.5 bg-muted rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-primary rounded-full transition-all"
-                style={{ width: `${task.progress}%` }}
-              />
-            </div>
-            <span className="text-xs text-muted-foreground w-8">
-              {task.progress}%
+          </TableCell>
+          <TableCell className="py-2 hidden lg:table-cell">
+            <span className={cn(
+              "text-sm",
+              task.dueDate && new Date(task.dueDate) < new Date() && !task.status.isClosed
+                ? "text-red-500 font-medium"
+                : "text-muted-foreground"
+            )}>
+              {formatDate(task.dueDate)}
             </span>
-          </div>
-        </TableCell>
-        <TableCell className="py-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-7 w-7 opacity-0 group-hover:opacity-100"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-              <DropdownMenuItem className="cursor-pointer" onClick={() => onClick()}>
+          </TableCell>
+          <TableCell className="py-2 hidden sm:table-cell">
+            <div className="flex items-center gap-2">
+              <div className="w-12 h-1.5 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all"
+                  style={{ width: `${task.progress}%` }}
+                />
+              </div>
+              <span className="text-xs text-muted-foreground w-8">
+                {task.progress}%
+              </span>
+            </div>
+          </TableCell>
+          <TableCell className="py-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 opacity-0 group-hover:opacity-100"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => onClick()}>
                   <Pencil className="h-4 w-4 mr-2" />
                   Edit Task
-              </DropdownMenuItem>
-              {lists.length > 0 && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                    Move to...
-                  </DropdownMenuLabel>
-                  {lists.map(list => (
+                </DropdownMenuItem>
+                {lists.length > 0 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                      Move to...
+                    </DropdownMenuLabel>
+                    {lists.map(list => (
                       <DropdownMenuItem key={list.id} className="cursor-pointer" onClick={() => handleMove(list.id)}>
-                          <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: list.color || '#6B7280' }} />
-                          {list.name}
+                        <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: list.color || '#6B7280' }} />
+                        {list.name}
                       </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator />
-                </>
-              )}
-              <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer" onClick={handleDelete}>
+                    ))}
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer" onClick={handleDelete}>
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TableCell>
-      </TableRow>
-      
-      {/* Subtasks */}
-      {isExpanded && task.subtasks?.map((subtask) => (
-        <TaskRow
-          key={subtask.id}
-          task={{
-            ...subtask,
-            _count: { subtasks: 0, comments: 0, attachments: 0 },
-            subtasks: []
-          }}
-          level={level + 1}
-          isExpanded={false}
-          isSelected={isSelected}
-          onSelect={() => onSelect()}
-          onToggle={() => {}}
-          onClick={onClick}
-          formatDate={formatDate}
-          lists={lists}
-        />
-      ))}
-    </>
-  )
-})
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TableCell>
+        </TableRow>
+
+        {/* Subtasks */}
+        {isExpanded && task.subtasks?.map((subtask) => (
+          <TaskRow
+            key={subtask.id}
+            task={{
+              ...subtask,
+              _count: { subtasks: 0, comments: 0, attachments: 0 },
+              subtasks: []
+            }}
+            level={level + 1}
+            isExpanded={false}
+            isSelected={isSelected}
+            onSelect={() => onSelect()}
+            onToggle={() => { }}
+            onClick={onClick}
+            formatDate={formatDate}
+            lists={lists}
+          />
+        ))}
+      </>
+    )
+  })
 TaskRow.displayName = 'TaskRow'

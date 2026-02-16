@@ -120,23 +120,23 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
   const [isPending, startTransition] = useTransition()
   // Optimistic updates: track temporary task status changes
   const [optimisticMoves, setOptimisticMoves] = useState<Map<string, string>>(new Map())
-  
+
   // Group all tasks by status, applying optimistic moves
   const tasksByStatus = useMemo(() => {
-    const allTasks = project.lists.flatMap(list => 
+    const allTasks = project.lists.flatMap(list =>
       list.tasks.map(task => ({ ...task, listId: list.id }))
     )
-    
+
     // Filter by search query and tags
     const filteredTasks = allTasks.filter(task => {
-        const matchesSearch = !searchQuery || 
-          task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          task.description?.toLowerCase().includes(searchQuery.toLowerCase())
-        
-        const matchesTag = selectedTag === 'all' || 
-          task.tags.some(t => t.id === selectedTag)
+      const matchesSearch = !searchQuery ||
+        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.description?.toLowerCase().includes(searchQuery.toLowerCase())
 
-        return matchesSearch && matchesTag
+      const matchesTag = selectedTag === 'all' ||
+        task.tags.some(t => t.id === selectedTag)
+
+      return matchesSearch && matchesTag
     })
 
     // Group by status, applying optimistic moves
@@ -167,7 +167,7 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
   const customCollisionDetection: CollisionDetection = (args) => {
     // First, try pointerWithin - this is more precise for container detection
     const pointerCollisions = pointerWithin(args)
-    
+
     if (pointerCollisions.length > 0) {
       // Prioritize column (status) collisions over task collisions
       const columnCollision = pointerCollisions.find(
@@ -178,7 +178,7 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
       }
       return pointerCollisions
     }
-    
+
     // Fallback to rectIntersection for edge cases
     const rectCollisions = rectIntersection(args)
     if (rectCollisions.length > 0) {
@@ -190,7 +190,7 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
       }
       return rectCollisions
     }
-    
+
     // Final fallback to closestCorners
     return closestCorners(args)
   }
@@ -198,7 +198,7 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event
     const taskId = active.id as string
-    
+
     // Find the task across all statuses
     for (const tasks of Object.values(tasksByStatus)) {
       const task = tasks.find(t => t.id === taskId)
@@ -211,18 +211,18 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active } = event
-    
+
     // Use the overColumnId tracked by handleDragOver
     const targetStatusId = overColumnId
     const activeId = active.id as string
-    
+
     // Reset the over column tracker
     setOverColumnId(null)
     setActiveTask(null)
-    
+
     if (targetStatusId && activeTask && activeTask.status.id !== targetStatusId) {
       const targetStatus = statuses.find(s => s.id === targetStatusId)
-      
+
       // Client-side validation: Tasks without assignee can only be in Backlog
       const isMovingToNonBacklog = targetStatus && targetStatus.name !== 'Backlog'
       if (!activeTask.assignee && isMovingToNonBacklog) {
@@ -235,7 +235,7 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
 
       // OPTIMISTIC UPDATE: Immediately move the task visually
       setOptimisticMoves(prev => new Map(prev).set(activeId, targetStatusId))
-      
+
       // Call server in background
       try {
         await updateTaskStatus(activeId, targetStatusId)
@@ -261,27 +261,27 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
 
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event
-    
+
     if (!over) {
       setOverColumnId(null)
       return
     }
-    
+
     const overId = over.id as string
     const activeId = active.id as string
-    
+
     // Ignore if hovering over yourself
     if (overId === activeId) {
       return // Keep the previously detected column
     }
-    
+
     // Check if we're over a column directly (status ID)
     const directStatus = statuses.find(s => s.id === overId)
     if (directStatus) {
       setOverColumnId(directStatus.id)
       return
     }
-    
+
     // If we're over a task (not ourselves), find which column that task belongs to
     for (const [statusId, tasks] of Object.entries(tasksByStatus)) {
       const foundTask = tasks.find(t => t.id === overId && t.id !== activeId)
@@ -315,23 +315,23 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
               className="pl-10 h-10"
             />
           </div>
-          
+
           {/* Tag Filter */}
           <Select value={selectedTag} onValueChange={setSelectedTag}>
             <SelectTrigger className="w-full sm:w-[180px] h-10">
-               <div className="flex items-center gap-2">
-                 <TagsIcon className="w-4 h-4 text-muted-foreground" />
-                 <SelectValue placeholder={t('filterByTag')} />
-               </div>
+              <div className="flex items-center gap-2">
+                <TagsIcon className="w-4 h-4 text-muted-foreground" />
+                <SelectValue placeholder={t('filterByTag')} />
+              </div>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t('allTags')}</SelectItem>
               {tags.map((tag) => (
                 <SelectItem key={tag.id} value={tag.id}>
                   <div className="flex items-center gap-2">
-                    <div 
-                      className="w-2 h-2 rounded-full" 
-                      style={{ backgroundColor: tag.color }} 
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: tag.color }}
                     />
                     {tag.name}
                   </div>
@@ -339,7 +339,7 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
               ))}
             </SelectContent>
           </Select>
-          
+
           {/* Column Visibility Toggle */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -368,11 +368,11 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
+                    <div
+                      className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: status.color }}
                     />
-                    {status.name}
+                    {t(`statuses.${status.name}`)}
                   </div>
                 </DropdownMenuCheckboxItem>
               ))}
@@ -416,7 +416,7 @@ export function KanbanBoard({ project, statuses, tags, users, currentUserId }: K
           {activeTask && (
             <KanbanCard
               task={activeTask}
-              onClick={() => {}}
+              onClick={() => { }}
               isDragging
             />
           )}

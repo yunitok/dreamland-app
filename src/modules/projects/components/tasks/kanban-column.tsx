@@ -56,13 +56,13 @@ interface KanbanColumnProps {
 
 export function KanbanColumn({ status, tasks, onTaskClick, onAddTask, onHideColumn }: KanbanColumnProps) {
   const t = useTranslations('tasks')
-  
+
   const { setNodeRef, isOver } = useDroppable({
     id: status.id,
   })
 
   return (
-    <div 
+    <div
       className={cn(
         "flex flex-col w-[320px] min-w-[320px] h-full rounded-xl bg-muted/30 border transition-colors",
         isOver && "bg-muted/50 border-primary/50"
@@ -70,11 +70,13 @@ export function KanbanColumn({ status, tasks, onTaskClick, onAddTask, onHideColu
     >
       {/* Column Header */}
       <div className="flex items-center gap-2 p-3 border-b">
-        <div 
+        <div
           className="w-3 h-3 rounded-full shrink-0"
           style={{ backgroundColor: status.color }}
         />
-        <h3 className="font-medium text-sm flex-1 truncate">{status.name}</h3>
+        <h3 className="font-medium text-sm flex-1 truncate">
+          {t(`statuses.${status.name}`)}
+        </h3>
         <Badge variant="secondary" className="text-xs">
           {tasks.length}
         </Badge>
@@ -96,12 +98,12 @@ export function KanbanColumn({ status, tasks, onTaskClick, onAddTask, onHideColu
       </div>
 
       {/* Tasks Container */}
-      <div 
+      <div
         ref={setNodeRef}
         className="flex-1 p-2 overflow-y-auto space-y-2"
       >
-        <SortableContext 
-          items={tasks.map(t => t.id)} 
+        <SortableContext
+          items={tasks.map(t => t.id)}
           strategy={verticalListSortingStrategy}
         >
           {tasks.map(task => (
@@ -122,8 +124,8 @@ export function KanbanColumn({ status, tasks, onTaskClick, onAddTask, onHideColu
 
       {/* Add Task Button */}
       <div className="p-2 border-t">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           className="w-full justify-start text-muted-foreground hover:text-foreground"
           onClick={onAddTask}
         >
