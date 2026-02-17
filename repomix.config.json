@@ -1,0 +1,38 @@
+{
+    "output": {
+        "filePath": "repomix-context-roles-refactor.txt",
+        "style": "markdown",
+        "headerText": "Este archivo contiene el contexto necesario para refactorizar el sistema de roles y usuarios a una arquitectura modular y mejorar la interfaz de permisos.",
+        "removeComments": false,
+        "removeEmptyLines": true,
+        "topFilesLength": 10,
+        "showLineNumbers": true
+    },
+    "include": [
+        "prisma/schema.prisma",
+        "src/lib/auth.ts",
+        "src/lib/permissions.ts",
+        "src/lib/session.ts",
+        "src/modules/admin/**/*",
+        "src/modules/sherlock/actions/**/*",
+        "src/modules/sherlock/domain/**/*",
+        "src/app/[locale]/(modules)/admin/**/*",
+        "middleware.ts"
+    ],
+    "ignore": {
+        "customPatterns": [
+            "**/node_modules/**",
+            "**/.next/**",
+            "**/public/**",
+            "package-lock.json",
+            "**/*.ico",
+            "**/*.png",
+            "**/*.jpg"
+        ],
+        "useGitignore": true,
+        "useDefaultPatterns": true
+    },
+    "security": {
+        "enableSecretLint": true
+    }
+}

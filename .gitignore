@@ -51,3 +51,7 @@ ai-debug.log
 .agent/skills
 .agent/rules
 .claude
+
+# repomix
+repomix-context-*.txt
+repomix-output.txt
