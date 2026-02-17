@@ -1,0 +1,8 @@
+{
+    "title": "Arquitectura",
+    "pages": [
+        "system-overview",
+        "modular-monolith",
+        "voice-agent"
+    ]
+}
