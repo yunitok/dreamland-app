@@ -22,8 +22,8 @@ interface RoleDialogProps {
   role?: Role & { permissions: Permission[] }
 }
 
-const RESOURCES = ["projects", "users", "roles", "departments", "sentiment", "admin"]
-const ACTIONS = ["view", "create", "edit", "delete", "manage"]
+const RESOURCES = ["projects", "sherlock", "reports", "users", "roles", "departments", "sentiment", "admin"]
+const ACTIONS = ["read", "create", "update", "delete", "manage"]
 
 export function RoleDialog({ role }: RoleDialogProps) {
   const t = useTranslations("admin")

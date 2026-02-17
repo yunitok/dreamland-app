@@ -1,3 +1,9 @@
+/**
+ * NOTA: Estas funciones son para checks rápidos en el cliente (UI condicional).
+ * Para autorización real en server actions, usar siempre las funciones de
+ * src/lib/actions/rbac.ts que consultan la DB en vivo.
+ */
+
 export type PermissionAction = 'read' | 'create' | 'update' | 'delete' | 'manage'
 export type PermissionResource = 'admin' | 'users' | 'roles' | 'projects' | 'settings' | 'departments' | 'sentiment' | 'tasks' | 'lists' | 'comments' | 'attachments' | 'tags' | 'sherlock' | 'reports'
 

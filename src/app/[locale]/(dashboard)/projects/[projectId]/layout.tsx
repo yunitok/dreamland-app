@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { getChatSessions } from '@/lib/actions/chat'
+import { hasProjectAccess } from '@/lib/actions/rbac'
 import { notFound } from 'next/navigation'
 import { ProjectHeader } from '@/modules/projects/components/tasks/project-header'
 import { ViewTabs } from '@/modules/projects/components/tasks/view-tabs'
@@ -13,7 +14,8 @@ interface ProjectLayoutProps {
 export default async function ProjectLayout({ children, params }: ProjectLayoutProps) {
   const { projectId } = await params
 
-  const project = await prisma.project.findUnique({
+  const [project, canManage, sessions] = await Promise.all([
+    prisma.project.findUnique({
       where: { id: projectId },
       include: {
         tags: true,
@@ -25,18 +27,18 @@ export default async function ProjectLayout({ children, params }: ProjectLayoutP
           select: { lists: true }
         }
       }
-    })
+    }),
+    hasProjectAccess(projectId, 'MANAGER'),
+    getChatSessions(projectId),
+  ])
 
   if (!project) {
     notFound()
   }
 
-  /* Fetch Chat Sessions */
-  const sessions = await getChatSessions(projectId)
-
   return (
     <div className="flex flex-col h-full">
-      <ProjectHeader project={project} />
+      <ProjectHeader project={project} canManage={canManage} />
       <ViewTabs projectId={projectId} />
       <div className="flex-1 overflow-auto">
         {children}

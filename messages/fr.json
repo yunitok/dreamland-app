@@ -236,19 +236,30 @@
                 "roles": "Roles",
                 "departments": "Departments",
                 "sentiment": "Sentiment",
-                "admin": "Admin"
+                "admin": "Admin",
+                "sherlock": "Sherlock",
+                "reports": "Rapports"
             },
             "actions": {
-                "view": "View",
-                "create": "Create",
-                "edit": "Edit",
-                "delete": "Delete",
-                "manage": "Manage"
+                "read": "Lire",
+                "create": "Créer",
+                "update": "Modifier",
+                "delete": "Supprimer",
+                "manage": "Gérer"
             },
             "resource": "Resource",
-            "accessLevel": "Access Level"
+            "accessLevel": "Niveau d'accès"
         },
-        "databaseStatus": "Database Status",
+        "roleDescriptions": {
+            "SUPER_ADMIN": "Accès complet au système sans restrictions",
+            "STRATEGIC_PM": "Gère la feuille de route et les projets au niveau stratégique",
+            "TEAM_LEAD": "Gère les tâches de l'équipe et les assignations",
+            "TEAM_MEMBER": "Travaille sur les tâches assignées",
+            "PEOPLE_LEAD": "Gère le sentiment de l'équipe et les départements",
+            "STAKEHOLDER": "Accès en lecture seule aux analyses"
+        },
+        "noDescription": "Aucune description",
+        "databaseStatus": "État de la base de données",
         "selectAll": "Select All",
         "unselectAll": "Unselect",
         "connected": "Connected",
@@ -263,12 +274,32 @@
         "importSuccess": "Data imported successfully!",
         "jsonFormatReference": "JSON Format Reference",
         "jsonDescription": "The expected JSON structure should contain projects and/or teamMoods arrays.",
+        "generalInfo": "Informations Générales",
+        "projectAccess": "Accès aux Projets",
+        "addProject": "Ajouter un Projet",
+        "selectProject": "Sélectionner un projet",
+        "assign": "Assigner",
+        "projectAssigned": "Projet assigné avec succès",
+        "projectAssignFailed": "Erreur lors de l'assignation du projet",
+        "projectRemoved": "Accès au projet supprimé",
+        "projectRemoveFailed": "Erreur lors de la suppression de l'accès",
+        "roleUpdated": "Rôle mis à jour",
+        "roleUpdateFailed": "Erreur lors de la mise à jour du rôle",
+        "noProjectAccess": "Cet utilisateur n'a accès à aucun projet",
+        "project": "Projet",
+        "department": "Département",
         "filters": "Filtres",
         "of": "de",
         "clearFilters": "Effacer les filtres",
         "searchPlaceholder": "Rechercher par nom ou email...",
         "allRoles": "Tous les rôles",
-        "noRole": "Aucun rôle"
+        "noRole": "Aucun rôle",
+        "searchProject": "Rechercher un projet...",
+        "noProjectsFound": "Aucun projet trouvé",
+        "roleDescOwner": "Contrôle total : gérer les membres, les paramètres et supprimer le projet",
+        "roleDescManager": "Gérer les tâches et les membres, sans pouvoir supprimer le projet",
+        "roleDescEditor": "Créer et modifier les tâches et le contenu, sans gérer les membres",
+        "roleDescViewer": "Lecture seule : voir les tâches et données sans rien modifier"
     },
     "footer": {
         "strategicPM": "Strategic PM",

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { ingredientSchema, IngredientFormValues } from "@/modules/sherlock/schemas"
 import { Ingredient } from "@prisma/client"
+import { requirePermission } from "@/lib/actions/rbac"
 
 export type IngredientWithRelations = Ingredient & {
   category: { name: string }
@@ -12,6 +13,7 @@ export type IngredientWithRelations = Ingredient & {
 }
 
 export async function getIngredients({ categoryId, search }: { categoryId?: string, search?: string }) {
+  await requirePermission("sherlock", "read")
   const where: any = {}
   
   if (categoryId && categoryId !== 'all') {
@@ -34,6 +36,7 @@ export async function getIngredients({ categoryId, search }: { categoryId?: stri
 }
 
 export async function getIngredient(id: string) {
+  await requirePermission("sherlock", "read")
   return await prisma.ingredient.findUnique({
     where: { id },
     include: {
@@ -49,6 +52,7 @@ export async function getIngredient(id: string) {
 }
 
 export async function createIngredient(data: IngredientFormValues) {
+  await requirePermission("sherlock", "manage")
   const validatedFields = ingredientSchema.parse(data)
 
   await prisma.ingredient.create({ 
@@ -59,6 +63,7 @@ export async function createIngredient(data: IngredientFormValues) {
 }
 
 export async function updateIngredient(id: string, data: IngredientFormValues) {
+  await requirePermission("sherlock", "manage")
   const validatedFields = ingredientSchema.parse(data)
 
   await prisma.ingredient.update({
@@ -71,6 +76,7 @@ export async function updateIngredient(id: string, data: IngredientFormValues) {
 }
 
 export async function deleteIngredient(id: string) {
+  await requirePermission("sherlock", "manage")
   await prisma.ingredient.delete({
     where: { id }
   })

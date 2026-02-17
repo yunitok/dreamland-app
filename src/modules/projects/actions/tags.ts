@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { hasProjectAccess } from '@/lib/actions/rbac'
 
 // =============================================================================
 // TYPES
@@ -23,6 +24,8 @@ export interface UpdateTagInput {
 // =============================================================================
 
 export async function getTags(projectId: string) {
+  if (!await hasProjectAccess(projectId, 'VIEWER')) throw new Error('Forbidden')
+
   return prisma.tag.findMany({
     where: { projectId },
     include: {
@@ -33,7 +36,8 @@ export async function getTags(projectId: string) {
 }
 
 export async function createTag(data: CreateTagInput) {
-  // Check for duplicate name in project
+  if (!await hasProjectAccess(data.projectId, 'MANAGER')) throw new Error('Forbidden')
+
   const existing = await prisma.tag.findUnique({
     where: {
       projectId_name: {
@@ -42,10 +46,8 @@ export async function createTag(data: CreateTagInput) {
       }
     }
   })
-  
-  if (existing) {
-    throw new Error('A tag with this name already exists in this project')
-  }
+
+  if (existing) throw new Error('A tag with this name already exists in this project')
 
   const tag = await prisma.tag.create({
     data: {
@@ -64,10 +66,10 @@ export async function updateTag(id: string, data: UpdateTagInput) {
     where: { id },
     select: { projectId: true }
   })
-  
-  if (!tag) throw new Error('Tag not found')
 
-  // Check for duplicate name if updating name
+  if (!tag) throw new Error('Tag not found')
+  if (!await hasProjectAccess(tag.projectId, 'MANAGER')) throw new Error('Forbidden')
+
   if (data.name) {
     const existing = await prisma.tag.findFirst({
       where: {
@@ -76,18 +78,13 @@ export async function updateTag(id: string, data: UpdateTagInput) {
         NOT: { id }
       }
     })
-    
-    if (existing) {
-      throw new Error('A tag with this name already exists in this project')
-    }
+
+    if (existing) throw new Error('A tag with this name already exists in this project')
   }
 
   const updated = await prisma.tag.update({
     where: { id },
-    data: {
-      name: data.name,
-      color: data.color,
-    }
+    data: { name: data.name, color: data.color }
   })
 
   revalidatePath(`/projects/${tag.projectId}`)
@@ -99,8 +96,9 @@ export async function deleteTag(id: string) {
     where: { id },
     select: { projectId: true }
   })
-  
+
   if (!tag) throw new Error('Tag not found')
+  if (!await hasProjectAccess(tag.projectId, 'MANAGER')) throw new Error('Forbidden')
 
   await prisma.tag.delete({ where: { id } })
 
@@ -113,33 +111,43 @@ export async function deleteTag(id: string) {
 // =============================================================================
 
 export async function addTagToTask(taskId: string, tagId: string) {
-  const task = await prisma.task.update({
+  const task = await prisma.task.findUnique({
     where: { id: taskId },
-    data: {
-      tags: { connect: { id: tagId } }
-    },
-    include: { 
+    select: { list: { select: { projectId: true } } }
+  })
+  if (!task) throw new Error('Task not found')
+  if (!await hasProjectAccess(task.list.projectId, 'EDITOR')) throw new Error('Forbidden')
+
+  const updated = await prisma.task.update({
+    where: { id: taskId },
+    data: { tags: { connect: { id: tagId } } },
+    include: {
       tags: true,
       list: { select: { projectId: true } }
     }
   })
 
-  revalidatePath(`/projects/${task.list.projectId}`)
-  return task
+  revalidatePath(`/projects/${updated.list.projectId}`)
+  return updated
 }
 
 export async function removeTagFromTask(taskId: string, tagId: string) {
-  const task = await prisma.task.update({
+  const task = await prisma.task.findUnique({
     where: { id: taskId },
-    data: {
-      tags: { disconnect: { id: tagId } }
-    },
-    include: { 
+    select: { list: { select: { projectId: true } } }
+  })
+  if (!task) throw new Error('Task not found')
+  if (!await hasProjectAccess(task.list.projectId, 'EDITOR')) throw new Error('Forbidden')
+
+  const updated = await prisma.task.update({
+    where: { id: taskId },
+    data: { tags: { disconnect: { id: tagId } } },
+    include: {
       tags: true,
       list: { select: { projectId: true } }
     }
   })
 
-  revalidatePath(`/projects/${task.list.projectId}`)
-  return task
+  revalidatePath(`/projects/${updated.list.projectId}`)
+  return updated
 }

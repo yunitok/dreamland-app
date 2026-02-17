@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { recipeSchema, RecipeFormValues } from "../schemas"
 import { Prisma } from "@prisma/client"
+import { requirePermission } from "@/lib/actions/rbac"
 
 export type RecipeWithRelations = Prisma.RecipeGetPayload<{
   include: {
@@ -18,6 +19,7 @@ export type RecipeWithRelations = Prisma.RecipeGetPayload<{
 }>
 
 export async function getRecipes() {
+  await requirePermission("sherlock", "read")
   return await prisma.recipe.findMany({
     include: {
       category: true,
@@ -33,6 +35,7 @@ export async function getRecipes() {
 }
 
 export async function getRecipeById(id: string) {
+  await requirePermission("sherlock", "read")
   return await prisma.recipe.findUnique({
     where: { id },
     include: {
@@ -48,6 +51,7 @@ export async function getRecipeById(id: string) {
 }
 
 export async function createRecipe(data: RecipeFormValues) {
+  await requirePermission("sherlock", "manage")
   const validated = recipeSchema.parse(data)
 
   const recipe = await prisma.recipe.create({
@@ -79,6 +83,7 @@ export async function createRecipe(data: RecipeFormValues) {
 }
 
 export async function updateRecipe(id: string, data: RecipeFormValues) {
+  await requirePermission("sherlock", "manage")
   const validated = recipeSchema.parse(data)
 
   // We delete existing ingredients and recreate them to keep it simple and ensure order
@@ -117,6 +122,7 @@ export async function updateRecipe(id: string, data: RecipeFormValues) {
 }
 
 export async function deleteRecipe(id: string) {
+  await requirePermission("sherlock", "manage")
   await prisma.recipe.delete({
     where: { id },
   })
@@ -125,9 +131,11 @@ export async function deleteRecipe(id: string) {
 }
 
 export async function getRecipeCategories() {
+  await requirePermission("sherlock", "read")
   return await prisma.recipeCategory.findMany({ orderBy: { name: 'asc' } })
 }
 
 export async function getRecipeFamilies() {
+  await requirePermission("sherlock", "read")
   return await prisma.recipeFamily.findMany({ orderBy: { name: 'asc' } })
 }

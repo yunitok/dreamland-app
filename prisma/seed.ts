@@ -35,10 +35,12 @@ async function main() {
   // --- RBAC SEEDING ---
   console.log('🔒 Seeding RBAC system...');
   
-  // 1. Create Permissions - Extended for task management
+  // 1. Create Permissions - Global/system-level resources only.
+  // Project-scoped access (tasks, lists, comments, attachments, tags)
+  // is governed by ProjectMember roles (OWNER/MANAGER/EDITOR/VIEWER).
   const resources = [
     'projects', 'users', 'roles', 'departments', 'sentiment', 'admin',
-    'tasks', 'lists', 'comments', 'attachments', 'tags', 'sherlock', 'reports'
+    'sherlock', 'reports'
   ];
   const actions = ['read', 'create', 'update', 'delete', 'manage'];
 
@@ -95,16 +97,11 @@ async function main() {
       permissions: {
         connect: [
           ...getPerms('projects'),
-          ...getPerms('tasks'),
-          ...getPerms('lists'),
-          ...getPerms('comments'),
-          ...getPerms('attachments'),
-          ...getPerms('tags'),
           ...getPerms('departments', ['read']),
           ...getPerms('sentiment', ['read']),
           ...getPerms('admin', ['read']),
           ...getPerms('sherlock', ['read', 'create']),
-          ...getPerms('reports', ['read', 'create'])
+          ...getPerms('reports', ['read', 'create', 'manage'])
         ]
       }
     }
@@ -122,11 +119,6 @@ async function main() {
       permissions: {
         connect: [
           ...getPerms('projects', ['read']),
-          ...getPerms('tasks'),
-          ...getPerms('lists', ['read', 'create', 'update']),
-          ...getPerms('comments'),
-          ...getPerms('attachments'),
-          ...getPerms('tags', ['read', 'create']),
           ...getPerms('departments', ['read']),
           ...getPerms('sentiment', ['read']),
           ...getPerms('admin', ['read']),
@@ -149,11 +141,6 @@ async function main() {
       permissions: {
         connect: [
           ...getPerms('projects', ['read']),
-          ...getPerms('tasks', ['read', 'update']),
-          ...getPerms('lists', ['read']),
-          ...getPerms('comments', ['read', 'create', 'update']),
-          ...getPerms('attachments', ['read', 'create']),
-          ...getPerms('tags', ['read']),
           ...getPerms('admin', ['read'])
         ]
       }
@@ -174,7 +161,6 @@ async function main() {
           ...getPerms('sentiment'),
           ...getPerms('departments'),
           ...getPerms('projects', ['read']),
-          ...getPerms('tasks', ['read']),
           ...getPerms('admin', ['read'])
         ]
       }
@@ -193,8 +179,6 @@ async function main() {
       permissions: {
         connect: [
           ...getPerms('projects', ['read']),
-          ...getPerms('tasks', ['read']),
-          ...getPerms('lists', ['read']),
           ...getPerms('sentiment', ['read']),
           ...getPerms('departments', ['read']),
           ...getPerms('admin', ['read'])

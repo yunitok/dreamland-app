@@ -28,6 +28,7 @@ model Project {
   sherlockAudits SherlockAudit[]
   tags           Tag[]
   lists          TaskList[]
+  members        ProjectMember[]
 }
 
 model TaskList {
@@ -196,6 +197,7 @@ model User {
   attachments        TaskAttachment[] @relation("TaskAttachments")
   comments           TaskComment[]    @relation("TaskComments")
   role               Role             @relation(fields: [roleId], references: [id])
+  projectMemberships ProjectMember[]
 }
 
 model Role {
@@ -557,6 +559,29 @@ model ProductionBatch {
   @@index([status])
   @@index([producedDate])
   @@map("production_batches")
+}
+
+enum ProjectRole {
+  OWNER
+  MANAGER
+  EDITOR
+  VIEWER
+}
+
+model ProjectMember {
+  id        String      @id @default(cuid())
+  userId    String
+  projectId String
+  role      ProjectRole @default(VIEWER)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@index([userId])
+  @@index([projectId])
+  @@map("project_members")
 }
 
 enum UnitType {

@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { hasProjectAccess } from '@/lib/actions/rbac'
 
 // =============================================================================
 // TYPES
@@ -44,10 +45,12 @@ export interface UpdateTaskInput {
 // =============================================================================
 
 export async function getTasks(projectId: string) {
+  if (!await hasProjectAccess(projectId, 'VIEWER')) throw new Error('Forbidden')
+
   return prisma.task.findMany({
     where: {
       list: { projectId },
-      parentId: null, // Only get root tasks
+      parentId: null,
     },
     include: {
       status: true,
@@ -82,6 +85,13 @@ export async function getTasks(projectId: string) {
 }
 
 export async function getTasksByList(listId: string) {
+  const list = await prisma.taskList.findUnique({
+    where: { id: listId },
+    select: { projectId: true }
+  })
+  if (!list) return []
+  if (!await hasProjectAccess(list.projectId, 'VIEWER')) throw new Error('Forbidden')
+
   return prisma.task.findMany({
     where: {
       listId,
@@ -103,18 +113,18 @@ export async function getTasksByList(listId: string) {
 }
 
 export async function getTask(id: string) {
-  return prisma.task.findUnique({
+  const task = await prisma.task.findUnique({
     where: { id },
     include: {
       status: true,
       assignee: { select: { id: true, name: true, image: true, email: true } },
-      list: { 
-        select: { 
-          id: true, 
-          name: true, 
+      list: {
+        select: {
+          id: true,
+          name: true,
           color: true,
           project: { select: { id: true, title: true } }
-        } 
+        }
       },
       tags: true,
       subtasks: {
@@ -127,23 +137,23 @@ export async function getTask(id: string) {
       parent: { select: { id: true, title: true } },
       predecessors: {
         include: {
-          predecessor: { 
-            select: { 
-              id: true, 
-              title: true, 
-              status: { select: { name: true, color: true } } 
-            } 
+          predecessor: {
+            select: {
+              id: true,
+              title: true,
+              status: { select: { name: true, color: true } }
+            }
           }
         }
       },
       successors: {
         include: {
-          successor: { 
-            select: { 
-              id: true, 
-              title: true, 
-              status: { select: { name: true, color: true } } 
-            } 
+          successor: {
+            select: {
+              id: true,
+              title: true,
+              status: { select: { name: true, color: true } }
+            }
           }
         }
       },
@@ -161,18 +171,28 @@ export async function getTask(id: string) {
       }
     }
   })
+
+  if (!task) return null
+  if (!await hasProjectAccess(task.list.project.id, 'VIEWER')) throw new Error('Forbidden')
+  return task
 }
 
 export async function createTask(data: CreateTaskInput) {
-  // Get the max position in the target list
+  const list = await prisma.taskList.findUnique({
+    where: { id: data.listId },
+    select: { projectId: true }
+  })
+  if (!list) throw new Error('List not found')
+  if (!await hasProjectAccess(list.projectId, 'EDITOR')) throw new Error('Forbidden')
+
   const maxPosition = await prisma.task.aggregate({
-    where: { 
+    where: {
       listId: data.listId,
       parentId: data.parentId || null
     },
     _max: { position: true }
   })
-  
+
   const newPosition = (maxPosition._max.position ?? -1) + 1
 
   const task = await prisma.task.create({
@@ -206,28 +226,27 @@ export async function createTask(data: CreateTaskInput) {
 }
 
 export async function updateTask(id: string, data: UpdateTaskInput) {
-  // Fetch current task to check validation rules
   const currentTask = await prisma.task.findUnique({
     where: { id },
-    include: { status: true }
+    include: {
+      status: true,
+      list: { select: { projectId: true } }
+    }
   })
 
-  if (!currentTask) {
-    throw new Error('Task not found')
-  }
+  if (!currentTask) throw new Error('Task not found')
+  if (!await hasProjectAccess(currentTask.list.projectId, 'EDITOR')) throw new Error('Forbidden')
 
-  // VALIDATION: If removing assignee or changing status without assignee
   const finalAssigneeId = data.assigneeId !== undefined ? data.assigneeId : currentTask.assigneeId
-  
+
   if (data.statusId) {
     const targetStatus = await prisma.taskStatus.findUnique({ where: { id: data.statusId } })
-    
+
     if (targetStatus && !finalAssigneeId && targetStatus.name !== 'Backlog') {
       throw new Error('Tasks must have an assignee before moving out of Backlog')
     }
   }
 
-  // If removing assignee, ensure task is in Backlog
   if (data.assigneeId === null && currentTask.status.name !== 'Backlog') {
     throw new Error('Cannot remove assignee from tasks outside of Backlog. Move to Backlog first.')
   }
@@ -262,22 +281,17 @@ export async function updateTask(id: string, data: UpdateTaskInput) {
   return task
 }
 
-// =============================================================================
-// TASK CRUD
-// =============================================================================
-
-// ... (existing functions)
-
 export async function deleteTask(id: string) {
   const task = await prisma.task.findUnique({
     where: { id },
     include: { list: { select: { projectId: true } } }
   })
-  
+
   if (!task) throw new Error('Task not found')
+  if (!await hasProjectAccess(task.list.projectId, 'MANAGER')) throw new Error('Forbidden')
 
   await prisma.task.delete({ where: { id } })
-  
+
   revalidatePath(`/projects/${task.list.projectId}`)
   return { success: true }
 }
@@ -285,13 +299,15 @@ export async function deleteTask(id: string) {
 export async function deleteTasks(ids: string[]) {
   if (ids.length === 0) return { success: true, count: 0 }
 
-  // Get project ID for revalidation (assume all tasks are from same project or at least one)
   const task = await prisma.task.findUnique({
     where: { id: ids[0] },
     select: { list: { select: { projectId: true } } }
   })
 
-  // Delete all tasks
+  if (task?.list?.projectId) {
+    if (!await hasProjectAccess(task.list.projectId, 'MANAGER')) throw new Error('Forbidden')
+  }
+
   const result = await prisma.task.deleteMany({
     where: { id: { in: ids } }
   })
@@ -312,10 +328,10 @@ export async function moveTask(taskId: string, targetListId: string, targetPosit
     where: { id: taskId },
     include: { list: { select: { projectId: true } } }
   })
-  
-  if (!task) throw new Error('Task not found')
 
-  // Update positions of tasks in the target list
+  if (!task) throw new Error('Task not found')
+  if (!await hasProjectAccess(task.list.projectId, 'EDITOR')) throw new Error('Forbidden')
+
   await prisma.task.updateMany({
     where: {
       listId: targetListId,
@@ -325,7 +341,6 @@ export async function moveTask(taskId: string, targetListId: string, targetPosit
     data: { position: { increment: 1 } }
   })
 
-  // Move the task
   const updatedTask = await prisma.task.update({
     where: { id: taskId },
     data: {
@@ -339,26 +354,23 @@ export async function moveTask(taskId: string, targetListId: string, targetPosit
 }
 
 export async function updateTaskStatus(taskId: string, statusId: string) {
-  // Fetch the task with current status and assignee
   const currentTask = await prisma.task.findUnique({
     where: { id: taskId },
-    include: { status: true }
+    include: {
+      status: true,
+      list: { select: { projectId: true } }
+    }
   })
 
-  if (!currentTask) {
-    throw new Error('Task not found')
-  }
+  if (!currentTask) throw new Error('Task not found')
+  if (!await hasProjectAccess(currentTask.list.projectId, 'EDITOR')) throw new Error('Forbidden')
 
-  // Fetch the target status
   const targetStatus = await prisma.taskStatus.findUnique({
     where: { id: statusId }
   })
 
-  if (!targetStatus) {
-    throw new Error('Target status not found')
-  }
+  if (!targetStatus) throw new Error('Target status not found')
 
-  // VALIDATION: Tasks without assignee can only be in Backlog
   if (!currentTask.assigneeId && targetStatus.name !== 'Backlog') {
     throw new Error('Tasks must have an assignee before moving out of Backlog')
   }
@@ -366,9 +378,9 @@ export async function updateTaskStatus(taskId: string, statusId: string) {
   const task = await prisma.task.update({
     where: { id: taskId },
     data: { statusId },
-    include: { 
+    include: {
       status: true,
-      list: { select: { projectId: true } } 
+      list: { select: { projectId: true } }
     }
   })
 
@@ -377,24 +389,24 @@ export async function updateTaskStatus(taskId: string, statusId: string) {
 }
 
 export async function reorderTasks(listId: string, taskIds: string[]) {
-  const updates = taskIds.map((id, index) => 
+  const list = await prisma.taskList.findUnique({
+    where: { id: listId },
+    select: { projectId: true }
+  })
+
+  if (!list) throw new Error('List not found')
+  if (!await hasProjectAccess(list.projectId, 'EDITOR')) throw new Error('Forbidden')
+
+  const updates = taskIds.map((id, index) =>
     prisma.task.update({
       where: { id },
       data: { position: index }
     })
   )
-  
+
   await prisma.$transaction(updates)
-  
-  const list = await prisma.taskList.findUnique({
-    where: { id: listId },
-    select: { projectId: true }
-  })
-  
-  if (list) {
-    revalidatePath(`/projects/${list.projectId}`)
-  }
-  
+  revalidatePath(`/projects/${list.projectId}`)
+
   return { success: true }
 }
 
@@ -407,7 +419,7 @@ export async function createSubtask(parentId: string, data: Omit<CreateTaskInput
     where: { id: parentId },
     select: { listId: true, statusId: true }
   })
-  
+
   if (!parent) throw new Error('Parent task not found')
 
   return createTask({
@@ -419,6 +431,14 @@ export async function createSubtask(parentId: string, data: Omit<CreateTaskInput
 }
 
 export async function getSubtasks(parentId: string) {
+  const parent = await prisma.task.findUnique({
+    where: { id: parentId },
+    select: { list: { select: { projectId: true } } }
+  })
+
+  if (!parent) return []
+  if (!await hasProjectAccess(parent.list.projectId, 'VIEWER')) throw new Error('Forbidden')
+
   return prisma.task.findMany({
     where: { parentId },
     include: {
@@ -434,17 +454,20 @@ export async function getSubtasks(parentId: string) {
 // =============================================================================
 
 export async function addDependency(
-  predecessorId: string, 
-  successorId: string, 
+  predecessorId: string,
+  successorId: string,
   type: string = 'FS',
   lagDays: number = 0
 ) {
-  // Prevent circular dependencies
-  if (predecessorId === successorId) {
-    throw new Error('A task cannot depend on itself')
-  }
+  if (predecessorId === successorId) throw new Error('A task cannot depend on itself')
 
-  // Check for existing reverse dependency
+  const predecessor = await prisma.task.findUnique({
+    where: { id: predecessorId },
+    select: { list: { select: { projectId: true } } }
+  })
+  if (!predecessor) throw new Error('Task not found')
+  if (!await hasProjectAccess(predecessor.list.projectId, 'EDITOR')) throw new Error('Forbidden')
+
   const existing = await prisma.taskDependency.findUnique({
     where: {
       predecessorId_successorId: {
@@ -453,60 +476,66 @@ export async function addDependency(
       }
     }
   })
-  
-  if (existing) {
-    throw new Error('This would create a circular dependency')
-  }
 
-  const dependency = await prisma.taskDependency.create({
-    data: {
-      predecessorId,
-      successorId,
-      type,
-      lagDays,
-    },
+  if (existing) throw new Error('This would create a circular dependency')
+
+  return prisma.taskDependency.create({
+    data: { predecessorId, successorId, type, lagDays },
     include: {
       predecessor: { select: { id: true, title: true } },
       successor: { select: { id: true, title: true } },
     }
   })
-
-  return dependency
 }
 
 export async function removeDependency(predecessorId: string, successorId: string) {
+  const predecessor = await prisma.task.findUnique({
+    where: { id: predecessorId },
+    select: { list: { select: { projectId: true } } }
+  })
+  if (!predecessor) throw new Error('Task not found')
+  if (!await hasProjectAccess(predecessor.list.projectId, 'EDITOR')) throw new Error('Forbidden')
+
   await prisma.taskDependency.delete({
     where: {
       predecessorId_successorId: { predecessorId, successorId }
     }
   })
-  
+
   return { success: true }
 }
 
 export async function getDependencies(taskId: string) {
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+    select: { list: { select: { projectId: true } } }
+  })
+
+  if (!task) return { predecessors: [], successors: [] }
+  if (!await hasProjectAccess(task.list.projectId, 'VIEWER')) throw new Error('Forbidden')
+
   const [predecessors, successors] = await Promise.all([
     prisma.taskDependency.findMany({
       where: { successorId: taskId },
       include: {
-        predecessor: { 
-          select: { 
-            id: true, 
-            title: true, 
-            status: { select: { name: true, color: true, isClosed: true } } 
-          } 
+        predecessor: {
+          select: {
+            id: true,
+            title: true,
+            status: { select: { name: true, color: true, isClosed: true } }
+          }
         }
       }
     }),
     prisma.taskDependency.findMany({
       where: { predecessorId: taskId },
       include: {
-        successor: { 
-          select: { 
-            id: true, 
-            title: true, 
-            status: { select: { name: true, color: true, isClosed: true } } 
-          } 
+        successor: {
+          select: {
+            id: true,
+            title: true,
+            status: { select: { name: true, color: true, isClosed: true } }
+          }
         }
       }
     })
@@ -520,8 +549,15 @@ export async function getDependencies(taskId: string) {
 // =============================================================================
 
 export async function updateTaskProgress(taskId: string, progress: number) {
+  const ref = await prisma.task.findUnique({
+    where: { id: taskId },
+    select: { list: { select: { projectId: true } } }
+  })
+  if (!ref) throw new Error('Task not found')
+  if (!await hasProjectAccess(ref.list.projectId, 'EDITOR')) throw new Error('Forbidden')
+
   const clampedProgress = Math.max(0, Math.min(100, progress))
-  
+
   const task = await prisma.task.update({
     where: { id: taskId },
     data: { progress: clampedProgress },
@@ -537,7 +573,9 @@ export async function updateTaskProgress(taskId: string, progress: number) {
 // =============================================================================
 
 export async function getTasksForGantt(projectId: string) {
-  const tasks = await prisma.task.findMany({
+  if (!await hasProjectAccess(projectId, 'VIEWER')) throw new Error('Forbidden')
+
+  return prisma.task.findMany({
     where: {
       list: { projectId },
       parentId: null,
@@ -559,11 +597,11 @@ export async function getTasksForGantt(projectId: string) {
       { position: 'asc' }
     ]
   })
-
-  return tasks
 }
 
 export async function createDefaultLists(projectId: string) {
+  if (!await hasProjectAccess(projectId, 'MANAGER')) throw new Error('Forbidden')
+
   const lists = [
     { name: 'Backlog', color: '#6B7280', position: 0, description: 'Tasks to be done' },
     { name: 'In Progress', color: '#3B82F6', position: 1, description: 'Tasks currently being worked on' },
@@ -573,10 +611,7 @@ export async function createDefaultLists(projectId: string) {
 
   for (const list of lists) {
     await prisma.taskList.create({
-      data: {
-        ...list,
-        projectId
-      }
+      data: { ...list, projectId }
     })
   }
 

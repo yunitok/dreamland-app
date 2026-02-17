@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { requirePermission } from "@/lib/actions/rbac";
 import { Link } from "@/i18n/navigation";
 import {
   Scale,
@@ -15,6 +16,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/mod
 import { Header } from "@/components/layout/header";
 
 export default async function SherlockDashboard() {
+  await requirePermission('sherlock', 'read')
+
   const t = await getTranslations("sherlock");
 
   const modules = [

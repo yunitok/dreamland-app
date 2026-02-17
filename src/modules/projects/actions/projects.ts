@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { Prisma } from "@prisma/client"
+import { requireAuth } from "@/lib/actions/rbac"
+import { getProjectWhereFilter } from "@/modules/shared/lib/project-filters"
 
 // Types
 export interface ProjectFilters {
@@ -23,9 +25,10 @@ export interface ProjectUpdateData {
   sourceQuote?: string
 }
 
-// Get all projects with optional filters
+// Get all projects with optional filters (filtrados por membresía del usuario)
 export async function getProjects(filters?: ProjectFilters) {
-  const where: Prisma.ProjectWhereInput = {}
+  const accessFilter = await getProjectWhereFilter()
+  const where: Prisma.ProjectWhereInput = { ...accessFilter }
 
   if (filters?.search) {
     where.OR = [
@@ -106,24 +109,35 @@ export async function deleteProject(id: string) {
   }
 }
 
-// Create project
+// Create project — auto-asigna al creador como OWNER
 export async function createProject(data: ProjectUpdateData) {
   try {
-    const created = await prisma.project.create({
-      data: {
-        title: data.title,
-        description: data.description,
-        department: data.department,
-        priority: data.priority,
-        type: data.type,
-        status: data.status,
-        sourceQuote: data.sourceQuote || null,
-      },
+    const auth = await requireAuth()
+    if (!auth.authenticated) return { success: false, error: auth.error }
+
+    const created = await prisma.$transaction(async (tx) => {
+      const project = await tx.project.create({
+        data: {
+          title: data.title,
+          description: data.description,
+          department: data.department,
+          priority: data.priority,
+          type: data.type,
+          status: data.status,
+          sourceQuote: data.sourceQuote || null,
+        },
+      })
+
+      await tx.projectMember.create({
+        data: { userId: auth.userId, projectId: project.id, role: 'OWNER' }
+      })
+
+      return project
     })
 
     revalidatePath("/projects")
     revalidatePath("/")
-    
+
     return { success: true, project: created }
   } catch (error) {
     console.error("Error creating project:", error)

@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { VoiceAudit } from "@prisma/client"
+import { requirePermission } from "@/lib/actions/rbac"
 
 export type VoiceAuditWithRelations = VoiceAudit & {
   recipe: {
@@ -10,6 +11,7 @@ export type VoiceAuditWithRelations = VoiceAudit & {
 }
 
 export async function getVoiceAudits() {
+  await requirePermission("sherlock", "read")
   return await prisma.voiceAudit.findMany({
     include: {
       recipe: true
@@ -19,6 +21,7 @@ export async function getVoiceAudits() {
 }
 
 export async function getVoiceAudit(id: string) {
+  await requirePermission("sherlock", "read")
   return await prisma.voiceAudit.findUnique({
     where: { id },
     include: {

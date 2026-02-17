@@ -236,19 +236,30 @@
                 "roles": "Roles",
                 "departments": "Departments",
                 "sentiment": "Sentiment",
-                "admin": "Admin"
+                "admin": "Admin",
+                "sherlock": "Sherlock",
+                "reports": "Отчёты"
             },
             "actions": {
-                "view": "View",
-                "create": "Create",
-                "edit": "Edit",
-                "delete": "Delete",
-                "manage": "Manage"
+                "read": "Читать",
+                "create": "Создать",
+                "update": "Обновить",
+                "delete": "Удалить",
+                "manage": "Управлять"
             },
             "resource": "Resource",
-            "accessLevel": "Access Level"
+            "accessLevel": "Уровень доступа"
         },
-        "databaseStatus": "Database Status",
+        "roleDescriptions": {
+            "SUPER_ADMIN": "Полный доступ к системе без ограничений",
+            "STRATEGIC_PM": "Управляет дорожной картой и проектами на стратегическом уровне",
+            "TEAM_LEAD": "Управляет задачами команды и распределением обязанностей",
+            "TEAM_MEMBER": "Работает над назначенными задачами",
+            "PEOPLE_LEAD": "Управляет настроением команды и отделами",
+            "STAKEHOLDER": "Доступ только для чтения к аналитике"
+        },
+        "noDescription": "Нет описания",
+        "databaseStatus": "Состояние базы данных",
         "selectAll": "Select All",
         "unselectAll": "Unselect",
         "connected": "Connected",
@@ -263,12 +274,32 @@
         "importSuccess": "Data imported successfully!",
         "jsonFormatReference": "JSON Format Reference",
         "jsonDescription": "The expected JSON structure should contain projects and/or teamMoods arrays.",
+        "generalInfo": "Общая информация",
+        "projectAccess": "Доступ к проектам",
+        "addProject": "Добавить проект",
+        "selectProject": "Выбрать проект",
+        "assign": "Назначить",
+        "projectAssigned": "Проект успешно назначен",
+        "projectAssignFailed": "Ошибка при назначении проекта",
+        "projectRemoved": "Доступ к проекту удалён",
+        "projectRemoveFailed": "Ошибка при удалении доступа",
+        "roleUpdated": "Роль обновлена",
+        "roleUpdateFailed": "Ошибка при обновлении роли",
+        "noProjectAccess": "У этого пользователя нет доступа к проектам",
+        "project": "Проект",
+        "department": "Отдел",
         "filters": "Фильтры",
         "of": "из",
         "clearFilters": "Очистить фильтры",
         "searchPlaceholder": "Поиск по имени или email...",
         "allRoles": "Все роли",
-        "noRole": "Без роли"
+        "noRole": "Без роли",
+        "searchProject": "Найти проект...",
+        "noProjectsFound": "Проекты не найдены",
+        "roleDescOwner": "Полный контроль: управление участниками, настройками и удаление проекта",
+        "roleDescManager": "Управление задачами и участниками, без удаления проекта",
+        "roleDescEditor": "Создание и редактирование задач и контента, без управления участниками",
+        "roleDescViewer": "Только чтение: просмотр задач и данных без изменений"
     },
     "footer": {
         "strategicPM": "Strategic PM",

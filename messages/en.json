@@ -236,18 +236,29 @@
                 "roles": "Roles",
                 "departments": "Departments",
                 "sentiment": "Sentiment",
-                "admin": "Admin"
+                "admin": "Admin",
+                "sherlock": "Sherlock",
+                "reports": "Reports"
             },
             "actions": {
-                "view": "View",
+                "read": "Read",
                 "create": "Create",
-                "edit": "Edit",
+                "update": "Update",
                 "delete": "Delete",
                 "manage": "Manage"
             },
             "resource": "Resource",
             "accessLevel": "Access Level"
         },
+        "roleDescriptions": {
+            "SUPER_ADMIN": "Full system access without restrictions",
+            "STRATEGIC_PM": "Manages roadmap and projects at strategic level",
+            "TEAM_LEAD": "Manages team tasks and assignments",
+            "TEAM_MEMBER": "Works on assigned tasks",
+            "PEOPLE_LEAD": "Manages team sentiment and departments",
+            "STAKEHOLDER": "Read-only access to insights"
+        },
+        "noDescription": "No description",
         "filters": "Filters",
         "of": "of",
         "clearFilters": "Clear filters",
@@ -268,7 +279,27 @@
         "importing": "Importing...",
         "importSuccess": "Data imported successfully!",
         "jsonFormatReference": "JSON Format Reference",
-        "jsonDescription": "The expected JSON structure should contain projects and/or teamMoods arrays."
+        "jsonDescription": "The expected JSON structure should contain projects and/or teamMoods arrays.",
+        "generalInfo": "General Information",
+        "projectAccess": "Project Access",
+        "addProject": "Add Project",
+        "selectProject": "Select project",
+        "assign": "Assign",
+        "projectAssigned": "Project assigned successfully",
+        "projectAssignFailed": "Failed to assign project",
+        "projectRemoved": "Project access removed",
+        "projectRemoveFailed": "Failed to remove project access",
+        "roleUpdated": "Role updated",
+        "roleUpdateFailed": "Failed to update role",
+        "noProjectAccess": "This user has no project access",
+        "project": "Project",
+        "department": "Department",
+        "searchProject": "Search project...",
+        "noProjectsFound": "No projects found",
+        "roleDescOwner": "Full control: manage members, settings, and delete the project",
+        "roleDescManager": "Manage tasks and members, but cannot delete the project",
+        "roleDescEditor": "Create and edit tasks and content, without managing members",
+        "roleDescViewer": "Read-only: view tasks and data without modifying anything"
     },
     "footer": {
         "strategicPM": "Strategic PM",

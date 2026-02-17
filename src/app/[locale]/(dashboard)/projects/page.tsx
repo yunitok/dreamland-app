@@ -4,13 +4,18 @@ import { ProjectsTable } from "@/modules/projects/components/projects/projects-t
 import { PortfolioTimeline } from "@/modules/projects/components/projects/portfolio-timeline"
 import { prisma } from "@/lib/prisma"
 import { setRequestLocale, getTranslations } from "next-intl/server"
+import { requirePermission } from "@/lib/actions/rbac"
+import { getProjectWhereFilter } from "@/modules/shared/lib/project-filters"
 import { Button } from "@/modules/shared/ui/button"
 import { Link } from "@/i18n/navigation"
 import { Plus, LayoutList, CalendarDays } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger } from "@/modules/shared/ui/tabs"
 
 async function getProjectsData(includeTasks: boolean = false) {
+  const accessFilter = await getProjectWhereFilter()
+
   const projects = await prisma.project.findMany({
+    where: accessFilter,
     orderBy: [
       { priority: "asc" },
       { createdAt: "desc" },
@@ -46,6 +51,8 @@ export default async function ProjectsPage({
 }) {
   const { locale } = await params
   const { view = 'list' } = await searchParams
+
+  await requirePermission('projects', 'read')
 
   setRequestLocale(locale)
   const t = await getTranslations("projects")

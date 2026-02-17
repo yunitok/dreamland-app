@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { hasProjectAccess } from '@/lib/actions/rbac'
 
 // =============================================================================
 // TYPES
@@ -26,6 +27,8 @@ export interface UpdateTaskListInput {
 // =============================================================================
 
 export async function getTaskLists(projectId: string) {
+  if (!await hasProjectAccess(projectId, 'VIEWER')) throw new Error('Forbidden')
+
   return prisma.taskList.findMany({
     where: { projectId },
     include: {
@@ -46,7 +49,7 @@ export async function getTaskLists(projectId: string) {
 }
 
 export async function getTaskList(id: string) {
-  return prisma.taskList.findUnique({
+  const list = await prisma.taskList.findUnique({
     where: { id },
     include: {
       project: { select: { id: true, title: true } },
@@ -64,15 +67,20 @@ export async function getTaskList(id: string) {
       }
     }
   })
+
+  if (!list) return null
+  if (!await hasProjectAccess(list.project.id, 'VIEWER')) throw new Error('Forbidden')
+  return list
 }
 
 export async function createTaskList(data: CreateTaskListInput) {
-  // Get max position
+  if (!await hasProjectAccess(data.projectId, 'MANAGER')) throw new Error('Forbidden')
+
   const maxPosition = await prisma.taskList.aggregate({
     where: { projectId: data.projectId },
     _max: { position: true }
   })
-  
+
   const newPosition = (maxPosition._max.position ?? -1) + 1
 
   const list = await prisma.taskList.create({
@@ -90,6 +98,13 @@ export async function createTaskList(data: CreateTaskListInput) {
 }
 
 export async function updateTaskList(id: string, data: UpdateTaskListInput) {
+  const existing = await prisma.taskList.findUnique({
+    where: { id },
+    select: { projectId: true }
+  })
+  if (!existing) throw new Error('Task list not found')
+  if (!await hasProjectAccess(existing.projectId, 'MANAGER')) throw new Error('Forbidden')
+
   const list = await prisma.taskList.update({
     where: { id },
     data: {
@@ -110,29 +125,32 @@ export async function deleteTaskList(id: string) {
     where: { id },
     select: { projectId: true, _count: { select: { tasks: true } } }
   })
-  
+
   if (!list) throw new Error('Task list not found')
-  
+  if (!await hasProjectAccess(list.projectId, 'MANAGER')) throw new Error('Forbidden')
+
   if (list._count.tasks > 0) {
     throw new Error('Cannot delete a list with tasks. Move or delete tasks first.')
   }
 
   await prisma.taskList.delete({ where: { id } })
-  
+
   revalidatePath(`/projects/${list.projectId}`)
   return { success: true }
 }
 
 export async function reorderTaskLists(projectId: string, listIds: string[]) {
-  const updates = listIds.map((id, index) => 
+  if (!await hasProjectAccess(projectId, 'MANAGER')) throw new Error('Forbidden')
+
+  const updates = listIds.map((id, index) =>
     prisma.taskList.update({
       where: { id },
       data: { position: index }
     })
   )
-  
+
   await prisma.$transaction(updates)
-  
+
   revalidatePath(`/projects/${projectId}`)
   return { success: true }
 }

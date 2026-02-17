@@ -17,6 +17,7 @@ import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { LanguageSwitcher } from "@/components/layout/language-switcher"
 import { Bell } from "lucide-react"
 import { AiUsageIndicator } from "@/components/voice/ai-usage-indicator"
+import { ProjectMembersPanel } from '@/modules/projects/ui/project-members-panel'
 
 interface ProjectHeaderProps {
   project: {
@@ -31,6 +32,7 @@ interface ProjectHeaderProps {
     dueDate: Date | null
     color: string | null
   }
+  canManage?: boolean
 }
 
 const priorityStyles = {
@@ -39,7 +41,7 @@ const priorityStyles = {
   Low: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
 }
 
-export function ProjectHeader({ project }: ProjectHeaderProps) {
+export function ProjectHeader({ project, canManage = false }: ProjectHeaderProps) {
   const t = useTranslations('tasks')
   
   const formatDate = (date: Date | null) => {
@@ -158,6 +160,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
               <span className="sr-only">Notifications</span>
             </Button>
             <div className="h-6 w-px bg-border mx-2 hidden md:block" />
+            <ProjectMembersPanel projectId={project.id} canManage={canManage} />
             <Button variant="outline" size="icon" className="h-8 w-8">
               <Settings className="h-4 w-4" />
             </Button>

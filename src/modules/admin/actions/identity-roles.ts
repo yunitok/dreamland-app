@@ -2,8 +2,10 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { requirePermission } from "@/lib/actions/rbac"
 
 export async function getRoles() {
+  await requirePermission("roles", "read")
   try {
     const roles = await prisma.role.findMany({
       include: {
@@ -28,6 +30,7 @@ interface RoleFormData {
 }
 
 export async function createRole(data: RoleFormData) {
+  await requirePermission("roles", "manage")
   try {
     const role = await prisma.role.create({
       data: {
@@ -54,6 +57,7 @@ export async function createRole(data: RoleFormData) {
 }
 
 export async function updateRole(id: string, data: RoleFormData) {
+  await requirePermission("roles", "manage")
   try {
     // 1. Clear existing permissions
     await prisma.role.update({
@@ -91,6 +95,7 @@ export async function updateRole(id: string, data: RoleFormData) {
 }
 
 export async function deleteRole(id: string) {
+  await requirePermission("roles", "manage")
   try {
     // Prevent deleting system roles
     const role = await prisma.role.findUnique({ where: { id } })

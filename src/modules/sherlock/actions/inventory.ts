@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { inventoryRecordSchema, InventoryRecordFormValues } from "@/modules/sherlock/schemas"
 import { InventoryRecord, InventoryStatus } from "@prisma/client"
+import { requirePermission } from "@/lib/actions/rbac"
 
 export type InventoryRecordWithRelations = InventoryRecord & {
   ingredient: {
@@ -36,6 +37,7 @@ export async function updateIngredientStock(ingredientId: string) {
 }
 
 export async function getInventoryRecords() {
+  await requirePermission("sherlock", "read")
   return await prisma.inventoryRecord.findMany({
     include: {
       ingredient: {
@@ -49,6 +51,7 @@ export async function getInventoryRecords() {
 }
 
 export async function getInventoryRecord(id: string) {
+  await requirePermission("sherlock", "read")
   return await prisma.inventoryRecord.findUnique({
     where: { id },
     include: {
@@ -58,6 +61,7 @@ export async function getInventoryRecord(id: string) {
 }
 
 export async function createInventoryRecord(data: InventoryRecordFormValues) {
+  await requirePermission("sherlock", "manage")
   const validatedFields = inventoryRecordSchema.parse(data)
 
   const record = await prisma.inventoryRecord.create({
@@ -72,6 +76,7 @@ export async function createInventoryRecord(data: InventoryRecordFormValues) {
 }
 
 export async function updateInventoryRecord(id: string, data: InventoryRecordFormValues) {
+  await requirePermission("sherlock", "manage")
   const validatedFields = inventoryRecordSchema.parse(data)
 
   const record = await prisma.inventoryRecord.update({
@@ -87,6 +92,7 @@ export async function updateInventoryRecord(id: string, data: InventoryRecordFor
 }
 
 export async function deleteInventoryRecord(id: string) {
+  await requirePermission("sherlock", "manage")
   const record = await prisma.inventoryRecord.delete({
     where: { id }
   })

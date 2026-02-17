@@ -236,18 +236,29 @@
                 "roles": "Roles",
                 "departments": "Departamentos",
                 "sentiment": "Sentimiento",
-                "admin": "Admin"
+                "admin": "Admin",
+                "sherlock": "Sherlock",
+                "reports": "Informes"
             },
             "actions": {
-                "view": "Ver",
+                "read": "Ver",
                 "create": "Crear",
-                "edit": "Editar",
+                "update": "Editar",
                 "delete": "Eliminar",
                 "manage": "Gestionar"
             },
             "resource": "Recurso",
             "accessLevel": "Nivel de Acceso"
         },
+        "roleDescriptions": {
+            "SUPER_ADMIN": "Acceso completo al sistema sin restricciones",
+            "STRATEGIC_PM": "Gestiona la hoja de ruta y los proyectos a nivel estratégico",
+            "TEAM_LEAD": "Gestiona las tareas del equipo y las asignaciones",
+            "TEAM_MEMBER": "Trabaja en las tareas asignadas",
+            "PEOPLE_LEAD": "Gestiona el sentimiento del equipo y los departamentos",
+            "STAKEHOLDER": "Acceso de solo lectura a los análisis"
+        },
+        "noDescription": "Sin descripción",
         "filters": "Filtros",
         "of": "de",
         "clearFilters": "Limpiar filtros",
@@ -268,7 +279,27 @@
         "importing": "Importando...",
         "importSuccess": "¡Datos importados exitosamente!",
         "jsonFormatReference": "Referencia de Formato JSON",
-        "jsonDescription": "La estructura JSON esperada debe contener arrays de proyectos y/o teamMoods."
+        "jsonDescription": "La estructura JSON esperada debe contener arrays de proyectos y/o teamMoods.",
+        "generalInfo": "Información General",
+        "projectAccess": "Acceso a Proyectos",
+        "addProject": "Añadir Proyecto",
+        "selectProject": "Seleccionar proyecto",
+        "assign": "Asignar",
+        "projectAssigned": "Proyecto asignado correctamente",
+        "projectAssignFailed": "Error al asignar proyecto",
+        "projectRemoved": "Acceso al proyecto eliminado",
+        "projectRemoveFailed": "Error al eliminar acceso",
+        "roleUpdated": "Rol actualizado",
+        "roleUpdateFailed": "Error al actualizar rol",
+        "noProjectAccess": "Este usuario no tiene acceso a ningún proyecto",
+        "project": "Proyecto",
+        "department": "Departamento",
+        "searchProject": "Buscar proyecto...",
+        "noProjectsFound": "No se encontraron proyectos",
+        "roleDescOwner": "Control total: gestiona miembros, configuración y elimina el proyecto",
+        "roleDescManager": "Gestiona tareas y miembros, sin poder eliminar el proyecto",
+        "roleDescEditor": "Crea y edita tareas y contenido, sin gestionar miembros",
+        "roleDescViewer": "Solo lectura: ve tareas y datos sin poder modificar nada"
     },
     "footer": {
         "strategicPM": "PM Estratégico",

@@ -20,6 +20,15 @@ export default async function RolesPage() {
 
   const roles = result.data || []
 
+  const ROLE_DESCS: Record<string, string> = {
+    SUPER_ADMIN: t('roleDescriptions.SUPER_ADMIN'),
+    STRATEGIC_PM: t('roleDescriptions.STRATEGIC_PM'),
+    TEAM_LEAD: t('roleDescriptions.TEAM_LEAD'),
+    TEAM_MEMBER: t('roleDescriptions.TEAM_MEMBER'),
+    PEOPLE_LEAD: t('roleDescriptions.PEOPLE_LEAD'),
+    STAKEHOLDER: t('roleDescriptions.STAKEHOLDER'),
+  }
+
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <Header
@@ -43,7 +52,7 @@ export default async function RolesPage() {
                     {role.name}
                   </CardTitle>
                   <CardDescription className="text-sm line-clamp-2 min-h-[40px]">
-                    {role.description || "No description"}
+                    {ROLE_DESCS[role.code] || role.description || t('noDescription')}
                   </CardDescription>
                 </div>
                 {role.isSystem && (

@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl"
 import { useState, useMemo } from "react"
 import { Input } from "@/modules/shared/ui/input"
 import { Search, SlidersHorizontal, X } from "lucide-react"
+import { Link } from "@/i18n/navigation"
 import {
   Select,
   SelectContent,
@@ -106,6 +107,13 @@ export function UsersTable({ data, roles }: { data: UserWithRole[], roles: Role[
           />
         )
       },
+      cell: ({ row }: { row: Row<UserWithRole> }) => {
+        return (
+          <Link href={`/admin/users/${row.original.id}`} className="hover:underline font-medium">
+            {row.original.name || row.original.username}
+          </Link>
+        )
+      }
     },
     {
       accessorKey: "email",

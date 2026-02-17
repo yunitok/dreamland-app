@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 import { wasteRecordSchema, WasteRecordFormValues } from "@/modules/sherlock/schemas"
 import { WasteRecord } from "@prisma/client"
 import { updateIngredientStock } from "./inventory"
+import { requirePermission } from "@/lib/actions/rbac"
 
 export type WasteRecordWithRelations = WasteRecord & {
   ingredient: {
@@ -14,6 +15,7 @@ export type WasteRecordWithRelations = WasteRecord & {
 }
 
 export async function getWasteRecords() {
+  await requirePermission("sherlock", "read")
   return await prisma.wasteRecord.findMany({
     include: {
       ingredient: {
@@ -27,6 +29,7 @@ export async function getWasteRecords() {
 }
 
 export async function createWasteRecord(data: WasteRecordFormValues) {
+  await requirePermission("sherlock", "manage")
   const validatedFields = wasteRecordSchema.parse(data)
 
   const record = await prisma.wasteRecord.create({
@@ -44,6 +47,7 @@ export async function createWasteRecord(data: WasteRecordFormValues) {
 }
 
 export async function deleteWasteRecord(id: string) {
+  await requirePermission("sherlock", "manage")
   const record = await prisma.wasteRecord.delete({
     where: { id }
   })

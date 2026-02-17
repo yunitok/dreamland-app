@@ -4,10 +4,12 @@ import { prisma } from "@/lib/prisma"
 import { hash } from "bcryptjs"
 import { revalidatePath } from "next/cache"
 import { Prisma } from "@prisma/client"
+import { requirePermission } from "@/lib/actions/rbac"
 
 const SALT_ROUNDS = 10
 
 export async function getUsers() {
+  await requirePermission("users", "read")
   try {
     const users = await prisma.user.findMany({
       include: {
@@ -32,6 +34,7 @@ interface UserFormData {
 }
 
 export async function createUser(data: UserFormData) {
+  await requirePermission("users", "manage")
   try {
     const hashedPassword = await hash(data.password!, SALT_ROUNDS)
     const user = await prisma.user.create({
@@ -53,6 +56,7 @@ export async function createUser(data: UserFormData) {
 }
 
 export async function updateUser(id: string, data: UserFormData) {
+  await requirePermission("users", "manage")
   try {
     const updateData: Prisma.UserUncheckedUpdateInput = {
       name: data.name,
@@ -79,6 +83,7 @@ export async function updateUser(id: string, data: UserFormData) {
 }
 
 export async function deleteUser(id: string) {
+  await requirePermission("users", "manage")
   try {
     await prisma.user.delete({
       where: { id }
