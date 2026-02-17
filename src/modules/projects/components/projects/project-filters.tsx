@@ -40,13 +40,13 @@ export function ProjectFilters({ departments, onFiltersChange, totalCount, filte
     { value: "Medium", label: t("medium") },
     { value: "Low", label: t("low") },
   ]
-  
+
   const types = [
     { value: "Problem", label: t("problem") },
     { value: "Idea", label: t("idea") },
     { value: "Initiative", label: t("initiative") },
   ]
-  
+
   const statuses = [
     { value: "Active", label: t("active") },
     { value: "Pending", label: t("pending") },
@@ -118,26 +118,26 @@ export function ProjectFilters({ departments, onFiltersChange, totalCount, filte
       </div>
 
       {/* Search and Filters */}
-      <div className="grid grid-cols-2 md:flex md:flex-wrap items-center gap-3">
+      <div className="flex flex-col gap-4">
         {/* Search Bar */}
-        <div className="col-span-2 md:w-auto md:min-w-[250px] flex-grow">
+        <div className="w-full">
           <div className="relative group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
             <Input
               placeholder={t("searchPlaceholder")}
               value={filters.search}
               onChange={(e) => updateFilter("search", e.target.value)}
-              className="pl-9 h-9 bg-background/50 border-muted-foreground/20 focus:border-primary transition-colors"
+              className="pl-9 h-11 bg-background/50 border-muted-foreground/20 focus:border-primary transition-colors text-base md:text-sm"
             />
           </div>
         </div>
 
-         {/* Filters Group */}
-        <div className="col-span-2 md:col-span-1 flex flex-wrap items-center gap-2">
-           {/* Department */}
+        {/* Filters Group */}
+        <div className="grid grid-cols-1 xs:grid-cols-2 md:flex md:flex-wrap items-center gap-3">
+          {/* Department */}
           <Select value={filters.department} onValueChange={(v) => updateFilter("department", v)}>
-            <SelectTrigger className="h-10 w-full md:w-[160px] bg-background/50 text-sm">
-               <SelectValue placeholder={t("allDepartments")} />
+            <SelectTrigger className="h-10 w-full md:w-[180px] bg-background/50 text-sm">
+              <SelectValue placeholder={t("allDepartments")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("allDepartments")}</SelectItem>
@@ -149,8 +149,8 @@ export function ProjectFilters({ departments, onFiltersChange, totalCount, filte
 
           {/* Priority */}
           <Select value={filters.priority} onValueChange={(v) => updateFilter("priority", v)}>
-            <SelectTrigger className="h-10 w-full md:w-[140px] bg-background/50 text-sm">
-               <SelectValue placeholder={t("allPriorities")} />
+            <SelectTrigger className="h-10 w-full md:w-[150px] bg-background/50 text-sm">
+              <SelectValue placeholder={t("allPriorities")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("allPriorities")}</SelectItem>
@@ -162,8 +162,8 @@ export function ProjectFilters({ departments, onFiltersChange, totalCount, filte
 
           {/* Type */}
           <Select value={filters.type} onValueChange={(v) => updateFilter("type", v)}>
-             <SelectTrigger className="h-10 w-full md:w-[140px] bg-background/50 text-sm">
-               <SelectValue placeholder={t("allTypes")} />
+            <SelectTrigger className="h-10 w-full md:w-[150px] bg-background/50 text-sm">
+              <SelectValue placeholder={t("allTypes")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("allTypes")}</SelectItem>
@@ -173,10 +173,10 @@ export function ProjectFilters({ departments, onFiltersChange, totalCount, filte
             </SelectContent>
           </Select>
 
-           {/* Status */}
-           <Select value={filters.status} onValueChange={(v) => updateFilter("status", v)}>
-            <SelectTrigger className="h-10 w-full md:w-[140px] bg-background/50 text-sm">
-               <SelectValue placeholder={t("allStatuses")} />
+          {/* Status */}
+          <Select value={filters.status} onValueChange={(v) => updateFilter("status", v)}>
+            <SelectTrigger className="h-10 w-full md:w-[150px] bg-background/50 text-sm">
+              <SelectValue placeholder={t("allStatuses")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("allStatuses")}</SelectItem>

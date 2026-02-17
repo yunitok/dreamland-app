@@ -17,24 +17,24 @@ export default async function RecipesPage() {
     ])
 
     return (
-        <div className="flex flex-col h-[calc(100vh-65px)]">
+        <div className="flex flex-col h-screen overflow-hidden">
             <Header
                 titleKey="sherlock.recipes.title"
                 descriptionKey="sherlock.recipes.description"
                 backHref="/sherlock"
             >
                 <div className="flex items-center gap-2">
-                    <Button size="sm" asChild>
+                    <Button size="sm" asChild className="h-8 sm:h-9">
                         <Link href="/sherlock/recipes/new">
-                            <Plus className="mr-2 h-4 w-4" />
-                            <span className="hidden md:inline">{t("new")}</span>
-                            <span className="md:hidden">Nuevo</span>
+                            <Plus className="sm:mr-2 h-4 w-4" />
+                            <span className="hidden sm:inline">{t("new")}</span>
+                            <span className="sm:hidden text-xs">Nuevo</span>
                         </Link>
                     </Button>
                 </div>
             </Header>
 
-            <div className="flex-1 p-6 overflow-auto">
+            <div className="flex-1 p-6 overflow-y-auto">
                 <div className="flex flex-col gap-6 max-w-7xl mx-auto">
 
                     <Card>

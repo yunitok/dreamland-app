@@ -12,7 +12,7 @@ export default async function AdminDashboard({
 }) {
   const { locale } = await params
   setRequestLocale(locale)
-  
+
   // Double check permission (layout handles it, but good practice)
   await requirePermission('admin', 'manage')
   const t = await getTranslations("admin")
@@ -31,7 +31,7 @@ export default async function AdminDashboard({
       icon: ShieldCheck
     },
     {
-      title: "Database Seed", 
+      title: "Database Seed",
       description: "Initialize or reset database data",
       href: "/admin/seed",
       icon: Database
@@ -39,26 +39,28 @@ export default async function AdminDashboard({
   ]
 
   return (
-    <div className="flex flex-col h-full">
-       <Header 
-         title={t("title")} 
-         description="System controls and configuration" 
-       />
-       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 p-4 md:p-8">
-         {modules.map((module) => (
-           <Link key={module.href} href={module.href}>
-             <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
-               <CardHeader>
-                 <div className="flex items-center gap-2 mb-2">
-                   <module.icon className="h-5 w-5 text-primary" />
-                   <CardTitle className="text-lg">{module.title}</CardTitle>
-                 </div>
-                 <CardDescription>{module.description}</CardDescription>
-               </CardHeader>
-             </Card>
-           </Link>
-         ))}
-       </div>
+    <div className="flex flex-col h-screen overflow-hidden">
+      <Header
+        title={t("title")}
+        description="System controls and configuration"
+      />
+      <div className="flex-1 overflow-y-auto p-4 md:p-8">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {modules.map((module) => (
+            <Link key={module.href} href={module.href}>
+              <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
+                <CardHeader>
+                  <div className="flex items-center gap-2 mb-2">
+                    <module.icon className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-lg">{module.title}</CardTitle>
+                  </div>
+                  <CardDescription>{module.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

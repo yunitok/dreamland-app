@@ -123,10 +123,10 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
     })
     // Better cycle: asc -> desc -> asc
     setSortConfig(current => {
-       if (current?.key === key) {
-         return { key, direction: current.direction === 'asc' ? 'desc' : 'asc' }
-       }
-       return { key, direction: 'asc' }
+      if (current?.key === key) {
+        return { key, direction: current.direction === 'asc' ? 'desc' : 'asc' }
+      }
+      return { key, direction: 'asc' }
     })
   }
 
@@ -138,7 +138,7 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
       // Search filter
       if (filters.search !== "") {
         const searchLower = filters.search.toLowerCase()
-        const matchesSearch = 
+        const matchesSearch =
           project.title.toLowerCase().includes(searchLower) ||
           project.description.toLowerCase().includes(searchLower)
         if (!matchesSearch) return false
@@ -162,17 +162,17 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
         const bValue = b[sortConfig.key as keyof Project]
 
         if (sortConfig.key === 'priority') {
-           const pA = priorityValues[a.priority as keyof typeof priorityValues] || 0
-           const pB = priorityValues[b.priority as keyof typeof priorityValues] || 0
-           return sortConfig.direction === 'asc' ? pA - pB : pB - pA
+          const pA = priorityValues[a.priority as keyof typeof priorityValues] || 0
+          const pB = priorityValues[b.priority as keyof typeof priorityValues] || 0
+          return sortConfig.direction === 'asc' ? pA - pB : pB - pA
         }
 
         if (sortConfig.key === 'status') {
-           // Custom status sort if needed, or alphabetical
-           // Using statusValues map
-           const sA = statusValues[a.status as keyof typeof statusValues] || 99
-           const sB = statusValues[b.status as keyof typeof statusValues] || 99
-           return sortConfig.direction === 'asc' ? sA - sB : sB - sA
+          // Custom status sort if needed, or alphabetical
+          // Using statusValues map
+          const sA = statusValues[a.status as keyof typeof statusValues] || 99
+          const sB = statusValues[b.status as keyof typeof statusValues] || 99
+          return sortConfig.direction === 'asc' ? sA - sB : sB - sA
         }
 
         // Default string/number comparison
@@ -183,7 +183,7 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
         return 0
       })
     }
-    
+
     return result
   }, [projects, filters, sortConfig])
 
@@ -243,10 +243,10 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
     setIsFormOpen(false)
     // Remove query param if it exists
     if (searchParams.get('new-project')) {
-        router.replace(pathname)
+      router.replace(pathname)
     }
   }
-  
+
   return (
     <div className="space-y-6">
       {/* Filters */}
@@ -258,12 +258,12 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
       />
 
       {/* Table */}
-      <div className="rounded-xl border bg-card/50 backdrop-blur-sm overflow-hidden premium-card mt-6">
-        <div className="overflow-x-auto">
+      <div className="rounded-xl border bg-card/50 backdrop-blur-sm premium-card mt-6">
+        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-primary/10 scrollbar-track-transparent">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent border-border/50">
-                <TableHead 
+                <TableHead
                   className="font-bold cursor-pointer hover:bg-muted/50 transition-colors"
                   onClick={() => handleSort('title')}
                 >
@@ -272,7 +272,7 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
                     <SortIcon column="title" sortConfig={sortConfig} />
                   </div>
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="hidden md:table-cell font-bold cursor-pointer hover:bg-muted/50 transition-colors"
                   onClick={() => handleSort('department')}
                 >
@@ -281,7 +281,7 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
                     <SortIcon column="department" sortConfig={sortConfig} />
                   </div>
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="hidden sm:table-cell font-bold cursor-pointer hover:bg-muted/50 transition-colors"
                   onClick={() => handleSort('type')}
                 >
@@ -290,252 +290,254 @@ export function ProjectsTable({ projects, departments }: ProjectsTableProps) {
                     <SortIcon column="type" sortConfig={sortConfig} />
                   </div>
                 </TableHead>
-                <TableHead 
-                   className="hidden xs:table-cell font-bold cursor-pointer hover:bg-muted/50 transition-colors"
-                   onClick={() => handleSort('priority')}
+                <TableHead
+                  className="hidden sm:table-cell font-bold cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => handleSort('priority')}
                 >
-                   <div className="flex items-center">
+                  <div className="flex items-center">
                     {t("priority")}
                     <SortIcon column="priority" sortConfig={sortConfig} />
                   </div>
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="font-bold cursor-pointer hover:bg-muted/50 transition-colors"
                   onClick={() => handleSort('status')}
                 >
                   <div className="flex items-center">
                     {t("status")}
-                     <SortIcon column="status" sortConfig={sortConfig} />
+                    <SortIcon column="status" sortConfig={sortConfig} />
                   </div>
                 </TableHead>
-                <TableHead className="w-[80px] text-right font-bold">{t("actions")}</TableHead>
+                <TableHead className="w-[80px] text-right font-bold pr-4">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
-          <TableBody>
-            {paginatedProjects.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
-                  <div className="flex flex-col items-center gap-2">
-                    <p className="text-sm">{t("noProjectsMatch")}</p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              paginatedProjects.map((project) => (
-                <TableRow 
-                  key={project.id} 
-                  className="group cursor-pointer hover:bg-muted/30 border-border/40"
-                  onClick={() => setSelectedProject(project)}
-                >
-                  <TableCell className="font-semibold py-4">
-                    <div className="flex flex-col gap-1">
-                      <span className="truncate max-w-[180px] xs:max-w-[250px] md:max-w-[400px]">
-                        {project.title}
-                      </span>
-                      <div className="flex md:hidden items-center gap-2 text-[10px] text-muted-foreground font-normal">
-                        <span>{project.department}</span>
-                        <span className="w-1 h-1 rounded-full bg-border" />
-                        <span>{getTypeLabel(project.type)}</span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell text-muted-foreground">
-                    {project.department}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    <Badge variant="outline" className={cn("text-[10px] px-2 py-0 h-5 font-bold uppercase tracking-tighter", typeStyles[project.type as keyof typeof typeStyles])}>
-                      {getTypeLabel(project.type)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden xs:table-cell">
-                    <Badge 
-                      variant="outline" 
-                      className={cn("text-[10px] px-2 py-0 h-5 font-bold uppercase tracking-tighter", priorityStyles[project.priority as keyof typeof priorityStyles])}
-                    >
-                      {getPriorityLabel(project.priority)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant="secondary"
-                      className={cn("text-[10px] px-2 py-0 h-5 font-bold uppercase tracking-tighter", statusStyles[project.status as keyof typeof statusStyles])}
-                    >
-                      {getStatusLabel(project.status)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="h-8 w-8 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => handleEditClick(e, project)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="h-8 w-8 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-                        asChild
-                      >
-                        <Link 
-                          href={`/projects/${project.id}`}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Settings className="h-4 w-4" />
-                        </Link>
-                      </Button>
+            <TableBody>
+              {paginatedProjects.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
+                    <div className="flex flex-col items-center gap-2">
+                      <p className="text-sm">{t("noProjectsMatch")}</p>
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      {filteredProjects.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 border-t">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>{t("showing")}</span>
-            <span className="font-medium text-foreground">
-              {(currentPage - 1) * pageSize + 1}
-            </span>
-            <span>{t("to")}</span>
-            <span className="font-medium text-foreground">
-              {Math.min(currentPage * pageSize, filteredProjects.length)}
-            </span>
-            <span>{t("of")}</span>
-            <span className="font-medium text-foreground">{filteredProjects.length}</span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
-                <SelectTrigger className="h-8 w-[70px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PAGE_SIZES.map((size) => (
-                    <SelectItem key={size} value={String(size)}>
-                      {size}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <span className="text-sm text-muted-foreground">{t("perPage")}</span>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(currentPage - 1)}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm px-2">
-                {t("page")} {currentPage} {t("of")} {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(currentPage + 1)}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+              ) : (
+                paginatedProjects.map((project) => (
+                  <TableRow
+                    key={project.id}
+                    className="group cursor-pointer hover:bg-muted/30 border-border/40"
+                    onClick={() => setSelectedProject(project)}
+                  >
+                    <TableCell className="font-semibold py-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="truncate max-w-[180px] xs:max-w-[250px] md:max-w-[400px]">
+                          {project.title}
+                        </span>
+                        <div className="flex md:hidden items-center gap-2 text-[10px] text-muted-foreground font-normal">
+                          <span>{project.department}</span>
+                          <span className="w-1 h-1 rounded-full bg-border" />
+                          <span>{getTypeLabel(project.type)}</span>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-muted-foreground">
+                      {project.department}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <Badge variant="outline" className={cn("text-[10px] px-2 py-0 h-5 font-bold uppercase tracking-tighter", typeStyles[project.type as keyof typeof typeStyles])}>
+                        {getTypeLabel(project.type)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <Badge
+                        variant="outline"
+                        className={cn("text-[10px] px-2 py-0 h-5 font-bold uppercase tracking-tighter", priorityStyles[project.priority as keyof typeof priorityStyles])}
+                      >
+                        {getPriorityLabel(project.priority)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="pr-4">
+                      <Badge
+                        variant="secondary"
+                        className={cn("text-[10px] px-2 py-0 h-5 font-bold uppercase tracking-tighter", statusStyles[project.status as keyof typeof statusStyles])}
+                      >
+                        {getStatusLabel(project.status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => handleEditClick(e, project)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                          asChild
+                        >
+                          <Link
+                            href={`/projects/${project.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Settings className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
-      )}
+
+        {/* Pagination */}
+        {filteredProjects.length > 0 && (
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 px-4 py-6 border-t bg-background/50 backdrop-blur-sm rounded-xl border mt-6">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground order-2 md:order-1">
+              <span>{t("showing")}</span>
+              <span className="font-semibold text-foreground">
+                {(currentPage - 1) * pageSize + 1}
+              </span>
+              <span>{t("to")}</span>
+              <span className="font-semibold text-foreground">
+                {Math.min(currentPage * pageSize, filteredProjects.length)}
+              </span>
+              <span>{t("of")}</span>
+              <span className="font-semibold text-foreground">{filteredProjects.length}</span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto order-1 md:order-2">
+              <div className="flex items-center gap-3 bg-muted/30 px-3 py-1.5 rounded-lg border border-border/50">
+                <span className="text-xs font-medium text-muted-foreground">{t("perPage")}</span>
+                <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                  <SelectTrigger className="h-7 w-[65px] bg-transparent border-none shadow-none focus:ring-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAGE_SIZES.map((size) => (
+                      <SelectItem key={size} value={String(size)}>
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 rounded-lg"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <div className="flex items-center justify-center min-w-[100px] h-9 px-3 bg-primary/5 rounded-lg border border-primary/10">
+                  <span className="text-xs font-bold text-primary">
+                    {t("page")} {currentPage} / {totalPages}
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 rounded-lg"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-    {/* Project Detail Sheet */}
-    <Sheet open={!!selectedProject} onOpenChange={() => setSelectedProject(null)}>
+      {/* Project Detail Sheet */}
+      <Sheet open={!!selectedProject} onOpenChange={() => setSelectedProject(null)}>
         <SheetContent className="w-full sm:max-w-xl p-0 overflow-y-auto">
           <div className="p-6">
-          {selectedProject && (
-            <>
-              <SheetHeader>
-                <div className="flex items-center gap-2">
-                  <Badge 
-                    variant="outline" 
-                    className={cn("text-xs", priorityStyles[selectedProject.priority as keyof typeof priorityStyles])}
-                  >
-                    {getPriorityLabel(selectedProject.priority)}
-                  </Badge>
-                  <Badge 
-                    variant="outline" 
-                    className={cn("text-xs", typeStyles[selectedProject.type as keyof typeof typeStyles])}
-                  >
-                    {getTypeLabel(selectedProject.type)}
-                  </Badge>
-                </div>
-                <SheetTitle className="text-xl mt-2">{selectedProject.title}</SheetTitle>
-                <SheetDescription>
-                  {selectedProject.department} • {getStatusLabel(selectedProject.status)}
-                </SheetDescription>
-              </SheetHeader>
-              
-              <div className="mt-6 space-y-6">
-                <div>
-                  <h4 className="text-sm font-medium mb-2">{t("description")}</h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {selectedProject.description}
-                  </p>
-                </div>
-
-                {selectedProject.sourceQuote && (
-                  <div className="border-l-2 border-primary/50 pl-4 py-2 bg-muted/30 rounded-r-lg">
-                    <div className="flex items-start gap-2">
-                      <Quote className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                      <p className="text-sm italic text-muted-foreground">
-                        {selectedProject.sourceQuote}
-                      </p>
-                    </div>
+            {selectedProject && (
+              <>
+                <SheetHeader>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className={cn("text-xs", priorityStyles[selectedProject.priority as keyof typeof priorityStyles])}
+                    >
+                      {getPriorityLabel(selectedProject.priority)}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={cn("text-xs", typeStyles[selectedProject.type as keyof typeof typeStyles])}
+                    >
+                      {getTypeLabel(selectedProject.type)}
+                    </Badge>
                   </div>
-                )}
+                  <SheetTitle className="text-xl mt-2">{selectedProject.title}</SheetTitle>
+                  <SheetDescription>
+                    {selectedProject.department} • {getStatusLabel(selectedProject.status)}
+                  </SheetDescription>
+                </SheetHeader>
 
-                <div className="pt-4 border-t flex items-center justify-between">
-                  <p className="text-xs text-muted-foreground">
-                    {t("created")}: {new Date(selectedProject.createdAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
-                  <Button 
-                    size="sm" 
-                    onClick={() => {
-                      setEditingProject(selectedProject)
-                      setFormMode("edit")
-                      setIsFormOpen(true)
-                      setSelectedProject(null)
-                    }}
-                  >
-                    <Pencil className="h-3 w-3 mr-1" />
-                    {t("editProject")}
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="default"
-                    asChild
-                  >
-                    <Link href={`/projects/${selectedProject.id}`}>
-                      <LayoutDashboard className="h-3 w-3 mr-1" />
-                      {t("manageProject")}
-                    </Link>
-                  </Button>
+                <div className="mt-6 space-y-6">
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">{t("description")}</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {selectedProject.description}
+                    </p>
+                  </div>
+
+                  {selectedProject.sourceQuote && (
+                    <div className="border-l-2 border-primary/50 pl-4 py-2 bg-muted/30 rounded-r-lg">
+                      <div className="flex items-start gap-2">
+                        <Quote className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                        <p className="text-sm italic text-muted-foreground">
+                          {selectedProject.sourceQuote}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="pt-4 border-t flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      {t("created")}: {new Date(selectedProject.createdAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setEditingProject(selectedProject)
+                        setFormMode("edit")
+                        setIsFormOpen(true)
+                        setSelectedProject(null)
+                      }}
+                    >
+                      <Pencil className="h-3 w-3 mr-1" />
+                      {t("editProject")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="default"
+                      asChild
+                    >
+                      <Link href={`/projects/${selectedProject.id}`}>
+                        <LayoutDashboard className="h-3 w-3 mr-1" />
+                        {t("manageProject")}
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
           </div>
         </SheetContent>
       </Sheet>

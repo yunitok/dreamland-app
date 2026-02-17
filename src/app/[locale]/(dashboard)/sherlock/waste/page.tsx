@@ -9,19 +9,23 @@ export default async function WastePage() {
     const wasteRecords = await getWasteRecords()
 
     return (
-        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-            <div className="flex items-center justify-between">
-                <Header
-                    titleKey="sherlock.waste.title"
-                    descriptionKey="sherlock.waste.description"
-                />
-                <Button asChild>
+        <div className="flex flex-col h-screen overflow-hidden">
+            <Header
+                titleKey="sherlock.waste.title"
+                descriptionKey="sherlock.waste.description"
+            >
+                <Button size="sm" asChild>
                     <Link href="/sherlock/waste/new">
-                        <Plus className="mr-2 h-4 w-4" /> Registrar Merma
+                        <Plus className="mr-2 h-4 w-4" />
+                        <span className="hidden md:inline">Registrar Merma</span>
+                        <span className="md:hidden">Nuevo</span>
                     </Link>
                 </Button>
+            </Header>
+
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 pt-6">
+                <WasteTable data={wasteRecords as any} />
             </div>
-            <WasteTable data={wasteRecords as any} />
         </div>
     )
 }

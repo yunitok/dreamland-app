@@ -21,14 +21,14 @@ export default async function SherlockSettingsPage() {
   ]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-65px)]">
+    <div className="flex flex-col h-screen overflow-hidden">
       <Header
         titleKey="sherlock.settings.title"
         descriptionKey="sherlock.settings.description"
         backHref="/sherlock"
       />
 
-      <div className="flex-1 p-6 overflow-auto">
+      <div className="flex-1 p-6 overflow-y-auto">
         <div className="flex flex-col gap-6 max-w-7xl mx-auto">
 
           <Tabs defaultValue="units" className="w-full">

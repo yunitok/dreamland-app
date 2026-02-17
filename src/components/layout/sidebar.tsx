@@ -3,12 +3,12 @@
 import { Link, usePathname, useRouter } from "@/i18n/navigation"
 import { cn } from "@/lib/utils"
 import { useTranslations } from "next-intl"
-import { 
+import {
   Users,
   Shield,
-  LayoutDashboard, 
-  FolderKanban, 
-  Heart, 
+  LayoutDashboard,
+  FolderKanban,
+  Heart,
   Settings,
   Zap,
   LogOut,
@@ -17,9 +17,11 @@ import {
 } from "lucide-react"
 import { logout } from "@/lib/auth"
 import { Button } from "@/modules/shared/ui/button"
+import { hasPermission as libHasPermission } from "@/lib/permissions"
 
 interface SidebarContentProps {
   user?: {
+    id: string
     name?: string | null
     role?: string
     permissions?: string[]
@@ -28,18 +30,7 @@ interface SidebarContentProps {
 
 // Helper to check permissions client-side based on session data
 function hasPermission(user: SidebarContentProps['user'], action: string, resource: string) {
-  if (!user) return false
-  
-  // Super Admin and Admin bypass
-  if (['SUPER_ADMIN', 'ADMIN'].includes(user.role || '')) return true
-
-  const permissions = user.permissions || []
-  // Check for specific permission or manage:* or manage:resource
-  // Also mapping 'view' to 'read' if needed, but RBAC likely sends standard actions
-  // The sidebar plan used 'view', but rbac.ts uses 'read'. 
-  // We should match rbac.ts. 
-  // Update sidebar actions to 'read' below.
-  return permissions.includes(`${action}:${resource}`) || permissions.includes(`manage:${resource}`)
+  return libHasPermission(user as any, action as any, resource as any)
 }
 
 export function SidebarContent({ user }: SidebarContentProps) {
@@ -91,12 +82,12 @@ export function SidebarContent({ user }: SidebarContentProps) {
   ]
 
   // Filter items based on permissions
-  const visibleNavItems = allNavItems.filter(item => 
-    item.permission === null || 
+  const visibleNavItems = allNavItems.filter(item =>
+    item.permission === null ||
     hasPermission(user, item.permission.action, item.permission.resource)
   )
 
-  const canSeeAdmin = hasPermission(user, 'manage', 'admin')
+  const canSeeAdmin = hasPermission(user, 'read', 'admin')
 
   const handleLogout = async () => {
     await logout()
@@ -107,8 +98,8 @@ export function SidebarContent({ user }: SidebarContentProps) {
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <Link 
-        href="/" 
+      <Link
+        href="/"
         className="flex h-16 items-center gap-2 border-b border-border px-6 bg-sidebar cursor-pointer hover:bg-sidebar-accent/30 transition-colors"
       >
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
@@ -120,17 +111,17 @@ export function SidebarContent({ user }: SidebarContentProps) {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-4 bg-sidebar">
         {visibleNavItems.map((item) => {
-          const isActive = pathname === item.href || 
+          const isActive = pathname === item.href ||
             (item.href !== "/" && pathname.startsWith(item.href))
-          
+
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
-                isActive 
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground" 
+                isActive
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
               )}
             >
@@ -144,18 +135,18 @@ export function SidebarContent({ user }: SidebarContentProps) {
       {/* Footer Actions */}
       <div className="border-t border-border p-4 bg-sidebar space-y-2">
         {canSeeAdmin && (
-             <Link
-             href="/admin"
-             className={cn(
-               "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-colors",
-               pathname.startsWith('/admin')
-                 ? "text-sidebar-foreground bg-sidebar-accent/50"
-                 : "text-sidebar-foreground/70 hover:text-sidebar-foreground"
-             )}
-           >
-             <Settings className="h-4 w-4" />
-             <span className="truncate">{t("admin")}</span>
-           </Link>
+          <Link
+            href="/admin"
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-colors",
+              pathname.startsWith('/admin')
+                ? "text-sidebar-foreground bg-sidebar-accent/50"
+                : "text-sidebar-foreground/70 hover:text-sidebar-foreground"
+            )}
+          >
+            <Settings className="h-4 w-4" />
+            <span className="truncate">{t("admin")}</span>
+          </Link>
         )}
 
         <div className={cn("flex items-center gap-3 pt-2", canSeeAdmin && "border-t border-border/50")}>
@@ -177,9 +168,9 @@ export function SidebarContent({ user }: SidebarContentProps) {
               </p>
             </div>
           </Link>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-8 w-8 shrink-0 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors cursor-pointer"
             onClick={handleLogout}
           >
@@ -195,6 +186,7 @@ export function SidebarContent({ user }: SidebarContentProps) {
 interface SidebarProps {
   className?: string
   user?: {
+    id: string
     name?: string | null
     role?: string
     permissions?: string[]

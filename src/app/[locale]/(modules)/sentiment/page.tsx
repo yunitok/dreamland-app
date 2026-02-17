@@ -26,17 +26,17 @@ async function getSentimentData() {
   // 2. Identify the "Latest" set (the most recent detection window)
   const latestDetect = allMoods[0].detectedAt
   // We consider moods detected within 2 seconds of the latest one as part of the same "report"
-  const currentMoods = allMoods.filter(m => 
+  const currentMoods = allMoods.filter(m =>
     Math.abs(m.detectedAt.getTime() - latestDetect.getTime()) < 2000
   )
 
   // 3. Identify the "Previous" set
-  const previousReportMoods = allMoods.filter(m => 
+  const previousReportMoods = allMoods.filter(m =>
     m.detectedAt.getTime() < latestDetect.getTime() - 2000
   )
-  
+
   const previousDetect = previousReportMoods.length > 0 ? previousReportMoods[0].detectedAt : null
-  const previousMoods = previousDetect ? previousReportMoods.filter(m => 
+  const previousMoods = previousDetect ? previousReportMoods.filter(m =>
     Math.abs(m.detectedAt.getTime() - previousDetect.getTime()) < 2000
   ) : []
 
@@ -57,13 +57,13 @@ async function getSentimentData() {
     trend = Number(((avgScore - prevAvg) / (prevAvg || 1)) * 100).toFixed(1)
   }
 
-  return { 
-    moods: currentMoods, 
-    avgScore, 
-    criticalDepts, 
-    stableDepts, 
-    healthyDepts, 
-    trend: trend ? parseFloat(trend) : null 
+  return {
+    moods: currentMoods,
+    avgScore,
+    criticalDepts,
+    stableDepts,
+    healthyDepts,
+    trend: trend ? parseFloat(trend) : null
   }
 }
 
@@ -75,10 +75,10 @@ export default async function SentimentPage({
   const { locale } = await params
   setRequestLocale(locale)
   const t = await getTranslations("sentiment")
-  
+
   // Use new RBAC check
   const canManage = await hasPermission('sentiment', 'create')
-  
+
   const [{ moods, avgScore, criticalDepts, stableDepts, healthyDepts, trend }, departments] = await Promise.all([
     getSentimentData(),
     getDepartments()
@@ -86,32 +86,31 @@ export default async function SentimentPage({
 
   return (
     <RoleGuard action="read" resource="sentiment">
-      <div className="flex flex-col min-h-screen">
-        <Header 
+      <div className="flex flex-col h-screen overflow-hidden">
+        <Header
           titleKey="sentiment.title"
           descriptionKey="sentiment.description"
         >
           {canManage && (
-              <div className="flex gap-2">
-                  <Button variant="outline" size="sm" asChild className="hidden md:flex">
-                      {/* Link to history - strictly internal sentiment path now */}
-                      <Link href="/sentiment/history">
-                          Gestión (Admin)
-                      </Link>
-                  </Button>
-                  <NewCheckInButton departments={departments} />
-              </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" asChild className="hidden sm:flex h-8 sm:h-9">
+                <Link href="/sentiment/history">
+                  Admin
+                </Link>
+              </Button>
+              <NewCheckInButton departments={departments} />
+            </div>
           )}
         </Header>
-        
-        <div className="flex-1 p-4 md:p-6 space-y-4 w-full max-w-[1600px] mx-auto">
+
+        <div className="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto w-full max-w-[1600px] mx-auto">
           {/* Bento Grid Compacto - Header Section */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-stretch">
-            
+
             {/* Main Score - Hero Card (Span 2) */}
             <Card className="premium-card rounded-2xl md:col-span-2 bg-gradient-to-br from-slate-900 to-slate-800 border-none overflow-hidden group min-h-[140px]">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-40 transition-opacity group-hover:opacity-60" />
-              
+
               <CardContent className="p-5 flex items-center gap-6 h-full relative z-10">
                 {/* Circular Progress Gauge */}
                 <div className="relative shrink-0">

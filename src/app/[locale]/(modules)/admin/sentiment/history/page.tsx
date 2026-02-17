@@ -14,7 +14,7 @@ export default async function SentimentHistoryPage({
 }) {
   const { locale } = await params
   setRequestLocale(locale)
-  
+
   const [{ data: moods }, departmentsData] = await Promise.all([
     getTeamMoods(),
     getDepartments()
@@ -25,10 +25,10 @@ export default async function SentimentHistoryPage({
   const t = await getTranslations("sentiment");
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header 
-        titleKey="sentiment.historyTitle" 
-        descriptionKey="sentiment.historyDescription" 
+    <div className="flex flex-col h-screen overflow-hidden">
+      <Header
+        titleKey="sentiment.historyTitle"
+        descriptionKey="sentiment.historyDescription"
       >
         <Button size="sm" asChild>
           <Link href="?new-checkin=true">
@@ -39,10 +39,10 @@ export default async function SentimentHistoryPage({
         </Button>
       </Header>
 
-      <div className="flex-1 p-4 md:p-6 space-y-6">
-        <SentimentHistoryTable 
-          moods={moods ?? []} 
-          departments={departmentNames} 
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+        <SentimentHistoryTable
+          moods={moods ?? []}
+          departments={departmentNames}
         />
       </div>
     </div>

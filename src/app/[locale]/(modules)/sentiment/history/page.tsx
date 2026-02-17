@@ -14,7 +14,7 @@ export default async function SentimentHistoryPage({
 }) {
   const { locale } = await params
   setRequestLocale(locale)
-  
+
   await requirePermission('sentiment', 'read');
   const canCreate = await hasPermission('sentiment', 'create');
 
@@ -26,26 +26,26 @@ export default async function SentimentHistoryPage({
   const t = await getTranslations("sentiment");
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header 
-        titleKey="sentiment.historyTitle" 
-        descriptionKey="sentiment.historyDescription" 
+    <div className="flex flex-col h-screen overflow-hidden">
+      <Header
+        titleKey="sentiment.historyTitle"
+        descriptionKey="sentiment.historyDescription"
       >
         {canCreate && (
-            <Button size="sm" asChild>
-              <Link href="?new-checkin=true">
-                <Plus className="mr-2 h-4 w-4" />
-                <span className="hidden md:inline">{t("newCheckIn")}</span>
-                <span className="md:hidden">{t("new")}</span>
-              </Link>
-            </Button>
+          <Button size="sm" asChild>
+            <Link href="?new-checkin=true">
+              <Plus className="mr-2 h-4 w-4" />
+              <span className="hidden md:inline">{t("newCheckIn")}</span>
+              <span className="md:hidden">{t("new")}</span>
+            </Link>
+          </Button>
         )}
       </Header>
 
-      <div className="flex-1 p-4 md:p-6 space-y-6">
-        <SentimentHistoryTable 
-          moods={moods ?? []} 
-          departments={departments} 
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+        <SentimentHistoryTable
+          moods={moods ?? []}
+          departments={departments}
         />
       </div>
     </div>

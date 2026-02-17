@@ -41,14 +41,14 @@ export default async function DepartmentsPage({
 }) {
   const { locale } = await params
   setRequestLocale(locale)
-  
+
   const departments = await getDepartmentsData()
 
   const t = await getTranslations("departments")
 
   return (
-    <div className="flex flex-col">
-      <Header 
+    <div className="flex flex-col h-screen overflow-hidden">
+      <Header
         titleKey="departments.title"
         descriptionKey="departments.description"
       >
@@ -60,8 +60,8 @@ export default async function DepartmentsPage({
           </Link>
         </Button>
       </Header>
-      
-      <div className="flex-1 p-4 md:p-8 space-y-8">
+
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8">
         <DepartmentCards departments={departments} />
       </div>
     </div>

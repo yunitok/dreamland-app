@@ -42,10 +42,10 @@ export default async function DepartmentsPage({
 }) {
   const { locale } = await params
   setRequestLocale(locale)
-  
+
   // Permission check
   const { roleName } = await requirePermission('departments', 'read')
-  
+
   // Check if user can create (manage) to show the button
   // We can use a simpler check here or the hasPermission util if we want to be strict
   // For now, let's assume if they can view they might see the button but action will fail?
@@ -54,7 +54,7 @@ export default async function DepartmentsPage({
   // Since we are in RSC, we can use requiresPermission but we don't want to throw.
   // We need a non-throwing check.
   // rbac.ts has `hasPermission`.
-  
+
   const { hasPermission } = await import("@/lib/actions/rbac")
   const canCreate = await hasPermission('departments', 'create')
 
@@ -62,8 +62,8 @@ export default async function DepartmentsPage({
   const t = await getTranslations("departments")
 
   return (
-    <div className="flex flex-col">
-      <Header 
+    <div className="flex flex-col h-screen overflow-hidden">
+      <Header
         titleKey="departments.title"
         descriptionKey="departments.description"
       >
@@ -77,8 +77,8 @@ export default async function DepartmentsPage({
           </Button>
         )}
       </Header>
-      
-      <div className="flex-1 p-4 md:p-8 space-y-8">
+
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8">
         <DepartmentCards departments={departments} />
       </div>
     </div>

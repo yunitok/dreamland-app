@@ -2,9 +2,9 @@ import { Header } from "@/components/layout/header"
 import { KPICard } from "@/components/dashboard/kpi-card"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { prisma } from "@/lib/prisma"
-import { 
-  FolderKanban, 
-  AlertTriangle, 
+import {
+  FolderKanban,
+  AlertTriangle,
   HeartCrack,
   TrendingUp,
   Lock
@@ -43,21 +43,20 @@ export default async function DashboardPage({
   const { locale } = await params
   setRequestLocale(locale)
   const t = await getTranslations("dashboard")
-  
+
   // Check permissions - Allow if user can view projects OR sentiment
   const canViewProjects = await hasPermission('projects', 'read')
   const canViewSentiment = await hasPermission('sentiment', 'read')
-  
+
   if (!canViewProjects && !canViewSentiment) {
     return (
-      <div className="flex flex-col ai-glow min-h-full">
-        {/* Header removed for restricted access */}
+      <div className="flex flex-col h-screen bg-background">
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="premium-card max-w-md w-full p-8 text-center space-y-6">
             <div className="mx-auto w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20">
               <Lock className="w-8 h-8 text-red-500" />
             </div>
-            
+
             <div className="space-y-2">
               <h2 className="text-xl font-bold">{t("noAccess.title")}</h2>
               <p className="text-muted-foreground">{t("noAccess.message")}</p>
@@ -68,17 +67,17 @@ export default async function DashboardPage({
     )
   }
 
-  const { totalProjects, criticalProjects, recentProjects, mostStressedDept } = 
+  const { totalProjects, criticalProjects, recentProjects, mostStressedDept } =
     await getDashboardData()
 
   return (
-    <div className="flex flex-col ai-glow min-h-full">
-      <Header 
+    <div className="flex flex-col h-screen overflow-hidden">
+      <Header
         titleKey="dashboard.title"
         descriptionKey="dashboard.description"
       />
-      
-      <div className="flex-1 p-4 md:p-6 space-y-6">
+
+      <div className="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto">
         {/* AI Strategic Advisor - Priority 1 */}
         <div className="premium-card rounded-xl p-6 border-primary/20 bg-primary/5">
           <div className="flex items-center gap-2 mb-4">
@@ -91,7 +90,7 @@ export default async function DashboardPage({
             <div className="space-y-2">
               <p className="text-sm font-medium text-muted-foreground">{t("predictiveAnalysis")}</p>
               <p className="text-lg font-semibold leading-tight">
-                {criticalProjects > 0 
+                {criticalProjects > 0
                   ? `Se detectaron ${criticalProjects} riesgos críticos que requieren atención inmediata para estabilizar el trimestre.`
                   : "El portafolio se mantiene estable. Buen momento para introducir nuevas iniciativas de innovación."}
               </p>
@@ -152,7 +151,7 @@ export default async function DashboardPage({
           <div className="lg:col-span-2">
             <RecentActivity projects={recentProjects} />
           </div>
-          
+
           {/* Team Insights Card */}
           <div className="premium-card rounded-xl p-6 h-fit">
             <h3 className="text-base font-semibold mb-4">{t("teamSentimentOverview")}</h3>

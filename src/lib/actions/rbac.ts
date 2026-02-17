@@ -80,8 +80,8 @@ export async function hasPermission(
     return false
   }
   
-  // Admin has all permissions
-  if (authCheck.roleName === 'Admin') {
+  // Admin / Super Admin bypass
+  if (authCheck.roleName === 'Admin' || authCheck.roleName === 'Super Admin') {
     return true
   }
   

@@ -10,13 +10,13 @@ export default async function NewIngredientPage() {
   ]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-65px)]">
+    <div className="flex flex-col h-screen overflow-hidden">
       <Header
         titleKey="sherlock.ingredients.new"
         backHref="/sherlock/ingredients"
       />
 
-      <div className="flex-1 p-6 overflow-auto">
+      <div className="flex-1 p-6 overflow-y-auto">
         <div className="max-w-4xl mx-auto">
           <IngredientForm
             units={units}

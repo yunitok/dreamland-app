@@ -9,20 +9,21 @@ export default async function InventoryPage() {
     const records = await getInventoryRecords()
 
     return (
-        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <div className="flex flex-col h-screen overflow-hidden">
             <Header
                 titleKey="sherlock.inventory.title"
                 descriptionKey="sherlock.inventory.description"
             >
-                <Button asChild>
+                <Button size="sm" asChild className="h-8 sm:h-9">
                     <Link href="/sherlock/inventory/new">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Nuevo Registro
+                        <Plus className="sm:mr-2 h-4 w-4" />
+                        <span className="hidden sm:inline">Nuevo Registro</span>
+                        <span className="sm:hidden text-xs">Nuevo</span>
                     </Link>
                 </Button>
             </Header>
 
-            <div className="grid gap-4">
+            <div className="flex-1 p-4 md:p-8 overflow-y-auto">
                 <InventoryTable data={records as any} />
             </div>
         </div>

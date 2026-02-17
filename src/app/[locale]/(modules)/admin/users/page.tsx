@@ -16,21 +16,21 @@ export default async function UsersPage() {
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <Header 
-        title={t("usersTitle")} 
-        description={t("usersDescription")} 
+    <div className="flex h-screen flex-col overflow-hidden">
+      <Header
+        title={t("usersTitle")}
+        description={t("usersDescription")}
         backHref="/admin"
       >
-          <div className="flex items-center space-x-2">
-            <UserDialog roles={rolesResult.data!} />
-          </div>
+        <div className="flex items-center space-x-2">
+          <UserDialog roles={rolesResult.data!} />
+        </div>
       </Header>
 
-      <div className="p-8 w-full space-y-8">
-      <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
-        <UsersTable data={usersResult.data!} roles={rolesResult.data || []} />
-      </Suspense>
+      <div className="flex-1 overflow-y-auto p-8 w-full space-y-8">
+        <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
+          <UsersTable data={usersResult.data!} roles={rolesResult.data || []} />
+        </Suspense>
       </div>
     </div>
   )

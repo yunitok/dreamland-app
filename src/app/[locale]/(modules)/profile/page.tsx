@@ -54,13 +54,13 @@ export default async function ProfilePage({
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-screen overflow-hidden">
       <Header
         title={t("title")}
         description={t("subtitle")}
       />
 
-      <main className="flex-1 p-4 md:p-8">
+      <main className="flex-1 overflow-y-auto p-4 md:p-8">
         <div className="max-w-4xl mx-auto space-y-8">
           <Tabs defaultValue="personal" className="w-full">
             <TabsList className="grid w-full grid-cols-4 mb-8">

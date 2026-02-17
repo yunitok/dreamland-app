@@ -25,7 +25,10 @@ export function hasPermission(
   action: PermissionAction, 
   resource: PermissionResource
 ): boolean {
-  if (!user || !user.permissions) return false
+  if (!user) return false
+  
+  // Super Admin bypass
+  if (user.role === 'SUPER_ADMIN') return true
 
   const permissionString = `${action}:${resource}`
   
@@ -34,9 +37,6 @@ export function hasPermission(
   
   // Check for 'manage' action which implies everything for that resource
   if (action !== 'manage' && user.permissions.includes(`manage:${resource}`)) return true
-
-  // Specific check for Super Admin if needed (optional, but implemented via permissions usually)
-  // For now, reliance on explicit permissions is safer/cleaner.
 
   return false
 }

@@ -22,18 +22,18 @@ export default async function AdminSeedPage({
   const { locale } = await params
   setRequestLocale(locale)
   const t = await getTranslations("admin")
-  
+
   const { projectCount, moodCount } = await getStats()
 
   return (
-    <div className="flex flex-col">
-      <Header 
+    <div className="flex flex-col h-screen overflow-hidden">
+      <Header
         titleKey="admin.title"
         descriptionKey="admin.description"
         backHref="/admin"
       />
-      
-      <div className="flex-1 p-4 md:p-8 space-y-8">
+
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8">
         {/* Current Stats */}
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="premium-card rounded-xl">
@@ -48,7 +48,7 @@ export default async function AdminSeedPage({
               <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tight">SQLite (dev.db)</p>
             </CardContent>
           </Card>
-          
+
           <Card className="premium-card rounded-xl">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">
               <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -61,7 +61,7 @@ export default async function AdminSeedPage({
               <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tight">{t("inDatabase")}</p>
             </CardContent>
           </Card>
-          
+
           <Card className="premium-card rounded-xl">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">
               <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
