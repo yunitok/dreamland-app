@@ -22,18 +22,23 @@ Dreamland Manager uses **Prisma ORM** with **PostgreSQL** as the database. The s
 erDiagram
     User ||--o{ Task : assigns
     User }o--|| Role : has
+    User ||--o{ ProjectMember : member_of
     User ||--o{ TaskComment : authors
     User ||--o{ TaskAttachment : uploads
-    
+
     Role ||--o{ Permission : grants
-    
+
     Project ||--o{ TaskList : contains
     Project ||--o{ Tag : has
     Project ||--o{ ProjectRisk : has
-    
+    Project ||--o{ ProjectMember : has
+
+    ProjectMember }o--|| User : belongs_to
+    ProjectMember }o--|| Project : belongs_to
+
     TaskList ||--o{ Task : contains
     TaskList }o--|| Project : belongs_to
-    
+
     Task }o--|| TaskList : belongs_to
     Task }o--|| TaskStatus : has
     Task }o--o| User : assigned_to
@@ -43,13 +48,13 @@ erDiagram
     Task }o--o{ Tag : tagged_with
     Task ||--o{ TaskDependency : predecessor
     Task ||--o{ TaskDependency : successor
-    
+
     TaskDependency }o--|| Task : predecessor
     TaskDependency }o--|| Task : successor
-    
+
     Tag }o--|| Project : scoped_to
     Tag }o--o{ Task : tags
-    
+
     TaskStatus ||--o{ Task : categorizes
 ```
 
@@ -341,9 +346,11 @@ AI-identified risks associated with projects.
 
 ## Domain 3: Authentication & RBAC
 
+El sistema RBAC es de **dos capas**: roles globales (acceso por recurso) y roles de proyecto (acceso dentro de cada proyecto). Ver [RBAC System](../modules/admin/rbac.md) para documentación completa.
+
 ### User
 
-System users with role-based access.
+Usuarios del sistema con acceso basado en roles.
 
 **Fields**:
 | Field | Type | Description |
@@ -354,34 +361,37 @@ System users with role-based access.
 | `email` | String? (unique) | Email address |
 | `password` | String | Hashed password (bcryptjs) |
 | `image` | String? | Avatar URL |
-| `roleId` | String (FK) | Assigned role |
+| `roleId` | String (FK) | Assigned global role |
+| `mustChangePassword` | Boolean | Flag para forzar cambio de contraseña |
 | `createdAt` | DateTime | Auto-generated |
 | `updatedAt` | DateTime | Auto-updated |
 
 **Relations**:
 - `role`: Role (many-to-one)
+- `projectMemberships`: ProjectMember[] (one-to-many)
 - `assignedTasks`: Task[] (one-to-many)
 - `comments`: TaskComment[] (one-to-many)
 - `attachments`: TaskAttachment[] (one-to-many)
 
 **Security Notes**:
-- Passwords hashed with bcryptjs before storage
+- Passwords hashed with bcryptjs (factor 10) before storage
 - Email and username must be unique
+- `mustChangePassword` fuerza cambio en el próximo login
 
 ---
 
 ### Role
 
-Role definitions with associated permissions.
+Definiciones de roles con permisos asociados.
 
 **Fields**:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | String (CUID) | Unique identifier |
-| `code` | String (unique) | System code (e.g., "SUPER_ADMIN") |
+| `code` | String (unique) | System code (e.g., `SUPER_ADMIN`) |
 | `name` | String | Display name (e.g., "Super Admin") |
 | `description` | String? | Role description |
-| `isSystem` | Boolean | Protected system role (default: false) |
+| `isSystem` | Boolean | Protected system role — no puede eliminarse (default: false) |
 | `createdAt` | DateTime | Auto-generated |
 | `updatedAt` | DateTime | Auto-updated |
 
@@ -389,25 +399,25 @@ Role definitions with associated permissions.
 - `users`: User[] (one-to-many)
 - `permissions`: Permission[] (many-to-many)
 
-**Default Roles** (created by seed):
-- **SUPER_ADMIN**: Full system access
-- **STRATEGIC_PM**: Project and roadmap management
-- **PEOPLE_CULTURE_LEAD**: Team sentiment and departments
-- **STAKEHOLDER**: Read-only strategic insights
+**Roles de sistema** (creados por seed, `isSystem: true`):
+- **SUPER_ADMIN**: Acceso completo al sistema
+- **STRATEGIC_PM**: Gestión de proyectos y hoja de ruta
+- **PEOPLE_CULTURE_LEAD**: Bienestar del equipo y departamentos
+- **STAKEHOLDER**: Solo lectura — visión estratégica
 
 ---
 
 ### Permission
 
-Fine-grained permissions for resources and actions.
+Permisos granulares sobre recursos y acciones.
 
 **Fields**:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | String (CUID) | Unique identifier |
-| `action` | String | Action type (e.g., "view", "create", "edit", "delete") |
-| `resource` | String | Resource type (e.g., "projects", "users", "tasks") |
-| `description` | String? | Human-readable description |
+| `action` | String | Tipo de acción: `read`, `create`, `update`, `delete`, `manage` |
+| `resource` | String | Recurso: `projects`, `users`, `roles`, `sherlock`, `reports`, etc. |
+| `description` | String? | Descripción legible |
 | `createdAt` | DateTime | Auto-generated |
 | `updatedAt` | DateTime | Auto-updated |
 
@@ -415,12 +425,53 @@ Fine-grained permissions for resources and actions.
 - `roles`: Role[] (many-to-many)
 
 **Constraints**:
-- Unique constraint on `[action, resource]` (prevents duplicate permissions)
+- Unique constraint on `[action, resource]` (evita permisos duplicados)
 
-**Example Permissions**:
-- `{action: "view", resource: "projects"}` → Can view projects
-- `{action: "delete", resource: "users"}` → Can delete users
-- `{action: "edit", resource: "sentiment"}` → Can edit team mood data
+**Ejemplos**:
+- `{action: "read", resource: "projects"}` → Puede ver proyectos
+- `{action: "delete", resource: "users"}` → Puede eliminar usuarios
+- `{action: "manage", resource: "admin"}` → Control total del panel admin
+
+> **Nota:** Las acciones correctas son `read`/`update` (no `view`/`edit`).
+> La acción `manage` es un comodín que implica todos los permisos sobre ese recurso.
+
+---
+
+### ProjectMember
+
+Membresía de un usuario en un proyecto con un rol específico (scoped al proyecto).
+
+**Fields**:
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | String (CUID) | Unique identifier |
+| `userId` | String (FK) | Usuario miembro |
+| `projectId` | String (FK) | Proyecto al que pertenece |
+| `role` | ProjectRole | Rol dentro del proyecto (default: `VIEWER`) |
+| `createdAt` | DateTime | Auto-generated |
+| `updatedAt` | DateTime | Auto-updated |
+
+**ProjectRole enum**:
+
+| Valor | Jerarquía | Descripción |
+|-------|-----------|-------------|
+| `OWNER` | 4 | Control total: editar, eliminar, gestionar miembros |
+| `MANAGER` | 3 | Gestión completa excepto eliminar proyecto |
+| `EDITOR` | 2 | Creación y edición de contenido |
+| `VIEWER` | 1 | Solo lectura |
+
+**Relations**:
+- `user`: User (many-to-one, cascade delete)
+- `project`: Project (many-to-one, cascade delete)
+
+**Constraints**:
+- Unique constraint on `[userId, projectId]` (un usuario → un rol por proyecto)
+
+**Reglas de negocio**:
+- El creador del proyecto es asignado como `OWNER` automáticamente en transacción
+- `SUPER_ADMIN` bypassa las verificaciones de membresía (tiene acceso a todos)
+- No se puede asignar un rol superior al propio
+- No se puede eliminar al último `OWNER` de un proyecto
 
 ---
 
@@ -477,10 +528,10 @@ CREATE INDEX idx_aiusagelog_userId ON AiUsageLog(userId);
 
 ### Cascade Deletes
 The following relationships cascade on delete:
-- **Project deleted** → All TaskLists, Tags, and ProjectRisks deleted
+- **Project deleted** → All TaskLists, Tags, ProjectRisks, and ProjectMembers deleted
 - **TaskList deleted** → All Tasks in that list deleted
 - **Task deleted** → All Comments, Attachments, Dependencies deleted
-- **User deleted** → All Comments and Attachments by that user deleted
+- **User deleted** → All Comments, Attachments, and ProjectMemberships by that user deleted
 
 ### Nullable Foreign Keys with SetNull
 - **User deleted** → Tasks assigned to that user have `assigneeId` set to NULL (tasks remain)

@@ -1,318 +1,514 @@
 ---
 title: Role-Based Access Control
-description: Permission system and role management
+description: Sistema de permisos y gestión de roles (global + scoped por proyecto)
 ---
 
-# RBAC System Overview - Dreamland Manager
+# Sistema RBAC - Dreamland Manager
 
-## Introduction
+## Introducción
 
-Dreamland Manager implements a robust **Role-Based Access Control (RBAC)** system that provides granular permissions for enterprise-level security.
+Dreamland Manager implementa un sistema **RBAC híbrido de dos capas**:
 
-## Architecture
+1. **Roles Globales** — definen qué recursos del sistema puede acceder un usuario
+2. **Roles de Proyecto** — definen el nivel de acceso dentro de cada proyecto concreto
+
+---
+
+## Arquitectura
 
 ```mermaid
 erDiagram
     User ||--|| Role : has
+    User ||--o{ ProjectMember : member_of
     Role ||--o{ Permission : grants
+    Project ||--o{ ProjectMember : has
+
     Permission {
         string action
         string resource
     }
-    
+
     User {
         string id
         string username
         string roleId
     }
-    
+
     Role {
         string id
         string code
         string name
         boolean isSystem
     }
+
+    ProjectMember {
+        string userId
+        string projectId
+        ProjectRole role
+    }
 ```
 
-## Core Concepts
+---
 
-### 1. Users
-Individual system users with credentials:
-- Username/email + password
-- Assigned exactly ONE role
-- Inherit all permissions from their role
+## Conceptos Core
 
-### 2. Roles
-Named collections of permissions:
-- **code**: System identifier (e.g., `SUPER_ADMIN`)
-- **name**: Display name (e.g., "Super Admin")
-- **isSystem**: Protected roles that can't be deleted
+### 1. Usuarios
+Usuarios individuales con credenciales:
+- Username/email + contraseña
+- Asignados a exactamente **UN rol global**
+- Heredan todos los permisos de ese rol
+- Pueden tener **múltiples membresías de proyecto** con roles diferentes
 
-### 3. Permissions
-Fine-grained access rules:
-- **resource**: What (e.g., "projects", "users")
-- **action**: How (e.g., "view", "create", "edit", "delete")
+### 2. Roles Globales
+Colecciones de permisos sobre recursos del sistema:
+- **code**: Identificador de sistema (ej. `SUPER_ADMIN`)
+- **name**: Nombre para mostrar (ej. "Super Admin")
+- **isSystem**: Roles protegidos que no pueden eliminarse
 
-## Authorization Flow
+### 3. Permisos
+Reglas de acceso granulares:
+- **resource**: Qué (ej. `projects`, `users`, `sherlock`)
+- **action**: Cómo (`read`, `create`, `update`, `delete`, `manage`)
+
+> **Nota:** La acción `manage` es un comodín — implica todos los permisos sobre ese recurso.
+> La nomenclatura correcta es `read`/`update` (no `view`/`edit`).
+
+### 4. Roles de Proyecto (`ProjectRole`)
+Controlan el acceso dentro de un proyecto específico:
+
+| Rol | Jerarquía | Capacidades |
+|-----|-----------|-------------|
+| `OWNER` | 4 (máximo) | Control total: editar, eliminar, gestionar miembros |
+| `MANAGER` | 3 | Gestión completa excepto eliminar proyecto |
+| `EDITOR` | 2 | Creación y edición de contenido (tareas, listas) |
+| `VIEWER` | 1 (mínimo) | Solo lectura |
+
+---
+
+## Flujo de Autorización
 
 ```mermaid
 sequenceDiagram
     actor User
-    participant Page
-    participant Middleware
-    participant RBAC
+    participant UI as Componente UI
+    participant Action as Server Action
+    participant RBAC as rbac.ts (DB)
     participant DB
-    
-    User->>Page: Access protected page
-    Page->>Middleware: Check session
-    Middleware->>DB: Get user + role + permissions
-    DB-->>Middleware: User with permissions[]
-    Middleware->>RBAC: hasPermission(resource, action)
-    
-    alt Has Permission
-        RBAC-->>Page: ✅ Allowed
-        Page->>User: Render page
-    else No Permission
-        RBAC-->>Page: ❌ Denied
-        Page->>User: Redirect to /unauthorized
+
+    User->>UI: Accede a página protegida
+    UI->>Action: Invoca server action
+    Action->>RBAC: requirePermission('projects', 'read')
+    RBAC->>DB: Consulta Role + Permissions en vivo
+    DB-->>RBAC: Permisos del usuario
+
+    alt Tiene permiso global
+        RBAC->>Action: ✅ AuthResult
+        Action->>RBAC: hasProjectAccess(projectId, 'EDITOR')
+        RBAC->>DB: Consulta ProjectMember
+        alt Es miembro con rol suficiente
+            RBAC-->>Action: ✅ true
+            Action-->>UI: Datos
+        else Sin membresía o rol insuficiente
+            RBAC-->>Action: ❌ false
+            Action-->>UI: Error / redirect
+        end
+    else Sin permiso global
+        RBAC-->>Action: ❌ Error / redirect
     end
 ```
 
-## Default Roles
+### Regla clave: SUPER_ADMIN bypassa todo
 
-The system creates 4 default roles via seed script:
+`SUPER_ADMIN` tiene acceso completo a todos los recursos Y a todos los proyectos, sin necesidad de membresía.
+
+---
+
+## Roles Globales por Defecto
+
+El seed crea 4 roles de sistema (`isSystem: true`):
 
 ### 1. Super Admin
-**Code**: `SUPER_ADMIN`  
-**Permissions**: ALL (full system access)
+**Code**: `SUPER_ADMIN`
+**Permisos**: Acceso completo a todo el sistema
 
-| Resource | Actions |
-|----------|---------|
-| projects | view, create, edit, delete |
-| users | view, create, edit, delete |
-| roles | view, create, edit, delete |
-| departments | view, create, edit, delete |
-| tasks | view, create, edit, delete |
-| sentiment | view, create, edit, delete |
+| Recurso | Acciones |
+|---------|----------|
+| projects | read, create, update, delete |
+| users | read, create, update, delete |
+| roles | read, create, update, delete |
+| departments | read, create, update, delete |
+| sentiment | read, create, update, delete |
+| sherlock | read, create, update, delete |
+| reports | read, create, update, delete |
+| admin | manage |
 
-**Use Case**: System administrators, founders
+**Caso de uso**: Administradores del sistema, fundadores
 
 ---
 
 ### 2. Strategic PM
-**Code**: `STRATEGIC_PM`  
-**Permissions**: Project and roadmap management
+**Code**: `STRATEGIC_PM`
+**Permisos**: Gestión de proyectos y hoja de ruta
 
-| Resource | Actions |
-|----------|---------|
-| projects | view, create, edit, delete |
-| tasks | view, create, edit, delete |
-| departments | view |
-| users | view |
+| Recurso | Acciones |
+|---------|----------|
+| projects | read, create, update, delete |
+| departments | read |
+| users | read |
+| sherlock | read |
+| reports | read |
 
-**Use Case**: Product/Project Managers, technical leads
+**Caso de uso**: Product Managers, Technical Leads
 
 ---
 
 ### 3. People & Culture Lead
-**Code**: `PEOPLE_CULTURE_LEAD`  
-**Permissions**: Team wellness and HR
+**Code**: `PEOPLE_CULTURE_LEAD`
+**Permisos**: Bienestar del equipo y RRHH
 
-| Resource | Actions |
-|----------|---------|
-| sentiment | view, create, edit, delete |
-| departments | view, create, edit |
-| users | view, edit |
-| projects | view |
+| Recurso | Acciones |
+|---------|----------|
+| sentiment | read, create, update, delete |
+| departments | read, create, update |
+| users | read, update |
+| projects | read |
 
-**Use Case**: HR managers, team coaches
+**Caso de uso**: Responsables de RRHH, coaches de equipo
 
 ---
 
 ### 4. Stakeholder
-**Code**: `STAKEHOLDER`  
-**Permissions**: Read-only strategic insights
+**Code**: `STAKEHOLDER`
+**Permisos**: Visión de solo lectura
 
-| Resource | Actions |
-|----------|---------|
-| projects | view |
-| tasks | view |
-| sentiment | view |
-| departments | view |
+| Recurso | Acciones |
+|---------|----------|
+| projects | read |
+| departments | read |
+| sentiment | read |
+| reports | read |
 
-**Use Case**: Executives, external stakeholders
+**Caso de uso**: Ejecutivos, stakeholders externos
 
 ---
 
-## Permission Matrix
+## Matriz de Permisos Global
 
-Full permission matrix for all resources:
-
-| Resource | View | Create | Edit | Delete |
-|----------|------|--------|------|--------|
-| **projects** | All roles | Super Admin, Strategic PM | Super Admin, Strategic PM | Super Admin |
-| **users** | All roles | Super Admin | Super Admin, People Lead | Super Admin |
+| Recurso | read | create | update | delete |
+|---------|------|--------|--------|--------|
+| **projects** | Todos | Super Admin, Strategic PM | Super Admin, Strategic PM | Super Admin, Strategic PM |
+| **users** | Todos | Super Admin | Super Admin, People Lead | Super Admin |
 | **roles** | Super Admin | Super Admin | Super Admin | Super Admin |
-| **departments** | All roles | Super Admin, People Lead | Super Admin, People Lead | Super Admin |
-| **tasks** | All roles | Super Admin, Strategic PM | Super Admin, Strategic PM | Super Admin |
-| **sentiment** | All roles | Super Admin, People Lead | Super Admin, People Lead | Super Admin |
+| **departments** | Todos | Super Admin, People Lead | Super Admin, People Lead | Super Admin |
+| **sentiment** | Todos | Super Admin, People Lead | Super Admin, People Lead | Super Admin |
+| **sherlock** | Super Admin, Strategic PM | Super Admin | Super Admin | Super Admin |
+| **reports** | Super Admin, Strategic PM, Stakeholder | Super Admin | Super Admin | Super Admin |
+| **admin** | Super Admin | Super Admin | Super Admin | Super Admin |
+
+> **Importante:** Los permisos a nivel de tarea (`tasks`, `lists`, `comments`, etc.) son gestionados exclusivamente por los roles de proyecto (`ProjectRole`), no por los roles globales.
 
 ---
 
-## Implementation
+## Roles de Proyecto — Detalle
 
-### Permission Check Function
+### Jerarquía
 
-**File**: `src/lib/permissions.ts`
-
-```typescript
-import { getSession } from '@/lib/session';
-import prisma from '@/lib/prisma';
-
-export async function hasPermission(resource: string, action: string): Promise<boolean> {
-  const session = await getSession();
-  if (!session) return false;
-  
-  const user = await prisma.user.findUnique({
-    where: { id: session.userId },
-    include: {
-      role: {
-        include: {
-          permissions: true
-        }
-      }
-    }
-  });
-  
-  if (!user) return false;
-  
-  return user.role.permissions.some(
-    p => p.resource === resource && p.action === action
-  );
-}
+```
+OWNER (4) > MANAGER (3) > EDITOR (2) > VIEWER (1)
 ```
 
-### Usage in Server Actions
+### Restricciones de seguridad
+- Un usuario solo puede asignar roles **iguales o inferiores** al suyo
+- `MANAGER` puede eliminar miembros con rol `EDITOR` o `VIEWER`
+- **No se puede eliminar al último `OWNER`** de un proyecto
+- El **creador del proyecto** es asignado automáticamente como `OWNER` en la misma transacción
+
+### Capacidades por rol
+
+| Acción | OWNER | MANAGER | EDITOR | VIEWER |
+|--------|-------|---------|--------|--------|
+| Ver proyecto y tareas | ✅ | ✅ | ✅ | ✅ |
+| Crear/editar tareas | ✅ | ✅ | ✅ | ❌ |
+| Crear/editar listas | ✅ | ✅ | ✅ | ❌ |
+| Gestionar miembros | ✅ | ✅ | ❌ | ❌ |
+| Editar configuración del proyecto | ✅ | ✅ | ❌ | ❌ |
+| Eliminar proyecto | ✅ | ❌ | ❌ | ❌ |
+
+---
+
+## Implementación
+
+### Archivos Clave
+
+| Archivo | Propósito |
+|---------|-----------|
+| `src/lib/actions/rbac.ts` | Autorización real en servidor (consulta DB en vivo) |
+| `src/lib/permissions.ts` | Checks rápidos en cliente (UI condicional, no para seguridad) |
+| `src/modules/shared/lib/project-filters.ts` | Filtro Prisma automático por membresía |
+| `src/modules/projects/actions/members.ts` | CRUD de membresías de proyecto |
+| `src/modules/admin/actions/project-members.ts` | Gestión de membresías desde Admin |
+
+---
+
+### Funciones del Servidor (`src/lib/actions/rbac.ts`)
+
+#### Tipos
 
 ```typescript
-'use server';
+type Resource = 'projects' | 'tasks' | 'users' | 'roles' | 'sentiment' |
+                'departments' | 'ai' | 'admin' | 'sherlock' | 'reports' |
+                'settings' | 'lists' | 'comments' | 'attachments' | 'tags'
 
-import { hasPermission } from '@/lib/permissions';
-
-export async function deleteProject(projectId: string) {
-  // Check permission
-  if (!(await hasPermission('projects', 'delete'))) {
-    throw new Error('Unauthorized');
-  }
-  
-  // Proceed with deletion
-  await prisma.project.delete({ where: { id: projectId } });
-}
+type Action = 'create' | 'read' | 'update' | 'delete' | 'manage'
 ```
 
-### Usage in Components
+#### `requireAuth()`
+Verifica que el usuario esté autenticado consultando la DB en vivo.
+```typescript
+const auth = await requireAuth()
+if (!auth.authenticated) throw new Error(auth.error)
+// auth.userId, auth.roleCode disponibles
+```
 
-```tsx
-import { hasPermission } from '@/lib/permissions';
+#### `hasPermission(resource, action)`
+Devuelve `boolean`. Consulta DB en vivo. SUPER_ADMIN siempre devuelve `true`.
+```typescript
+const canRead = await hasPermission('projects', 'read')
+```
 
-export async function ProjectActions({ projectId }: { projectId: string }) {
-  const canEdit = await hasPermission('projects', 'edit');
-  const canDelete = await hasPermission('projects', 'delete');
-  
+#### `requirePermission(resource, action)`
+Como `hasPermission` pero lanza error si no está autorizado.
+```typescript
+await requirePermission('projects', 'create') // lanza si no tiene permiso
+```
+
+#### `requireProjectAccess(projectId, minRole?)`
+Verifica acceso a proyecto específico. Redirige a `/unauthorized` si no tiene acceso.
+```typescript
+await requireProjectAccess(projectId, 'EDITOR')
+```
+
+#### `hasProjectAccess(projectId, minRole?)`
+Versión no-redirect: devuelve `boolean`.
+```typescript
+const canEdit = await hasProjectAccess(projectId, 'EDITOR')
+```
+
+#### `getAccessibleProjectIds()`
+Devuelve `string[]` con IDs de proyectos accesibles, o `null` para SUPER_ADMIN (= todos).
+```typescript
+const projectIds = await getAccessibleProjectIds()
+// null = SUPER_ADMIN (acceso total)
+// [] = sin proyectos asignados
+```
+
+#### `getCurrentUserId()`
+Obtiene el ID del usuario actual sin consulta DB extra.
+```typescript
+const userId = await getCurrentUserId()
+```
+
+---
+
+### Checks Rápidos en Cliente (`src/lib/permissions.ts`)
+
+> ⚠️ **Solo para UI condicional.** Nunca como única barrera de seguridad. Las permissions se codifican en el JWT como `"action:resource"`.
+
+```typescript
+import { hasPermission } from '@/lib/permissions'
+
+// En Server Component
+export default async function Page() {
+  const session = await getSession()
+  const canCreate = hasPermission(session?.user, 'create', 'projects')
+
   return (
     <div>
-      {canEdit && <button>Edit</button>}
-      {canDelete && <button>Delete</button>}
+      {canCreate && <button>Nuevo Proyecto</button>}
     </div>
-  );
+  )
+}
+```
+
+```typescript
+import { hasAnyPermission } from '@/lib/permissions'
+
+const canManageTeam = hasAnyPermission(user, [
+  { action: 'update', resource: 'users' },
+  { action: 'manage', resource: 'departments' },
+])
+```
+
+---
+
+### Filtrado Automático de Proyectos (`src/modules/shared/lib/project-filters.ts`)
+
+```typescript
+import { getProjectWhereFilter } from '@/modules/shared/lib/project-filters'
+
+export async function getProjects() {
+  const filter = await getProjectWhereFilter()
+  // SUPER_ADMIN: filter = {} (sin restricción)
+  // Otros: filter = { id: { in: [...projectIds] } }
+  return prisma.project.findMany({ where: filter })
 }
 ```
 
 ---
 
-## Creating Custom Roles
+### Ejemplo Completo en Server Action
 
-### Via Admin Dashboard
+```typescript
+'use server'
 
-1. Navigate to **Admin** → **Roles**
-2. Click **Create New Role**
-3. Enter role name and description
-4. Use permission matrix to select permissions
-5. Click **Save**
+import { requirePermission, hasProjectAccess } from '@/lib/actions/rbac'
 
-### Via Code (Seed Script)
+export async function createTask(projectId: string, data: TaskData) {
+  // 1. Verificar permiso global (tiene acceso al módulo de proyectos)
+  await requirePermission('projects', 'read')
+
+  // 2. Verificar acceso al proyecto específico como EDITOR o superior
+  const canEdit = await hasProjectAccess(projectId, 'EDITOR')
+  if (!canEdit) {
+    throw new Error('No tienes permisos para crear tareas en este proyecto')
+  }
+
+  // 3. Proceder con la lógica de negocio
+  return prisma.task.create({ data: { ...data, projectId } })
+}
+```
+
+---
+
+## Gestión de Miembros de Proyecto
+
+### Desde el Proyecto (UI)
+
+El componente `ProjectMembersPanel` (sheet lateral en el header del proyecto) permite a `OWNER` y `MANAGER` gestionar miembros directamente.
+
+**Funciones disponibles** (`src/modules/projects/actions/members.ts`):
+
+```typescript
+getProjectMembers(projectId)                        // Lista de miembros
+addProjectMember(projectId, userId, role)           // Añadir miembro
+updateProjectMember(projectId, userId, role)        // Cambiar rol
+removeProjectMember(projectId, userId)              // Eliminar miembro
+getUsersWithProjectAccess(projectId)                // Usuarios con acceso
+```
+
+### Desde Admin (Gestión Global)
+
+El panel `ProjectAccessPanel` en `/admin/users/[id]` permite a SUPER_ADMIN gestionar todas las membresías de un usuario.
+
+**Funciones disponibles** (`src/modules/admin/actions/project-members.ts`):
+
+```typescript
+getUserProjectMemberships(userId)                   // Membresías de un usuario
+getProjectMembers(projectId)                        // Miembros de un proyecto
+assignUserToProject(userId, projectId, role)        // Asignar proyecto
+removeUserFromProject(userId, projectId)            // Eliminar acceso
+bulkAssignProjects(userId, assignments[])           // Asignación masiva
+```
+
+---
+
+## Creación de Roles Personalizados
+
+### Desde el Dashboard de Admin
+
+1. Ir a **Admin** → **Roles**
+2. Hacer clic en **Crear Nuevo Rol**
+3. Introducir nombre y descripción
+4. Seleccionar permisos en la matriz interactiva
+5. Guardar
+
+**Recursos disponibles en la UI**: `projects`, `sherlock`, `reports`, `users`, `roles`, `departments`, `sentiment`, `admin`
+**Acciones disponibles**: `read`, `create`, `update`, `delete`, `manage`
+
+### Desde Código (Seed Script)
 
 ```typescript
 // prisma/seed.ts
 
-const customRole = await prisma.role.create({
+const developerRole = await prisma.role.create({
   data: {
     code: 'DEVELOPER',
     name: 'Developer',
-    description: 'Software engineers with technical access',
+    description: 'Ingenieros de software con acceso técnico',
     permissions: {
       connect: [
-        { action_resource: { action: 'view', resource: 'projects' } },
-        { action_resource: { action: 'view', resource: 'tasks' } },
-        { action_resource: { action: 'create', resource: 'tasks' } },
-        { action_resource: { action: 'edit', resource: 'tasks' } }
+        { action_resource: { action: 'read', resource: 'projects' } },
+        { action_resource: { action: 'read', resource: 'sherlock' } },
       ]
     }
   }
-});
+})
 ```
 
 ---
 
-## Security Best Practices
+## Buenas Prácticas de Seguridad
 
-### 1. Principle of Least Privilege
-Grant minimum permissions needed:
+### 1. Principio de Mínimo Privilegio
+❌ **Mal**: Dar `SUPER_ADMIN` a todos los usuarios
+✅ **Bien**: Crear roles específicos por función y asignar roles de proyecto granulares
 
-❌ **Bad**: Give all users `SUPER_ADMIN`  
-✅ **Good**: Create specific roles per job function
-
-### 2. Protect System Roles
-System roles (`isSystem: true`) cannot be deleted:
+### 2. Proteger Roles de Sistema
+Los roles con `isSystem: true` no pueden eliminarse:
 
 ```typescript
 async function deleteRole(roleId: string) {
-  const role = await prisma.role.findUnique({ where: { id: roleId } });
-  
-  if (role?.isSystem) {
-    throw new Error('Cannot delete system role');
-  }
-  
-  await prisma.role.delete({ where: { id: roleId } });
+  const role = await prisma.role.findUnique({ where: { id: roleId } })
+  if (role?.isSystem) throw new Error('Cannot delete system role')
+  await prisma.role.delete({ where: { id: roleId } })
 }
 ```
 
-### 3. Server-Side Checks Always
-Never rely on client-side permission checks alone:
+### 3. Siempre Validar en el Servidor
+La UI condicionada por `hasPermission()` (cliente) es cosmética. La autorización real está en el servidor:
 
 ```typescript
-// ❌ Client-only check (insecure)
-'use client';
-function DeleteButton({ projectId }: { projectId: string }) {
-  const canDelete = usePermission('projects', 'delete');
-  return canDelete && <button onClick={() => deleteProject(projectId)}>Delete</button>;
-}
+// ❌ Solo cliente (inseguro como única barrera)
+'use client'
+const canDelete = hasPermission(user, 'delete', 'projects')
+return canDelete && <button onClick={() => deleteProject(id)}>Eliminar</button>
 
-// ✅ Server-side enforcement (secure)
-'use server';
+// ✅ Servidor (enforcement real)
+'use server'
 async function deleteProject(projectId: string) {
-  if (!(await hasPermission('projects', 'delete'))) {
-    throw new Error('Unauthorized');
-  }
+  await requirePermission('projects', 'delete')
+  await requireProjectAccess(projectId, 'OWNER')
   // ...
 }
 ```
 
+### 4. Doble Capa para Recursos de Proyecto
+Para cualquier acción sobre datos de un proyecto, verificar **ambas** capas:
+
+```typescript
+// Capa 1: permiso global sobre el módulo
+await requirePermission('projects', 'read')
+
+// Capa 2: membresía en el proyecto concreto
+await requireProjectAccess(projectId, 'EDITOR')
+```
+
 ---
 
-## Further Reading
+## Migraciones de Base de Datos
 
-- [Data Model](../../database/data-model.md)
-- [Default Roles](./default-roles.md)
-- [Permission Matrix](./permission-matrix.md)
-- [Custom Roles Guide](../../guides/custom-roles.md)
+El refactor introdujo las siguientes migraciones:
+
+```
+prisma/migrations/
+├── 20260217105017_add_project_members/   → Tabla project_members + enum ProjectRole
+└── 20260217120000_cleanup_project_scoped_permissions/  → Limpia permisos de nivel
+                                                          de proyecto de roles globales
+```
+
+---
+
+## Lectura Adicional
+
+- [Modelo de Datos](../../database/data-model.md)
+- [Guía de Autenticación](../capabilities/authentication.md)
