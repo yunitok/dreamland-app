@@ -13,7 +13,8 @@ import {
   Zap,
   LogOut,
   FileText,
-  Building2
+  Building2,
+  Headphones,
 } from "lucide-react"
 import { logout } from "@/lib/auth"
 import { Button } from "@/modules/shared/ui/button"
@@ -60,6 +61,12 @@ export function SidebarContent({ user }: SidebarContentProps) {
       label: "Sherlock",
       icon: Shield,
       permission: { action: "read", resource: "sherlock" }
+    },
+    {
+      href: "/atc",
+      label: "ATC",
+      icon: Headphones,
+      permission: { action: "read", resource: "atc" }
     },
     {
       href: "/reports",

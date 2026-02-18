@@ -15,22 +15,46 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // Clear existing data in order (respect foreign keys)
-  console.log('🗑️  Clearing data...');
-  await prisma.taskAttachment.deleteMany();
-  await prisma.taskComment.deleteMany();
-  await prisma.taskDependency.deleteMany();
-  await prisma.task.deleteMany();
-  await prisma.taskStatus.deleteMany();
-  await prisma.tag.deleteMany();
-  await prisma.taskList.deleteMany();
-  await prisma.projectRisk.deleteMany();
-  await prisma.project.deleteMany();
-  await prisma.teamMood.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.permission.deleteMany();
-  await prisma.role.deleteMany();
-  console.log('✨ Data cleared.');
+  // ⚠️  GUARD: Solo borrar datos si se ejecuta explícitamente con SEED_DESTRUCTIVE=true
+  // Esto evita borrar datos de producción por accidente.
+  // Para forzar el borrado: SEED_DESTRUCTIVE=true npx tsx prisma/seed.ts
+  if (process.env.SEED_DESTRUCTIVE === 'true') {
+    console.log('🗑️  SEED_DESTRUCTIVE=true — Clearing ALL data...');
+    await prisma.taskAttachment.deleteMany();
+    await prisma.taskComment.deleteMany();
+    await prisma.taskDependency.deleteMany();
+    await prisma.task.deleteMany();
+    await prisma.taskStatus.deleteMany();
+    await prisma.tag.deleteMany();
+    await prisma.taskList.deleteMany();
+    await prisma.projectRisk.deleteMany();
+    await prisma.project.deleteMany();
+    await prisma.teamMood.deleteMany();
+    // ATC tables
+    await prisma.voucherTransaction.deleteMany();
+    await prisma.giftVoucher.deleteMany();
+    await prisma.invoice.deleteMany();
+    await prisma.emailInbox.deleteMany();
+    await prisma.paymentRecovery.deleteMany();
+    await prisma.groupReservation.deleteMany();
+    await prisma.reservationModification.deleteMany();
+    await prisma.weatherAlert.deleteMany();
+    await prisma.incident.deleteMany();
+    await prisma.queryResolution.deleteMany();
+    await prisma.query.deleteMany();
+    await prisma.queryCategory.deleteMany();
+    await prisma.knowledgeBase.deleteMany();
+    await prisma.waitingList.deleteMany();
+    await prisma.reservation.deleteMany();
+    await prisma.reservationChannel.deleteMany();
+    await prisma.user.deleteMany();
+    await prisma.permission.deleteMany();
+    await prisma.role.deleteMany();
+    console.log('✨ Data cleared.');
+  } else {
+    console.log('⚠️  SKIP: borrado de datos omitido (datos de producción protegidos).');
+    console.log('   Usa SEED_DESTRUCTIVE=true para forzar el borrado completo.');
+  }
 
   // --- RBAC SEEDING ---
   console.log('🔒 Seeding RBAC system...');
@@ -40,7 +64,7 @@ async function main() {
   // is governed by ProjectMember roles (OWNER/MANAGER/EDITOR/VIEWER).
   const resources = [
     'projects', 'users', 'roles', 'departments', 'sentiment', 'admin',
-    'sherlock', 'reports'
+    'sherlock', 'reports', 'atc'
   ];
   const actions = ['read', 'create', 'update', 'delete', 'manage'];
 
@@ -183,6 +207,35 @@ async function main() {
           ...getPerms('departments', ['read']),
           ...getPerms('admin', ['read'])
         ]
+      }
+    }
+  });
+
+  // ATC roles
+  await prisma.role.upsert({
+    where: { code: 'ATC_VIEWER' },
+    update: {},
+    create: {
+      code: 'ATC_VIEWER',
+      name: 'ATC Viewer',
+      description: 'Acceso de solo lectura al módulo ATC',
+      isSystem: false,
+      permissions: {
+        connect: [...getPerms('atc', ['read'])]
+      }
+    }
+  });
+
+  await prisma.role.upsert({
+    where: { code: 'ATC_AGENT' },
+    update: {},
+    create: {
+      code: 'ATC_AGENT',
+      name: 'ATC Agent',
+      description: 'Agente de atención al cliente con acceso completo al módulo ATC',
+      isSystem: false,
+      permissions: {
+        connect: [...getPerms('atc', ['read', 'manage'])]
       }
     }
   });
@@ -694,6 +747,31 @@ async function main() {
   );
 
   console.log(`✅ Created ${moods.length} team mood records`);
+
+  // --- ATC SEED DATA ---
+  console.log('📞 Seeding ATC data...');
+
+  await prisma.reservationChannel.createMany({
+    data: [
+      { name: 'Web',           code: 'WEB' },
+      { name: 'Teléfono',      code: 'PHONE' },
+      { name: 'Nacional',      code: 'NATIONAL' },
+      { name: 'Internacional', code: 'INTERNATIONAL' },
+    ],
+    skipDuplicates: true,
+  });
+
+  await prisma.queryCategory.createMany({
+    data: [
+      { name: 'Espacios y Accesibilidad', code: 'SPACES' },
+      { name: 'Alérgenos e Ingredientes', code: 'ALLERGENS' },
+      { name: 'Eventos y Celebraciones',  code: 'EVENTS' },
+      { name: 'General',                  code: 'GENERAL' },
+    ],
+    skipDuplicates: true,
+  });
+
+  console.log('✅ ATC seed data created');
   console.log('🎉 Seeding completed!');
 }
 

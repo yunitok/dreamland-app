@@ -7,15 +7,15 @@ describe('Access Control - hasPermission', () => {
     username: 'test',
     name: 'Test',
     role: 'Editor',
-    permissions: ['view:projects', 'manage:projects', 'view:admin'] // manage:projects implies view/update/delete projects
+    permissions: ['read:projects', 'manage:projects', 'read:admin'] // manage:projects implies read/update/delete projects
   }
 
   it('should return false if user is null', () => {
-    expect(hasPermission(null, 'view', 'admin')).toBe(false)
+    expect(hasPermission(null, 'read', 'admin')).toBe(false)
   })
 
   it('should return true if user has exact permission', () => {
-    expect(hasPermission(mockUser, 'view', 'projects')).toBe(true)
+    expect(hasPermission(mockUser, 'read', 'projects')).toBe(true)
   })
 
   it('should return false if user does not have permission', () => {

@@ -8,7 +8,7 @@ import { Input } from "@/modules/shared/ui/input"
 import { Label } from "@/modules/shared/ui/label"
 import { Alert, AlertDescription } from "@/modules/shared/ui/alert"
 import { Checkbox } from "@/modules/shared/ui/checkbox"
-import { Loader2, Lock, User, AlertCircle } from "lucide-react"
+import { Loader2, Lock, User, AlertCircle, Eye, EyeOff } from "lucide-react"
 import { useTranslations } from "next-intl"
 
 
@@ -18,6 +18,7 @@ export function LoginForm() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -69,13 +70,21 @@ export function LoginForm() {
               <Input
                 id="password"
                 name="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 autoComplete="current-password"
                 disabled={isLoading}
-                className="pl-10 bg-background/50 backdrop-blur-sm border-border/50 focus:border-primary/50 transition-all"
+                className="pl-10 pr-10 bg-background/50 backdrop-blur-sm border-border/50 focus:border-primary/50 transition-all"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-colors"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
           </div>
           <div className="flex items-center space-x-2">

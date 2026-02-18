@@ -11,7 +11,7 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { ProjectRole } from '@prisma/client'
 
-export type Resource = 'projects' | 'tasks' | 'users' | 'roles' | 'sentiment' | 'departments' | 'ai' | 'admin' | 'sherlock' | 'reports' | 'settings' | 'lists' | 'comments' | 'attachments' | 'tags'
+export type Resource = 'projects' | 'tasks' | 'users' | 'roles' | 'sentiment' | 'departments' | 'ai' | 'admin' | 'sherlock' | 'reports' | 'settings' | 'lists' | 'comments' | 'attachments' | 'tags' | 'atc'
 export type Action = 'create' | 'read' | 'update' | 'delete' | 'manage'
 
 // Session user type (from auth.ts)

@@ -625,3 +625,309 @@ enum ProductionStatus {
   COMPLETED
   CANCELLED
 }
+
+// ─── ATC: Reservas ───────────────────────────────────────────
+
+model Reservation {
+  id               String                    @id @default(cuid())
+  guestName        String
+  guestEmail       String?
+  guestPhone       String?
+  partySize        Int
+  date             DateTime
+  time             String
+  channelId        String
+  status           ReservationStatus         @default(PENDING)
+  notes            String?
+  externalId       String?                   @unique
+  externalSource   String?
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+  channel          ReservationChannel        @relation(fields: [channelId], references: [id])
+  modifications    ReservationModification[]
+  paymentRecoveries PaymentRecovery[]
+  groupReservation GroupReservation?
+  invoices         Invoice[]
+
+  @@index([date])
+  @@index([status])
+  @@index([channelId])
+  @@index([externalId])
+  @@map("reservations")
+}
+
+model ReservationChannel {
+  id           String        @id @default(cuid())
+  name         String
+  code         String        @unique
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  reservations Reservation[]
+
+  @@map("reservation_channels")
+}
+
+model WaitingList {
+  id            String   @id @default(cuid())
+  guestName     String
+  guestPhone    String
+  partySize     Int
+  requestedDate DateTime
+  priority      Int      @default(0)
+  notified      Boolean  @default(false)
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  @@index([requestedDate])
+  @@index([priority])
+  @@map("waiting_list")
+}
+
+model ReservationModification {
+  id            String      @id @default(cuid())
+  reservationId String
+  field         String
+  oldValue      String?
+  newValue      String?
+  modifiedBy    String?
+  createdAt     DateTime    @default(now())
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@index([reservationId])
+  @@map("reservation_modifications")
+}
+
+// ─── ATC: Consultas IA ───────────────────────────────────────
+
+model Query {
+  id              String            @id @default(cuid())
+  guestInput      String
+  categoryId      String
+  channel         String            @default("WEB")
+  status          QueryStatus       @default(OPEN)
+  resolvedBy      String?
+  confidenceScore Float?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  category        QueryCategory     @relation(fields: [categoryId], references: [id])
+  resolutions     QueryResolution[]
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("queries")
+}
+
+model QueryCategory {
+  id      String  @id @default(cuid())
+  name    String
+  code    String  @unique
+  queries Query[]
+
+  @@map("query_categories")
+}
+
+model KnowledgeBase {
+  id         String   @id @default(cuid())
+  title      String
+  content    String
+  categoryId String?
+  embedding  String?
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([active])
+  @@map("knowledge_base")
+}
+
+model QueryResolution {
+  id           String   @id @default(cuid())
+  queryId      String
+  responseText String
+  source       String   @default("AI")
+  feedback     Int?
+  createdAt    DateTime @default(now())
+  query        Query    @relation(fields: [queryId], references: [id], onDelete: Cascade)
+
+  @@index([queryId])
+  @@map("query_resolutions")
+}
+
+// ─── ATC: Operaciones ────────────────────────────────────────
+
+model Incident {
+  id          String           @id @default(cuid())
+  type        IncidentType
+  severity    IncidentSeverity @default(LOW)
+  description String
+  status      IncidentStatus   @default(OPEN)
+  assignedTo  String?
+  resolvedAt  DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([type])
+  @@index([status])
+  @@index([severity])
+  @@map("incidents")
+}
+
+model PaymentRecovery {
+  id            String      @id @default(cuid())
+  reservationId String
+  amount        Float
+  failureReason String?
+  attempts      Int         @default(0)
+  status        String      @default("PENDING")
+  resolvedAt    DateTime?
+  createdAt     DateTime    @default(now())
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+
+  @@index([reservationId])
+  @@index([status])
+  @@map("payment_recoveries")
+}
+
+model WeatherAlert {
+  id          String    @id @default(cuid())
+  alertType   String
+  threshold   Float?
+  isActive    Boolean   @default(true)
+  action      String    @default("NOTIFY")
+  triggeredAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@map("weather_alerts")
+}
+
+model GroupReservation {
+  id                  String      @id @default(cuid())
+  reservationId       String      @unique
+  coordinatorId       String?
+  contractUrl         String?
+  depositPaid         Boolean     @default(false)
+  specialRequirements String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  reservation         Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@map("group_reservations")
+}
+
+// ─── ATC: Back-Office ────────────────────────────────────────
+
+model EmailInbox {
+  id         String   @id @default(cuid())
+  fromEmail  String
+  subject    String
+  body       String
+  aiLabel    String?
+  aiPriority Int?
+  isRead     Boolean  @default(false)
+  assignedTo String?
+  receivedAt DateTime @default(now())
+
+  @@index([isRead])
+  @@index([aiPriority])
+  @@index([receivedAt])
+  @@map("email_inbox")
+}
+
+model Invoice {
+  id            String       @id @default(cuid())
+  guestName     String
+  guestEmail    String?
+  items         Json
+  subtotal      Float
+  tax           Float
+  total         Float
+  status        String       @default("DRAFT")
+  reservationId String?
+  pdfUrl        String?
+  generatedAt   DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  reservation   Reservation? @relation(fields: [reservationId], references: [id])
+
+  @@index([status])
+  @@index([reservationId])
+  @@map("invoices")
+}
+
+model GiftVoucher {
+  id             String               @id @default(cuid())
+  code           String               @unique
+  value          Float
+  remainingValue Float
+  status         GiftVoucherStatus    @default(ACTIVE)
+  purchasedBy    String?
+  expiresAt      DateTime?
+  qrCode         String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  transactions   VoucherTransaction[]
+
+  @@index([status])
+  @@index([expiresAt])
+  @@map("gift_vouchers")
+}
+
+model VoucherTransaction {
+  id        String      @id @default(cuid())
+  voucherId String
+  amount    Float
+  type      String
+  notes     String?
+  createdAt DateTime    @default(now())
+  voucher   GiftVoucher @relation(fields: [voucherId], references: [id])
+
+  @@index([voucherId])
+  @@map("voucher_transactions")
+}
+
+// ─── ATC: Enums ──────────────────────────────────────────────
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  SEATED
+  CANCELLED
+  NO_SHOW
+  WAITING
+}
+
+enum QueryStatus {
+  OPEN
+  RESOLVED
+  ESCALATED
+}
+
+enum IncidentType {
+  PAYMENT
+  WEATHER
+  COMPLAINT
+  GROUP
+  OTHER
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum GiftVoucherStatus {
+  ACTIVE
+  USED
+  EXPIRED
+  CANCELLED
+}
