@@ -1,8 +1,10 @@
 import { Header } from "@/components/layout/header"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/modules/shared/ui/card"
 import { Link } from "@/i18n/navigation"
-import { CalendarDays, MessageSquare, AlertTriangle, Archive } from "lucide-react"
+import { CalendarDays, MessageSquare, AlertTriangle, Archive, BookOpen } from "lucide-react"
 import { getTranslations, setRequestLocale } from "next-intl/server"
+import { getSession } from "@/lib/auth"
+import { hasPermission } from "@/lib/permissions"
 
 export default async function AtcDashboard({
   params,
@@ -12,6 +14,8 @@ export default async function AtcDashboard({
   const { locale } = await params
   setRequestLocale(locale)
   const t = await getTranslations("atc")
+  const session = await getSession()
+  const canManage = hasPermission(session?.user as any, "manage", "atc")
 
   const sections = [
     {
@@ -19,26 +23,37 @@ export default async function AtcDashboard({
       description: t("reservationsDescription"),
       href: "/atc/reservations",
       icon: CalendarDays,
+      show: true,
     },
     {
       title: t("queriesTitle"),
       description: t("queriesDescription"),
       href: "/atc/queries",
       icon: MessageSquare,
+      show: true,
     },
     {
       title: t("operationsTitle"),
       description: t("operationsDescription"),
       href: "/atc/operations",
       icon: AlertTriangle,
+      show: true,
     },
     {
       title: t("backofficeTitle"),
       description: t("backofficeDescription"),
       href: "/atc/backoffice",
       icon: Archive,
+      show: true,
     },
-  ]
+    {
+      title: "Base de Conocimiento",
+      description: "Gestión del contenido RAG: espacios, accesibilidad y alérgenos",
+      href: "/atc/knowledge-base",
+      icon: BookOpen,
+      show: canManage,
+    },
+  ].filter(s => s.show)
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">

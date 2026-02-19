@@ -627,6 +627,13 @@
         "waiting": "Wartend",
         "open": "Offen",
         "resolved": "Gelöst",
-        "escalated": "Eskaliert"
+        "escalated": "Eskaliert",
+        "knowledgeBaseTitle": "Wissensdatenbank",
+        "knowledgeBaseDescription": "RAG-Inhaltsverwaltung für den Raum- und Allergenassistenten",
+        "newKBEntry": "Neuer Eintrag",
+        "importContent": "Inhalt importieren",
+        "chatTitle": "KI-Chat",
+        "chatPlaceholder": "Fragen zu Räumen, Barrierefreiheit oder Allergenen...",
+        "chatSources": "Konsultierte Quellen"
     }
 }

@@ -614,6 +614,13 @@
         "waiting": "Waiting",
         "open": "Open",
         "resolved": "Resolved",
-        "escalated": "Escalated"
+        "escalated": "Escalated",
+        "knowledgeBaseTitle": "Knowledge Base",
+        "knowledgeBaseDescription": "RAG content management for the spaces and allergens assistant",
+        "newKBEntry": "New entry",
+        "importContent": "Import content",
+        "chatTitle": "AI Chat",
+        "chatPlaceholder": "Ask about spaces, accessibility or allergens...",
+        "chatSources": "Consulted sources"
     }
 }

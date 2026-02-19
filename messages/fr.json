@@ -626,6 +626,13 @@
         "waiting": "En attente",
         "open": "Ouverte",
         "resolved": "Résolue",
-        "escalated": "Escaladée"
+        "escalated": "Escaladée",
+        "knowledgeBaseTitle": "Base de Connaissances",
+        "knowledgeBaseDescription": "Gestion du contenu RAG pour l'assistant espaces et allergènes",
+        "newKBEntry": "Nouvelle entrée",
+        "importContent": "Importer du contenu",
+        "chatTitle": "Chat IA",
+        "chatPlaceholder": "Posez votre question sur les espaces, l'accessibilité ou les allergènes...",
+        "chatSources": "Sources consultées"
     }
 }

@@ -57,9 +57,19 @@ export const giftVoucherSchema = z.object({
   expiresAt:   z.coerce.date().optional(),
 })
 
-export type ReservationFormValues = z.infer<typeof reservationSchema>
-export type WaitingListFormValues = z.infer<typeof waitingListSchema>
-export type QueryFormValues       = z.infer<typeof querySchema>
-export type IncidentFormValues    = z.infer<typeof incidentSchema>
-export type InvoiceFormValues     = z.infer<typeof invoiceSchema>
-export type GiftVoucherFormValues = z.infer<typeof giftVoucherSchema>
+export const knowledgeBaseSchema = z.object({
+  title:      z.string().min(3, "El título es obligatorio").max(200),
+  content:    z.string().min(10, "El contenido es obligatorio").max(3000),
+  categoryId: z.string().cuid().optional().or(z.literal("")).transform(v => v || undefined),
+  section:    z.string().max(100).optional().or(z.literal("")).transform(v => v || undefined),
+  source:     z.string().default("manual"),
+  active:     z.boolean().default(true),
+})
+
+export type ReservationFormValues  = z.infer<typeof reservationSchema>
+export type WaitingListFormValues  = z.infer<typeof waitingListSchema>
+export type QueryFormValues        = z.infer<typeof querySchema>
+export type IncidentFormValues     = z.infer<typeof incidentSchema>
+export type InvoiceFormValues      = z.infer<typeof invoiceSchema>
+export type GiftVoucherFormValues  = z.infer<typeof giftVoucherSchema>
+export type KnowledgeBaseFormValues = z.infer<typeof knowledgeBaseSchema>

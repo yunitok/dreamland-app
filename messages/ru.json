@@ -626,6 +626,13 @@
         "waiting": "Ожидает",
         "open": "Открыт",
         "resolved": "Решена",
-        "escalated": "Эскалирована"
+        "escalated": "Эскалирована",
+        "knowledgeBaseTitle": "База знаний",
+        "knowledgeBaseDescription": "Управление RAG-контентом для ассистента по помещениям и аллергенам",
+        "newKBEntry": "Новая запись",
+        "importContent": "Импортировать контент",
+        "chatTitle": "ИИ-чат",
+        "chatPlaceholder": "Задайте вопрос о помещениях, доступности или аллергенах...",
+        "chatSources": "Использованные источники"
     }
 }
