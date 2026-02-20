@@ -204,7 +204,7 @@ export function RagChat({ categories, isAdmin }: RagChatProps) {
                 <button
                   key={i}
                   onClick={() => setInputValue(q)}
-                  className="text-left text-xs p-2.5 rounded-lg border border-dashed hover:border-primary/50 hover:bg-primary/5 transition-colors text-muted-foreground hover:text-foreground"
+                  className="cursor-pointer text-left text-xs p-2.5 rounded-lg border border-dashed hover:border-primary/50 hover:bg-primary/5 transition-colors text-muted-foreground hover:text-foreground"
                 >
                   {q}
                 </button>
