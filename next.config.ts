@@ -13,6 +13,9 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
   },
   
+  // Paquetes CJS que no deben bundlearse para evitar conflictos ESM/CJS
+  serverExternalPackages: ['pdf-parse'],
+
   // Experimental optimizations
   experimental: {
     // Optimize package imports for smaller bundles

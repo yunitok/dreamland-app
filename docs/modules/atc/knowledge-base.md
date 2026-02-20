@@ -307,7 +307,7 @@ El script usa el mismo `computeContentHash()` que las server actions y actualiza
 
 ## 📊 Variables de Entorno Necesarias
 
-```env
+```bash
 DATABASE_URL=           # PostgreSQL connection string
 DIRECT_URL=             # Directa para migraciones (Supabase)
 OPENROUTER_API_KEY=     # Para normalización con GPT-4o-mini

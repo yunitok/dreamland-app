@@ -370,7 +370,7 @@ El `confidenceScore` guardado en `Query` permite analizar la calidad del RAG:
 
 ## 🔧 Variables de Entorno
 
-```env
+```bash
 # Modelos (vía OpenRouter)
 OPENROUTER_API_KEY=sk-or-...
 AI_CHAT_MODEL=openai/gpt-4o-mini        # LLM principal para chat y normalización

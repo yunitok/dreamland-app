@@ -1,7 +1,9 @@
 import { getSession } from "@/lib/auth"
 import { NextResponse } from "next/server"
 import * as XLSX from "xlsx"
-import pdf from "pdf-parse"
+// pdf-parse no tiene default export en ESM — usar require para evitar error de Turbopack
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdf = require("pdf-parse") as (buffer: Buffer) => Promise<{ text: string; numpages: number }>
 
 export const runtime = "nodejs"
 
