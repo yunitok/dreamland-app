@@ -15,10 +15,12 @@ Reglas:
 1. Divide el contenido en chunks de máximo 400 tokens cada uno
 2. Cada chunk debe tener un título claro y descriptivo
 3. Identifica la sección temática de cada chunk
-4. Sugiere una categoría: "espacios", "alergenos", "accesibilidad", "horarios", "menus", "politicas", "general"
-5. El contenido debe ser fluido y estar bien redactado en español
+4. Sugiere una categoría: "espacios", "alergenos", "accesibilidad", "horarios", "menus", "politicas", "general", "reservas", "pagos", "eventos", "incidencias"
+5. El contenido debe ser fluido y estar bien redactado
 6. Elimina duplicados y consolida información redundante
 7. Estima los tokens del contenido (1 token ≈ 4 caracteres)
+8. Si el contenido tiene versiones en múltiples idiomas, genera un chunk separado por cada idioma con el campo "language" correspondiente (ej: "es", "en", "de", "fr")
+9. Si detectas datos personales (emails, teléfonos, nombres propios de clientes), elimínalos o reemplázalos por placeholders como [EMAIL], [TELÉFONO], [NOMBRE]
 
 Responde ÚNICAMENTE con un array JSON válido con este formato exacto:
 [
@@ -26,29 +28,36 @@ Responde ÚNICAMENTE con un array JSON válido con este formato exacto:
     "title": "Título descriptivo del chunk",
     "section": "Sección del documento",
     "content": "Contenido bien redactado del chunk",
-    "categorySuggestion": "espacios|alergenos|accesibilidad|horarios|menus|politicas|general",
+    "categorySuggestion": "espacios|alergenos|accesibilidad|horarios|menus|politicas|general|reservas|pagos|eventos|incidencias",
+    "language": "es",
     "tokenCount": 150
   }
 ]`
+
+const FILE_CONTEXT = `\nNota: El contenido proviene de un archivo importado (Excel, PDF o CSV). Las filas de Excel/CSV están formateadas como "Header: valor". Para PDFs el texto es continuo. Interpreta la estructura para agrupar y categorizar correctamente el contenido.`
 
 export async function POST(req: Request) {
   const session = await getSession()
   if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
-  const { text } = await req.json()
+  const { text, source } = await req.json()
   if (!text?.trim()) {
     return NextResponse.json({ error: "No text provided" }, { status: 400 })
   }
+
+  const systemPrompt = source === "excel" || source === "file"
+    ? NORMALIZE_SYSTEM_PROMPT + FILE_CONTEXT
+    : NORMALIZE_SYSTEM_PROMPT
 
   try {
     const response = await openai.chat.completions.create({
       model: process.env.AI_CHAT_MODEL || "openai/gpt-4o-mini",
       temperature: 0.2,
       messages: [
-        { role: "system", content: NORMALIZE_SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         {
           role: "user",
-          content: `Normaliza el siguiente contenido para la base de conocimiento del restaurante:\n\n${text.slice(0, 12000)}`,
+          content: `Normaliza el siguiente contenido para la base de conocimiento del restaurante:\n\n${text.slice(0, 15000)}`,
         },
       ],
     })
@@ -61,7 +70,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid AI response" }, { status: 500 })
     }
 
-    const entries = JSON.parse(jsonMatch[0])
+    const entries = JSON.parse(jsonMatch[0]).map((e: Record<string, unknown>) => ({
+      ...e,
+      language: e.language ?? "es",
+    }))
     return NextResponse.json({ entries })
   } catch (e) {
     console.error("[normalize] Error:", e)

@@ -63,6 +63,7 @@ export const knowledgeBaseSchema = z.object({
   categoryId: z.string().cuid().optional().or(z.literal("")).transform(v => v || undefined),
   section:    z.string().max(100).optional().or(z.literal("")).transform(v => v || undefined),
   source:     z.string().default("manual"),
+  language:   z.string().default("es"),
   active:     z.boolean().default(true),
 })
 

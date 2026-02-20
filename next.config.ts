@@ -19,6 +19,9 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       'date-fns',
     ],
+    serverActions: {
+      bodySizeLimit: '6mb',
+    },
   },
   
   // Security headers

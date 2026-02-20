@@ -43,6 +43,7 @@ import {
   bulkImportKnowledgeBaseEntries,
   syncKnowledgeBaseBySource,
 } from "@/modules/atc/actions/knowledge-base"
+import type { KnowledgeBaseFormValues } from "@/modules/atc/domain/schemas"
 import { MOCK_EMBEDDING, createMockKBEntry } from "./helpers/mock-factories"
 
 // ─── Setup ───────────────────────────────────────────────────────────────────
@@ -94,11 +95,13 @@ describe("getKnowledgeBaseEntries", () => {
 // ─── createKnowledgeBaseEntry ────────────────────────────────────────────────
 
 describe("createKnowledgeBaseEntry", () => {
-  const validData = {
+  const validData: KnowledgeBaseFormValues = {
     title: "Salón principal",
     content: "Capacidad de 80 comensales en mesas de 2, 4 y 6.",
+    categoryId: undefined,
     section: "Espacios",
     source: "manual",
+    language: "es",
     active: true,
   }
 
@@ -149,10 +152,13 @@ describe("createKnowledgeBaseEntry", () => {
 // ─── updateKnowledgeBaseEntry ────────────────────────────────────────────────
 
 describe("updateKnowledgeBaseEntry", () => {
-  const validData = {
+  const validData: KnowledgeBaseFormValues = {
     title: "Salón actualizado",
     content: "Capacidad ampliada a 100 comensales.",
+    categoryId: undefined,
+    section: undefined,
     source: "manual",
+    language: "es",
     active: true,
   }
 

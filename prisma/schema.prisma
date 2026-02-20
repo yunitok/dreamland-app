@@ -729,19 +729,23 @@ model QueryCategory {
 }
 
 model KnowledgeBase {
-  id         String   @id @default(cuid())
-  title      String
-  content    String
-  categoryId String?
-  section    String?
-  source     String   @default("manual")
-  active     Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  contentHash String?
+  categoryId  String?
+  section     String?
+  source      String   @default("manual")
+  language    String   @default("es")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
+  @@unique([contentHash, source, language])
   @@index([categoryId])
   @@index([active])
   @@index([source])
+  @@index([language])
   @@map("knowledge_base")
 }
 

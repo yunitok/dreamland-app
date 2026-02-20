@@ -763,10 +763,17 @@ async function main() {
 
   await prisma.queryCategory.createMany({
     data: [
-      { name: 'Espacios y Accesibilidad', code: 'SPACES' },
-      { name: 'Alérgenos e Ingredientes', code: 'ALLERGENS' },
-      { name: 'Eventos y Celebraciones',  code: 'EVENTS' },
-      { name: 'General',                  code: 'GENERAL' },
+      { name: 'Espacios',       code: 'SPACES' },
+      { name: 'Alérgenos',      code: 'ALLERGENS' },
+      { name: 'Accesibilidad',  code: 'ACCESSIBILITY' },
+      { name: 'Horarios',       code: 'SCHEDULES' },
+      { name: 'Menús',          code: 'MENUS' },
+      { name: 'Políticas',      code: 'POLICIES' },
+      { name: 'Reservas',       code: 'RESERVATIONS' },
+      { name: 'Pagos',          code: 'PAYMENTS' },
+      { name: 'Eventos',        code: 'EVENTS' },
+      { name: 'Incidencias',    code: 'INCIDENTS' },
+      { name: 'General',        code: 'GENERAL' },
     ],
     skipDuplicates: true,
   });

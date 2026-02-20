@@ -15,13 +15,19 @@ import {
 } from "@/modules/shared/ui/dropdown-menu"
 import { MoreHorizontal, Trash2 } from "lucide-react"
 import { toast } from "sonner"
-import { toggleKnowledgeBaseEntry, deleteKnowledgeBaseEntry } from "@/modules/atc/actions/knowledge-base"
+import {
+  toggleKnowledgeBaseEntry,
+  deleteKnowledgeBaseEntry,
+  deleteKnowledgeBaseBySource,
+} from "@/modules/atc/actions/knowledge-base"
 import { KnowledgeBaseDialog } from "./knowledge-base-dialog"
 import type { KnowledgeBase, QueryCategory } from "@prisma/client"
 
 const sourceLabels: Record<string, { label: string; className: string }> = {
   manual: { label: "Manual",  className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
   staged: { label: "Staged",  className: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" },
+  excel:  { label: "Excel",   className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200" },
+  file:   { label: "Archivo", className: "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200" },
   gstock: { label: "GStock",  className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
   n8n:    { label: "n8n",     className: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200" },
 }
@@ -98,6 +104,30 @@ interface KBTableProps {
 }
 
 export function KnowledgeBaseTable({ data, categories }: KBTableProps) {
+  // Contar entries por source para mostrar en el dropdown
+  const sourceCounts = data.reduce<Record<string, number>>((acc, e) => {
+    acc[e.source] = (acc[e.source] ?? 0) + 1
+    return acc
+  }, {})
+  const deletableSources = Object.entries(sourceCounts).filter(
+    ([src]) => src !== "manual"
+  )
+
+  async function handleDeleteBySource(source: string) {
+    const count = sourceCounts[source] ?? 0
+    if (!confirm(`¿Eliminar ${count} entradas con source "${source}"? Esta acción no se puede deshacer.`)) return
+    try {
+      const result = await deleteKnowledgeBaseBySource(source)
+      if (result.success) {
+        toast.success(`${result.deleted} entradas eliminadas (source: ${source})`)
+      } else {
+        toast.error("Error al eliminar")
+      }
+    } catch {
+      toast.error("Error inesperado")
+    }
+  }
+
   const columns: ColumnDef<KnowledgeBase>[] = [
     {
       accessorKey: "title",
@@ -162,11 +192,42 @@ export function KnowledgeBaseTable({ data, categories }: KBTableProps) {
   ]
 
   return (
-    <DataTable
-      columns={columns}
-      data={data}
-      searchKey="title"
-      searchPlaceholder="Buscar en la base de conocimiento..."
-    />
+    <div className="space-y-3">
+      {deletableSources.length > 0 && (
+        <div className="flex justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Borrado masivo
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Borrar por fuente</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {deletableSources.map(([src, count]) => {
+                const label = sourceLabels[src]?.label ?? src
+                return (
+                  <DropdownMenuItem
+                    key={src}
+                    onClick={() => handleDeleteBySource(src)}
+                    className="text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {label} ({count} entradas)
+                  </DropdownMenuItem>
+                )
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
+      <DataTable
+        columns={columns}
+        data={data}
+        searchKey="title"
+        searchPlaceholder="Buscar en la base de conocimiento..."
+      />
+    </div>
   )
 }

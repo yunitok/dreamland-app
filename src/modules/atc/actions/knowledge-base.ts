@@ -1,5 +1,6 @@
 "use server"
 
+import { createHash } from "crypto"
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { requirePermission } from "@/lib/actions/rbac"
@@ -12,6 +13,13 @@ import {
   deleteVectorsBySource,
 } from "@/lib/pinecone"
 import type { KnowledgeBase } from "@prisma/client"
+
+// ─── Utilidades ─────────────────────────────────────────────────
+
+function computeContentHash(title: string, content: string): string {
+  const normalized = `${title.trim().toLowerCase()}||${content.trim().toLowerCase()}`
+  return createHash("sha256").update(normalized).digest("hex")
+}
 
 // ─── Lectura ────────────────────────────────────────────────────
 
@@ -41,7 +49,9 @@ export async function createKnowledgeBaseEntry(formData: KnowledgeBaseFormValues
   await requirePermission("atc", "manage")
   const data = knowledgeBaseSchema.parse(formData)
 
-  const entry = await prisma.knowledgeBase.create({ data })
+  const entry = await prisma.knowledgeBase.create({
+    data: { ...data, contentHash: computeContentHash(data.title, data.content) },
+  })
 
   try {
     const embedding = await generateEmbedding(buildKBText(entry.title, entry.content, entry.section))
@@ -66,7 +76,10 @@ export async function updateKnowledgeBaseEntry(id: string, formData: KnowledgeBa
   await requirePermission("atc", "manage")
   const data = knowledgeBaseSchema.parse(formData)
 
-  const entry = await prisma.knowledgeBase.update({ where: { id }, data })
+  const entry = await prisma.knowledgeBase.update({
+    where: { id },
+    data: { ...data, contentHash: computeContentHash(data.title, data.content) },
+  })
 
   try {
     const embedding = await generateEmbedding(buildKBText(entry.title, entry.content, entry.section))
@@ -129,38 +142,74 @@ export interface BulkKBEntry {
   section?: string
   categoryId?: string
   source?: string
+  language?: string
 }
 
-export async function bulkImportKnowledgeBaseEntries(entries: BulkKBEntry[]) {
+export async function bulkImportKnowledgeBaseEntries(
+  entries: BulkKBEntry[],
+  skipDuplicates = true
+) {
   await requirePermission("atc", "manage")
 
-  const texts = entries.map(e => buildKBText(e.title, e.content, e.section))
-  const embeddings = await generateEmbeddingsBatch(texts)
+  // Computar hashes para dedup
+  const hashes = entries.map(e => computeContentHash(e.title, e.content))
+
+  // Filtrar duplicados existentes en DB
+  let indicesToProcess = entries.map((_, i) => i)
+  if (skipDuplicates) {
+    const uniqueHashes = [...new Set(hashes)]
+    const existing = await prisma.knowledgeBase.findMany({
+      where: { contentHash: { in: uniqueHashes } },
+      select: { contentHash: true, source: true, language: true },
+    })
+    const existingSet = new Set(
+      existing.map(e => `${e.contentHash}|${e.source}|${e.language}`)
+    )
+    indicesToProcess = indicesToProcess.filter(i => {
+      const key = `${hashes[i]}|${entries[i].source ?? "n8n"}|${entries[i].language ?? "es"}`
+      return !existingSet.has(key)
+    })
+  }
+  const skipped = entries.length - indicesToProcess.length
+
+  if (!indicesToProcess.length) {
+    return { success: true, created: 0, skipped }
+  }
+
+  // Generar embeddings solo para entries nuevas
+  const textsToEmbed = indicesToProcess.map(i =>
+    buildKBText(entries[i].title, entries[i].content, entries[i].section)
+  )
+  const embeddings = await generateEmbeddingsBatch(textsToEmbed)
 
   const created: KnowledgeBase[] = []
   const vectors: Array<{ id: string; values: number[]; metadata: Parameters<typeof upsertKnowledgeVector>[2] }> = []
 
-  for (let i = 0; i < entries.length; i++) {
+  for (let j = 0; j < indicesToProcess.length; j++) {
+    const i = indicesToProcess[j]
     const e = entries[i]
     const entry = await prisma.knowledgeBase.create({
       data: {
         title: e.title,
         content: e.content,
+        contentHash: hashes[i],
         section: e.section,
         categoryId: e.categoryId,
         source: e.source ?? "n8n",
+        language: e.language ?? "es",
         active: true,
       },
     })
     created.push(entry)
     vectors.push({
       id: entry.id,
-      values: embeddings[i],
+      values: embeddings[j],
       metadata: {
         title: entry.title,
         section: entry.section ?? undefined,
         categoryId: entry.categoryId ?? undefined,
         source: entry.source,
+        language: entry.language,
         active: true,
       },
     })
@@ -168,7 +217,7 @@ export async function bulkImportKnowledgeBaseEntries(entries: BulkKBEntry[]) {
 
   await upsertKnowledgeVectorsBatch(vectors)
   revalidatePath("/atc/knowledge-base")
-  return { success: true, created: created.length }
+  return { success: true, created: created.length, skipped }
 }
 
 // ─── Sync por source (n8n GStock) ────────────────────────────────
@@ -196,7 +245,23 @@ export async function syncKnowledgeBaseBySource(
 
 // ─── Publish staged entries ──────────────────────────────────────
 
-export async function publishStagedEntries(entries: BulkKBEntry[]) {
+export async function publishStagedEntries(entries: BulkKBEntry[], source = "staged") {
   await requirePermission("atc", "manage")
-  return bulkImportKnowledgeBaseEntries(entries.map(e => ({ ...e, source: "staged" })))
+  return bulkImportKnowledgeBaseEntries(entries.map(e => ({ ...e, source })))
+}
+
+// ─── Borrado masivo por source ──────────────────────────────────
+
+export async function deleteKnowledgeBaseBySource(source: string) {
+  await requirePermission("atc", "manage")
+
+  try {
+    await deleteVectorsBySource(source)
+  } catch (e) {
+    console.error("[KB] Error deleting vectors for source", source, e)
+  }
+
+  const result = await prisma.knowledgeBase.deleteMany({ where: { source } })
+  revalidatePath("/atc/knowledge-base")
+  return { success: true, deleted: result.count }
 }

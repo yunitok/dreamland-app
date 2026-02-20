@@ -5,6 +5,7 @@ export interface KBVectorMetadata {
   section?: string
   categoryId?: string
   source: string
+  language?: string
   active: boolean
 }
 
