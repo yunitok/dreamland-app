@@ -348,6 +348,11 @@
         "dueDate": "Fecha límite",
         "statuses": {
             "Backlog": "Backlog",
+            "To Do": "Por Hacer",
+            "In Progress": "En Curso",
+            "Review": "Revisión",
+            "Done": "Finalizado",
+            "Cancelled": "Cancelado",
             "On Hold": "En Espera",
             "Blocked": "Bloqueado",
             "Pendientes": "Pendientes",

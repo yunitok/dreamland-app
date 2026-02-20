@@ -366,6 +366,11 @@
         "assignee": "Zuständiger",
         "statuses": {
             "Backlog": "Backlog",
+            "To Do": "Zu erledigen",
+            "In Progress": "In Bearbeitung",
+            "Review": "Prüfung",
+            "Done": "Abgeschlossen",
+            "Cancelled": "Abgebrochen",
             "On Hold": "Pausiert",
             "Blocked": "Blockiert",
             "Pendientes": "Ausstehend",

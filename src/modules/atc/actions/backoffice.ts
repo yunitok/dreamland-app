@@ -6,18 +6,43 @@ import { requirePermission } from "@/lib/actions/rbac"
 import {
   invoiceSchema,
   giftVoucherSchema,
+  emailCategorySchema,
   InvoiceFormValues,
   GiftVoucherFormValues,
+  EmailCategoryFormValues,
 } from "@/modules/atc/domain/schemas"
 
 // ─── Email Inbox ──────────────────────────────────────────────
 
-export async function getEmailInbox(showRead = false) {
+interface EmailInboxFilters {
+  showRead?:   boolean
+  categoryId?: string
+  minPriority?: number
+  search?:     string
+  assignedTo?: string
+}
+
+export async function getEmailInbox(filters: EmailInboxFilters = {}) {
   await requirePermission("atc", "manage")
   try {
+    const where: Record<string, unknown> = {}
+    if (!filters.showRead) where.isRead = false
+    if (filters.categoryId) where.categoryId = filters.categoryId
+    if (filters.minPriority) where.aiPriority = { gte: filters.minPriority }
+    if (filters.assignedTo) where.assignedTo = filters.assignedTo
+    if (filters.search) {
+      where.OR = [
+        { fromEmail: { contains: filters.search, mode: "insensitive" } },
+        { fromName:  { contains: filters.search, mode: "insensitive" } },
+        { subject:   { contains: filters.search, mode: "insensitive" } },
+      ]
+    }
+
     const emails = await prisma.emailInbox.findMany({
-      where: showRead ? undefined : { isRead: false },
+      where,
+      include: { category: { select: { id: true, name: true, color: true, icon: true, slug: true } } },
       orderBy: [{ aiPriority: "desc" }, { receivedAt: "desc" }],
+      take: 100,
     })
     return { success: true, data: emails }
   } catch (error) {
@@ -35,6 +60,85 @@ export async function markEmailRead(id: string) {
   } catch (error) {
     console.error("Error marking email as read:", error)
     return { success: false, error: "Error al marcar el email como leído" }
+  }
+}
+
+export async function assignEmail(id: string, userId: string | null) {
+  await requirePermission("atc", "manage")
+  try {
+    await prisma.emailInbox.update({ where: { id }, data: { assignedTo: userId } })
+    revalidatePath("/atc/backoffice")
+    return { success: true }
+  } catch (error) {
+    console.error("Error assigning email:", error)
+    return { success: false, error: "Error al asignar el email" }
+  }
+}
+
+export async function reclassifyEmail(id: string, categoryId: string, aiLabel: string) {
+  await requirePermission("atc", "manage")
+  try {
+    await prisma.emailInbox.update({ where: { id }, data: { categoryId, aiLabel } })
+    revalidatePath("/atc/backoffice")
+    return { success: true }
+  } catch (error) {
+    console.error("Error reclassifying email:", error)
+    return { success: false, error: "Error al reclasificar el email" }
+  }
+}
+
+// ─── Email Categories ─────────────────────────────────────────
+
+export async function getEmailCategories() {
+  await requirePermission("atc", "read")
+  try {
+    const categories = await prisma.emailCategory.findMany({
+      where: { isActive: true },
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      include: { _count: { select: { emails: true } }, parent: { select: { name: true } } },
+    })
+    return { success: true, data: categories }
+  } catch (error) {
+    console.error("Error fetching email categories:", error)
+    return { success: false, error: "Error al cargar las categorías" }
+  }
+}
+
+export async function createEmailCategory(data: EmailCategoryFormValues) {
+  await requirePermission("atc", "manage")
+  try {
+    const validated = emailCategorySchema.parse(data)
+    const category = await prisma.emailCategory.create({ data: validated })
+    revalidatePath("/atc/backoffice")
+    return { success: true, data: category }
+  } catch (error) {
+    console.error("Error creating email category:", error)
+    return { success: false, error: "Error al crear la categoría" }
+  }
+}
+
+export async function updateEmailCategory(id: string, data: EmailCategoryFormValues) {
+  await requirePermission("atc", "manage")
+  try {
+    const validated = emailCategorySchema.parse(data)
+    const category = await prisma.emailCategory.update({ where: { id }, data: validated })
+    revalidatePath("/atc/backoffice")
+    return { success: true, data: category }
+  } catch (error) {
+    console.error("Error updating email category:", error)
+    return { success: false, error: "Error al actualizar la categoría" }
+  }
+}
+
+export async function deleteEmailCategory(id: string) {
+  await requirePermission("atc", "manage")
+  try {
+    await prisma.emailCategory.update({ where: { id }, data: { isActive: false } })
+    revalidatePath("/atc/backoffice")
+    return { success: true }
+  } catch (error) {
+    console.error("Error deleting email category:", error)
+    return { success: false, error: "Error al eliminar la categoría" }
   }
 }
 

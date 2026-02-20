@@ -366,6 +366,11 @@
         "assignee": "Исполнитель",
         "statuses": {
             "Backlog": "Бэклог",
+            "To Do": "К выполнению",
+            "In Progress": "В процессе",
+            "Review": "Проверка",
+            "Done": "Завершено",
+            "Cancelled": "Отменено",
             "On Hold": "На паузе",
             "Blocked": "Заблокировано",
             "Pendientes": "В ожидании",

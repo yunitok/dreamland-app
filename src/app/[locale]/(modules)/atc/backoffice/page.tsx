@@ -2,7 +2,7 @@ import { Suspense } from "react"
 import { Header } from "@/components/layout/header"
 import { Skeleton } from "@/modules/shared/ui/skeleton"
 import { getTranslations, setRequestLocale } from "next-intl/server"
-import { getEmailInbox, getInvoices, getGiftVouchers } from "@/modules/atc/actions/backoffice"
+import { getEmailInbox, getInvoices, getGiftVouchers, getEmailCategories } from "@/modules/atc/actions/backoffice"
 import { BackofficeView } from "@/modules/atc/ui/backoffice/backoffice-view"
 
 export default async function AtcBackofficePage({
@@ -14,10 +14,11 @@ export default async function AtcBackofficePage({
   setRequestLocale(locale)
   const t = await getTranslations("atc")
 
-  const [inboxResult, invoicesResult, vouchersResult] = await Promise.all([
+  const [inboxResult, invoicesResult, vouchersResult, categoriesResult] = await Promise.all([
     getEmailInbox(),
     getInvoices(),
     getGiftVouchers(),
+    getEmailCategories(),
   ])
 
   return (
@@ -34,6 +35,7 @@ export default async function AtcBackofficePage({
             emails={inboxResult.data ?? []}
             invoices={invoicesResult.data ?? []}
             vouchers={vouchersResult.data ?? []}
+            categories={categoriesResult.data ?? []}
           />
         </Suspense>
       </div>

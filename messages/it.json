@@ -366,6 +366,11 @@
         "assignee": "Assegnatario",
         "statuses": {
             "Backlog": "Backlog",
+            "To Do": "Da fare",
+            "In Progress": "In corso",
+            "Review": "Revisione",
+            "Done": "Completato",
+            "Cancelled": "Annullato",
             "On Hold": "In pausa",
             "Blocked": "Bloccato",
             "Pendientes": "In attesa",

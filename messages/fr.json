@@ -366,6 +366,11 @@
         "assignee": "Assigné",
         "statuses": {
             "Backlog": "Backlog",
+            "To Do": "À faire",
+            "In Progress": "En cours",
+            "Review": "Révision",
+            "Done": "Terminé",
+            "Cancelled": "Annulé",
             "On Hold": "En pause",
             "Blocked": "Bloqué",
             "Pendientes": "En attente",

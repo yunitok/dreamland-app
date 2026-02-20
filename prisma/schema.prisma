@@ -825,20 +825,53 @@ model GroupReservation {
 
 // ─── ATC: Back-Office ────────────────────────────────────────
 
+model EmailCategory {
+  id          String          @id @default(cuid())
+  name        String
+  slug        String          @unique
+  description String?
+  color       String          @default("#6B7280")
+  icon        String?
+  parentId    String?
+  isActive    Boolean         @default(true)
+  sortOrder   Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  parent      EmailCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    EmailCategory[] @relation("CategoryHierarchy")
+  emails      EmailInbox[]
+
+  @@index([parentId])
+  @@index([isActive])
+  @@map("email_categories")
+}
+
 model EmailInbox {
-  id         String   @id @default(cuid())
-  fromEmail  String
-  subject    String
-  body       String
-  aiLabel    String?
-  aiPriority Int?
-  isRead     Boolean  @default(false)
-  assignedTo String?
-  receivedAt DateTime @default(now())
+  id                 String         @id @default(cuid())
+  messageId          String         @unique
+  threadId           String?
+  fromEmail          String
+  fromName           String?
+  subject            String
+  body               String
+  aiLabel            String?
+  aiPriority         Int?
+  aiConfidenceScore  Float?
+  aiSummary          String?
+  isRead             Boolean        @default(false)
+  assignedTo         String?
+  categoryId         String?
+  receivedAt         DateTime       @default(now())
+  createdAt          DateTime       @default(now())
+
+  category           EmailCategory? @relation(fields: [categoryId], references: [id])
 
   @@index([isRead])
   @@index([aiPriority])
   @@index([receivedAt])
+  @@index([categoryId])
+  @@index([assignedTo])
   @@map("email_inbox")
 }
 

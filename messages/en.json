@@ -347,6 +347,11 @@
         "dueDate": "Due Date",
         "statuses": {
             "Backlog": "Backlog",
+            "To Do": "To Do",
+            "In Progress": "In Progress",
+            "Review": "Review",
+            "Done": "Done",
+            "Cancelled": "Cancelled",
             "On Hold": "On Hold",
             "Blocked": "Blocked",
             "Pendientes": "Pending",

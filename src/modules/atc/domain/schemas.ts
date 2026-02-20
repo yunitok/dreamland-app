@@ -67,10 +67,22 @@ export const knowledgeBaseSchema = z.object({
   active:     z.boolean().default(true),
 })
 
-export type ReservationFormValues  = z.infer<typeof reservationSchema>
-export type WaitingListFormValues  = z.infer<typeof waitingListSchema>
-export type QueryFormValues        = z.infer<typeof querySchema>
-export type IncidentFormValues     = z.infer<typeof incidentSchema>
-export type InvoiceFormValues      = z.infer<typeof invoiceSchema>
-export type GiftVoucherFormValues  = z.infer<typeof giftVoucherSchema>
+export const emailCategorySchema = z.object({
+  name:        z.string().min(2, "El nombre es obligatorio").max(100),
+  slug:        z.string().min(2).max(50).regex(/^[a-z0-9_]+$/, "Solo letras minúsculas, números y guiones bajos"),
+  description: z.string().max(500).optional().or(z.literal("")).transform(v => v || undefined),
+  color:       z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Color hexadecimal inválido").default("#6B7280"),
+  icon:        z.string().max(50).optional().or(z.literal("")).transform(v => v || undefined),
+  parentId:    z.string().optional().or(z.literal("")).transform(v => v || undefined),
+  isActive:    z.boolean().default(true),
+  sortOrder:   z.number().int().min(0).default(0),
+})
+
+export type ReservationFormValues   = z.infer<typeof reservationSchema>
+export type WaitingListFormValues   = z.infer<typeof waitingListSchema>
+export type QueryFormValues         = z.infer<typeof querySchema>
+export type IncidentFormValues      = z.infer<typeof incidentSchema>
+export type InvoiceFormValues       = z.infer<typeof invoiceSchema>
+export type GiftVoucherFormValues   = z.infer<typeof giftVoucherSchema>
 export type KnowledgeBaseFormValues = z.infer<typeof knowledgeBaseSchema>
+export type EmailCategoryFormValues = z.infer<typeof emailCategorySchema>

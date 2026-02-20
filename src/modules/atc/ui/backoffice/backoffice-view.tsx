@@ -1,54 +1,45 @@
 "use client"
 
-import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/modules/shared/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/modules/shared/ui/card"
 import { Badge } from "@/modules/shared/ui/badge"
 import { Button } from "@/modules/shared/ui/button"
-import { Mail, MailOpen, Receipt, Gift, MoreHorizontal } from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/modules/shared/ui/dropdown-menu"
-import { markEmailRead } from "@/modules/atc/actions/backoffice"
-import { toast } from "sonner"
+import { Mail, Receipt, Gift, Settings } from "lucide-react"
 import { GiftVoucherStatus } from "@prisma/client"
+import { EmailInboxTab, type EmailRow } from "./email-inbox-tab"
+import Link from "next/link"
 
-type EmailRow = {
-  id: string
-  fromEmail: string
-  subject: string
-  body: string
-  aiLabel: string | null
-  aiPriority: number | null
-  isRead: boolean
-  receivedAt: Date
+type CategoryInfo = {
+  id:    string
+  name:  string
+  color: string
+  icon:  string | null
+  slug:  string
 }
 
 type InvoiceRow = {
-  id: string
-  guestName: string
-  guestEmail: string | null
-  total: number
-  status: string
+  id:          string
+  guestName:   string
+  guestEmail:  string | null
+  total:       number
+  status:      string
   generatedAt: Date
 }
 
 type VoucherRow = {
-  id: string
-  code: string
-  value: number
+  id:             string
+  code:           string
+  value:          number
   remainingValue: number
-  status: GiftVoucherStatus
-  expiresAt: Date | null
+  status:         GiftVoucherStatus
+  expiresAt:      Date | null
 }
 
 interface BackofficeViewProps {
-  emails: EmailRow[]
-  invoices: InvoiceRow[]
-  vouchers: VoucherRow[]
+  emails:     EmailRow[]
+  invoices:   InvoiceRow[]
+  vouchers:   VoucherRow[]
+  categories: CategoryInfo[]
 }
 
 const voucherStatusColors: Record<GiftVoucherStatus, string> = {
@@ -58,94 +49,43 @@ const voucherStatusColors: Record<GiftVoucherStatus, string> = {
   CANCELLED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
 }
 
-export function BackofficeView({ emails, invoices, vouchers }: BackofficeViewProps) {
-  const [localEmails, setLocalEmails] = useState(emails)
-
-  async function handleMarkRead(id: string) {
-    const result = await markEmailRead(id)
-    if (result.success) {
-      setLocalEmails(prev => prev.map(e => e.id === id ? { ...e, isRead: true } : e))
-      toast.success("Email marcado como leído")
-    } else {
-      toast.error("Error al marcar el email")
-    }
-  }
+export function BackofficeView({ emails, invoices, vouchers, categories }: BackofficeViewProps) {
+  const unreadCount = emails.filter(e => !e.isRead).length
 
   return (
     <Tabs defaultValue="inbox">
-      <TabsList>
-        <TabsTrigger value="inbox" className="gap-2">
-          <Mail className="h-4 w-4" />
-          Buzón
-          {localEmails.filter(e => !e.isRead).length > 0 && (
-            <Badge variant="destructive" className="ml-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center">
-              {localEmails.filter(e => !e.isRead).length}
-            </Badge>
-          )}
-        </TabsTrigger>
-        <TabsTrigger value="invoices" className="gap-2">
-          <Receipt className="h-4 w-4" />
-          Facturas
-        </TabsTrigger>
-        <TabsTrigger value="vouchers" className="gap-2">
-          <Gift className="h-4 w-4" />
-          Bonos Regalo
-        </TabsTrigger>
-      </TabsList>
+      <div className="flex items-center justify-between mb-2">
+        <TabsList>
+          <TabsTrigger value="inbox" className="gap-2">
+            <Mail className="h-4 w-4" />
+            Buzón
+            {unreadCount > 0 && (
+              <Badge variant="destructive" className="ml-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center">
+                {unreadCount}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="invoices" className="gap-2">
+            <Receipt className="h-4 w-4" />
+            Facturas
+          </TabsTrigger>
+          <TabsTrigger value="vouchers" className="gap-2">
+            <Gift className="h-4 w-4" />
+            Bonos Regalo
+          </TabsTrigger>
+        </TabsList>
+
+        <Button variant="outline" size="sm" asChild className="gap-2">
+          <Link href="/atc/backoffice/categories">
+            <Settings className="h-4 w-4" />
+            Categorías
+          </Link>
+        </Button>
+      </div>
 
       {/* Email Inbox */}
-      <TabsContent value="inbox" className="space-y-3 mt-4">
-        {localEmails.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              No hay emails pendientes
-            </CardContent>
-          </Card>
-        ) : (
-          localEmails.map(email => (
-            <Card key={email.id} className={email.isRead ? "opacity-60" : ""}>
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    {email.isRead
-                      ? <MailOpen className="h-4 w-4 text-muted-foreground" />
-                      : <Mail className="h-4 w-4 text-primary" />
-                    }
-                    <div>
-                      <CardTitle className="text-sm font-medium">{email.subject}</CardTitle>
-                      <CardDescription className="text-xs">{email.fromEmail}</CardDescription>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {email.aiLabel && (
-                      <Badge variant="secondary" className="text-xs">{email.aiLabel}</Badge>
-                    )}
-                    {email.aiPriority && email.aiPriority > 3 && (
-                      <Badge variant="destructive" className="text-xs">Alta prioridad</Badge>
-                    )}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7">
-                          <MoreHorizontal className="h-3 w-3" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {!email.isRead && (
-                          <DropdownMenuItem onClick={() => handleMarkRead(email.id)}>
-                            Marcar como leído
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground line-clamp-2">{email.body}</p>
-              </CardContent>
-            </Card>
-          ))
-        )}
+      <TabsContent value="inbox" className="mt-4">
+        <EmailInboxTab emails={emails} categories={categories} />
       </TabsContent>
 
       {/* Invoices */}
