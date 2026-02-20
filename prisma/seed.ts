@@ -201,31 +201,68 @@ async function main() {
   // --- TASK STATUSES ---
   console.log('📋 Seeding task statuses...');
 
-  await prisma.taskStatus.upsert({
-    where: { name: 'To Do' },
-    update: {},
-    create: { name: 'To Do', color: '#6B7280', position: 0, isDefault: true, isClosed: false }
-  });
+  const CANONICAL_STATUSES = [
+    { name: 'Backlog',     color: '#808080', position: 0, isDefault: true,  isClosed: false },
+    { name: 'To Do',       color: '#6B7280', position: 1, isDefault: false, isClosed: false },
+    { name: 'In Progress', color: '#3B82F6', position: 2, isDefault: false, isClosed: false },
+    { name: 'In Review',   color: '#A855F7', position: 3, isDefault: false, isClosed: false },
+    { name: 'On Hold',     color: '#F97316', position: 4, isDefault: false, isClosed: false },
+    { name: 'Blocked',     color: '#EF4444', position: 5, isDefault: false, isClosed: false },
+    { name: 'Review',      color: '#F59E0B', position: 6, isDefault: false, isClosed: false },
+    { name: 'Done',        color: '#10B981', position: 7, isDefault: false, isClosed: true  },
+  ];
 
-  await prisma.taskStatus.upsert({
-    where: { name: 'In Progress' },
-    update: {},
-    create: { name: 'In Progress', color: '#3B82F6', position: 1, isDefault: false, isClosed: false }
-  });
+  for (const status of CANONICAL_STATUSES) {
+    await prisma.taskStatus.upsert({
+      where: { name: status.name },
+      update: { color: status.color, position: status.position, isDefault: status.isDefault, isClosed: status.isClosed },
+      create: status,
+    });
+  }
 
-  await prisma.taskStatus.upsert({
-    where: { name: 'Review' },
-    update: {},
-    create: { name: 'Review', color: '#F59E0B', position: 2, isDefault: false, isClosed: false }
-  });
+  console.log('✅ Canonical task statuses upserted');
 
-  await prisma.taskStatus.upsert({
-    where: { name: 'Done' },
-    update: {},
-    create: { name: 'Done', color: '#10B981', position: 3, isDefault: false, isClosed: true }
-  });
+  // --- CLEANUP: Remove duplicate Spanish-named statuses ---
+  console.log('🧹 Cleaning up duplicate task statuses...');
 
-  console.log('✅ Task statuses seeded');
+  const SPANISH_DUPLICATES: Record<string, string> = {
+    'Por Hacer':    'To Do',
+    'En Curso':     'In Progress',
+    'Revisión':     'Review',
+    'En Revisión':  'In Review',
+    'Bloqueado':    'Blocked',
+    'En Pausa':     'On Hold',
+    'Pendientes':   'Backlog',
+    'Finalizado':   'Done',
+    'Completado':   'Done',
+  };
+
+  for (const [name, targetName] of Object.entries(SPANISH_DUPLICATES)) {
+    const status = await prisma.taskStatus.findUnique({
+      where: { name },
+      include: { _count: { select: { tasks: true } } },
+    });
+
+    if (!status) continue;
+
+    if (status._count.tasks > 0) {
+      const target = await prisma.taskStatus.findUnique({ where: { name: targetName } });
+      if (!target) {
+        console.warn(`⚠️  No se encontró target "${targetName}" para "${name}" — se omite`);
+        continue;
+      }
+      const result = await prisma.task.updateMany({
+        where: { statusId: status.id },
+        data: { statusId: target.id },
+      });
+      console.log(`   📦 Movidas ${result.count} tareas: "${name}" → "${targetName}"`);
+    }
+
+    await prisma.taskStatus.delete({ where: { id: status.id } });
+    console.log(`   🗑️  Eliminado: "${name}"`);
+  }
+
+  console.log('✅ Task statuses cleanup completed');
 
   // --- ATC CATALOGS ---
   console.log('📞 Seeding ATC catalogs...');
