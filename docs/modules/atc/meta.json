@@ -1,4 +1,4 @@
 {
   "title": "ATC — Atención al Cliente",
-  "pages": ["index", "knowledge-base", "rag-pipeline"]
+  "pages": ["index", "knowledge-base", "rag-pipeline", "email-classification", "operations-incidents", "operations-weather"]
 }

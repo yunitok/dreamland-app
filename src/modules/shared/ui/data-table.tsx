@@ -24,6 +24,7 @@ import { Button } from "@/modules/shared/ui/button"
 import { useState } from "react"
 import { Input } from "@/modules/shared/ui/input"
 import { useTranslations } from "next-intl"
+import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -78,14 +79,24 @@ export function DataTable<TData, TValue>({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
+                  const canSort = header.column.getCanSort()
+                  const sorted = header.column.getIsSorted()
                   return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                    <TableHead
+                      key={header.id}
+                      className={canSort ? "cursor-pointer select-none hover:bg-muted/50 transition-colors" : undefined}
+                      onClick={header.column.getToggleSortingHandler()}
+                    >
+                      {header.isPlaceholder ? null : (
+                        <div className="flex items-center gap-1">
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                          {canSort && (
+                            sorted === "asc" ? <ArrowUp className="h-3.5 w-3.5" />
+                            : sorted === "desc" ? <ArrowDown className="h-3.5 w-3.5" />
+                            : <ArrowUpDown className="h-3.5 w-3.5 opacity-40" />
+                          )}
+                        </div>
+                      )}
                     </TableHead>
                   )
                 })}

@@ -78,11 +78,31 @@ export const emailCategorySchema = z.object({
   sortOrder:   z.number().int().min(0).default(0),
 })
 
-export type ReservationFormValues   = z.infer<typeof reservationSchema>
-export type WaitingListFormValues   = z.infer<typeof waitingListSchema>
-export type QueryFormValues         = z.infer<typeof querySchema>
-export type IncidentFormValues      = z.infer<typeof incidentSchema>
-export type InvoiceFormValues       = z.infer<typeof invoiceSchema>
-export type GiftVoucherFormValues   = z.infer<typeof giftVoucherSchema>
-export type KnowledgeBaseFormValues = z.infer<typeof knowledgeBaseSchema>
-export type EmailCategoryFormValues = z.infer<typeof emailCategorySchema>
+export const weatherAlertSchema = z.object({
+  alertType:       z.enum(["RAIN", "WIND", "TEMPERATURE_HIGH", "TEMPERATURE_LOW",
+                           "STORM", "SNOW", "HAIL", "FOG"]),
+  severity:        z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]),
+  description:     z.string().min(10, "La descripción es obligatoria"),
+  forecastDate:    z.coerce.date(),
+  location:        z.string().min(1, "Selecciona una ubicación"),
+  precipitationMm: z.number().nonnegative().optional(),
+  windSpeedKmh:    z.number().nonnegative().optional(),
+  temperatureC:    z.number().optional(),
+  threshold:       z.number().optional(),
+})
+
+export const resolveWeatherAlertSchema = z.object({
+  actionsTaken: z.string().min(5, "Describe las acciones tomadas"),
+  resolvedBy:   z.string().optional(),
+})
+
+export type ReservationFormValues          = z.infer<typeof reservationSchema>
+export type WaitingListFormValues          = z.infer<typeof waitingListSchema>
+export type QueryFormValues                = z.infer<typeof querySchema>
+export type IncidentFormValues             = z.infer<typeof incidentSchema>
+export type InvoiceFormValues              = z.infer<typeof invoiceSchema>
+export type GiftVoucherFormValues          = z.infer<typeof giftVoucherSchema>
+export type KnowledgeBaseFormValues        = z.infer<typeof knowledgeBaseSchema>
+export type EmailCategoryFormValues        = z.infer<typeof emailCategorySchema>
+export type WeatherAlertFormValues         = z.infer<typeof weatherAlertSchema>
+export type ResolveWeatherAlertFormValues  = z.infer<typeof resolveWeatherAlertSchema>

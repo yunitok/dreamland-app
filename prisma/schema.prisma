@@ -798,15 +798,71 @@ model PaymentRecovery {
 }
 
 model WeatherAlert {
-  id          String    @id @default(cuid())
-  alertType   String
-  threshold   Float?
-  isActive    Boolean   @default(true)
-  action      String    @default("NOTIFY")
-  triggeredAt DateTime?
-  createdAt   DateTime  @default(now())
+  id               String               @id @default(cuid())
+  alertType        WeatherAlertType
+  severity         WeatherAlertSeverity  @default(MEDIUM)
+  status           WeatherAlertStatus    @default(ACTIVE)
+  source           WeatherAlertSource    @default(MANUAL)
+  description      String
 
+  // Datos meteorológicos
+  forecastDate     DateTime
+  location         String
+  precipitationMm  Float?
+  windSpeedKmh     Float?
+  temperatureC     Float?
+  threshold        Float?
+
+  // Workflow
+  isActive         Boolean               @default(true)
+  action           String                @default("NOTIFY")
+  actionsTaken     String?
+  triggeredAt      DateTime?
+  resolvedAt       DateTime?
+  resolvedBy       String?
+
+  // Auditoría
+  rawForecastData  Json?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  @@index([status])
+  @@index([severity])
+  @@index([forecastDate])
+  @@index([alertType])
+  @@index([location])
   @@map("weather_alerts")
+}
+
+model WeatherConfig {
+  id                 String   @id @default("default")
+  rainProbability    Float    @default(50)     // % prob. precipitación
+  rainMm             Float    @default(5)      // mm acumulados
+  windSpeed          Float    @default(40)     // km/h viento sostenido
+  windGust           Float    @default(60)     // km/h rachas
+  temperatureLow     Float    @default(8)      // °C umbral frío
+  temperatureHigh    Float    @default(36)     // °C umbral calor
+  serviceHoursStart  Int      @default(12)     // Hora inicio servicio (0-23)
+  serviceHoursEnd    Int      @default(0)      // Hora fin servicio (0-23, 0 = medianoche)
+  updatedAt          DateTime @updatedAt
+
+  @@map("weather_config")
+}
+
+model RestaurantLocation {
+  id                String   @id @default(cuid())
+  name              String                          // "Voltereta Casa"
+  city              String                          // "Valencia"
+  address           String?                         // Direccion completa
+  aemetMunicipioId  String                          // Codigo INE 5 digitos: "46250"
+  latitude          Float
+  longitude         Float
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+
+  @@index([city])
+  @@index([isActive])
+  @@map("restaurant_locations")
 }
 
 model GroupReservation {
@@ -987,4 +1043,35 @@ enum GiftVoucherStatus {
   USED
   EXPIRED
   CANCELLED
+}
+
+enum WeatherAlertType {
+  RAIN
+  WIND
+  TEMPERATURE_HIGH
+  TEMPERATURE_LOW
+  STORM
+  SNOW
+  HAIL
+  FOG
+}
+
+enum WeatherAlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum WeatherAlertStatus {
+  ACTIVE
+  MONITORING
+  RESOLVED
+  EXPIRED
+}
+
+enum WeatherAlertSource {
+  MANUAL
+  AEMET
+  OPENWEATHERMAP
 }

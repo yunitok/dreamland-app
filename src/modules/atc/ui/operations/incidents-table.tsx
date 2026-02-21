@@ -128,6 +128,7 @@ const columns: ColumnDef<IncidentRow>[] = [
   },
   {
     id: "actions",
+    enableSorting: false,
     cell: ({ row }) => <ActionsCell row={row} />,
   },
 ]

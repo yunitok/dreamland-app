@@ -347,6 +347,47 @@ async function main() {
   }
 
   console.log('✅ ATC catalogs seeded');
+
+  // --- RESTAURANT LOCATIONS (Voltereta) ---
+  console.log('📍 Seeding restaurant locations...');
+  const locations = [
+    { id: 'loc-casa',       name: 'Voltereta Casa',          city: 'Valencia',  address: 'Av. de las Cortes Valencianes, 26, 46015 Valencia', aemetMunicipioId: '46250', latitude: 39.4699, longitude: -0.3763 },
+    { id: 'loc-bali',       name: 'Voltereta Bali',          city: 'Valencia',  address: 'Gran Vía Marqués del Turia, 59, 46005 Valencia',    aemetMunicipioId: '46250', latitude: 39.4667, longitude: -0.3667 },
+    { id: 'loc-manhattan',  name: 'Voltereta Manhattan',     city: 'Valencia',  address: 'Calle Isabel la Católica, 11, 46004 Valencia',      aemetMunicipioId: '46250', latitude: 39.4697, longitude: -0.3775 },
+    { id: 'loc-kioto',      name: 'Voltereta Kioto',         city: 'Valencia',  address: 'Pg. de l\'Albereda, 51, 46023 Valencia',            aemetMunicipioId: '46250', latitude: 39.4700, longitude: -0.3600 },
+    { id: 'loc-oneburger',  name: 'One Burger Laundry',      city: 'Valencia',  address: 'Carrer de Misser Mascó, 42, 46010 Valencia',        aemetMunicipioId: '46250', latitude: 39.4750, longitude: -0.3700 },
+    { id: 'loc-nz',         name: 'Voltereta Nueva Zelanda', city: 'Zaragoza',  address: 'C/ La Salle, 4, 50006 Zaragoza',                    aemetMunicipioId: '50297', latitude: 41.6488, longitude: -0.8891 },
+    { id: 'loc-paris',      name: 'Voltereta París',         city: 'Sevilla',   address: 'C/ Santo Domingo de la Calzada, 3, 41018 Sevilla',  aemetMunicipioId: '41091', latitude: 37.3886, longitude: -5.9823 },
+    { id: 'loc-tanzania',   name: 'Voltereta Tanzania',      city: 'Alicante',  address: 'C/ Navas, 33, 03001 Alicante',                      aemetMunicipioId: '03014', latitude: 38.3452, longitude: -0.4815 },
+    { id: 'loc-toscana',    name: 'Voltereta Toscana',       city: 'Córdoba',   address: 'C/ Manríquez 4, 14003 Córdoba',                     aemetMunicipioId: '14021', latitude: 37.8882, longitude: -4.7794 },
+  ];
+  for (const loc of locations) {
+    await prisma.restaurantLocation.upsert({
+      where: { id: loc.id },
+      update: { name: loc.name, city: loc.city, address: loc.address, aemetMunicipioId: loc.aemetMunicipioId, latitude: loc.latitude, longitude: loc.longitude },
+      create: loc,
+    });
+  }
+  console.log('✅ Restaurant locations seeded');
+
+  // --- WEATHER CONFIG (defaults) ---
+  await prisma.weatherConfig.upsert({
+    where: { id: 'default' },
+    update: {},
+    create: {
+      id: 'default',
+      rainProbability: 50,
+      rainMm: 5,
+      windSpeed: 40,
+      windGust: 60,
+      temperatureLow: 8,
+      temperatureHigh: 36,
+      serviceHoursStart: 12,
+      serviceHoursEnd: 0,
+    },
+  });
+  console.log('✅ Weather config seeded');
+
   console.log('🎉 Seeding completed!');
 }
 

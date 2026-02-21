@@ -179,13 +179,16 @@ Las entradas tienen un campo `source` que identifica su origen:
 
 - **[Knowledge Base](./knowledge-base)** — Gestión de conocimiento, importación de archivos, deduplicación
 - **[RAG Pipeline](./rag-pipeline)** — Embeddings, Pinecone, HyDE, chat con herramientas, trazabilidad
+- **[Clasificación de Email](./email-classification)** — Sistema de clasificación automática de emails con IA
+- **[Gestión de Incidencias](./operations-incidents)** — Registro, seguimiento y resolución de incidencias operativas
+- **[Parte Meteorológico](./operations-weather)** — Previsión AEMET/OWM, alertas automáticas, umbrales configurables, dashboard visual
 
 ---
 
 ## 🚦 Estado Actual
 
 ### ✅ Implementado
-- [x] Schema completo (16 modelos, 2 migraciones)
+- [x] Schema completo (17 modelos, 4 migraciones)
 - [x] Chat ATC con streaming (Vercel AI SDK v6)
 - [x] 4 herramientas: searchKnowledgeBase (HyDE), lookupReservation, getActiveIncidents, checkWaitingList
 - [x] Knowledge Base CRUD con embeddings
@@ -196,13 +199,22 @@ Las entradas tienen un campo `source` que identifica su origen:
 - [x] Borrado masivo por source (DB + Pinecone)
 - [x] Trazabilidad de consultas (Query + QueryResolution)
 - [x] Webhook n8n para sync GStock
+- [x] Gestión de incidencias operativas (crear, resolver)
+- [x] Alertas meteorológicas con consulta AEMET/OWM
+- [x] Dashboard visual de alertas (KPIs, gráficos, tarjetas por ciudad)
+- [x] Umbrales meteorológicos configurables desde UI
+- [x] Filtro de temperaturas por franja horaria de servicio
+- [x] Clasificación automática de emails con IA
+- [x] 9 ubicaciones de restaurante con coordenadas y municipio AEMET
 
 ### 📋 Planificado
 - [ ] Gestión de reservas desde UI (CRUD completo)
-- [ ] Panel de incidencias
 - [ ] Integración CoverManager (campo `externalId` preparado)
 - [ ] Dashboard de métricas ATC
+- [ ] Cron automático de consulta meteorológica
+- [ ] Expiración automática de alertas pasadas
+- [ ] Reactivar alertas en monitoreo desde la UI
 
 ---
 
-**Última actualización**: 2026-02-20
+**Última actualización**: 2026-02-21
