@@ -13,7 +13,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/modules/shared/ui/dropdown-menu"
-import { MoreHorizontal, Trash2 } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/modules/shared/ui/alert-dialog"
+import { Loader2, MoreHorizontal, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import {
   toggleKnowledgeBaseEntry,
@@ -41,6 +51,8 @@ function ActionsCell({
 }) {
   const [active, setActive] = useState(entry.active)
   const [toggling, setToggling] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   async function handleToggle(value: boolean) {
     setToggling(true)
@@ -60,12 +72,19 @@ function ActionsCell({
   }
 
   async function handleDelete() {
-    if (!confirm("¿Eliminar esta entrada de la base de conocimiento?")) return
-    const result = await deleteKnowledgeBaseEntry(entry.id)
-    if (result.success) {
-      toast.success("Entrada eliminada")
-    } else {
-      toast.error("Error al eliminar")
+    setDeleting(true)
+    try {
+      const result = await deleteKnowledgeBaseEntry(entry.id)
+      if (result.success) {
+        toast.success("Entrada eliminada")
+        setDeleteOpen(false)
+      } else {
+        toast.error("Error al eliminar")
+      }
+    } catch {
+      toast.error("Error inesperado")
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -88,12 +107,37 @@ function ActionsCell({
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+          <DropdownMenuItem
+            onClick={() => setDeleteOpen(true)}
+            className="text-destructive"
+          >
             <Trash2 className="mr-2 h-4 w-4" />
             Eliminar
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar entrada</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Eliminar &ldquo;{entry.title}&rdquo;? Esta acción eliminará la entrada de la base de
+              conocimiento y su vector de Pinecone. No se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Eliminar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
@@ -104,6 +148,9 @@ interface KBTableProps {
 }
 
 export function KnowledgeBaseTable({ data, categories }: KBTableProps) {
+  const [bulkDeleteSource, setBulkDeleteSource] = useState<string | null>(null)
+  const [bulkDeleting, setBulkDeleting] = useState(false)
+
   // Contar entries por source para mostrar en el dropdown
   const sourceCounts = data.reduce<Record<string, number>>((acc, e) => {
     acc[e.source] = (acc[e.source] ?? 0) + 1
@@ -113,20 +160,26 @@ export function KnowledgeBaseTable({ data, categories }: KBTableProps) {
     ([src]) => src !== "manual"
   )
 
-  async function handleDeleteBySource(source: string) {
-    const count = sourceCounts[source] ?? 0
-    if (!confirm(`¿Eliminar ${count} entradas con source "${source}"? Esta acción no se puede deshacer.`)) return
+  async function handleBulkDelete() {
+    if (!bulkDeleteSource) return
+    setBulkDeleting(true)
     try {
-      const result = await deleteKnowledgeBaseBySource(source)
+      const result = await deleteKnowledgeBaseBySource(bulkDeleteSource)
       if (result.success) {
-        toast.success(`${result.deleted} entradas eliminadas (source: ${source})`)
+        toast.success(`${result.deleted} entradas eliminadas`)
+        setBulkDeleteSource(null)
       } else {
         toast.error("Error al eliminar")
       }
     } catch {
       toast.error("Error inesperado")
+    } finally {
+      setBulkDeleting(false)
     }
   }
+
+  const bulkCount = bulkDeleteSource ? (sourceCounts[bulkDeleteSource] ?? 0) : 0
+  const bulkLabel = bulkDeleteSource ? (sourceLabels[bulkDeleteSource]?.label ?? bulkDeleteSource) : ""
 
   const columns: ColumnDef<KnowledgeBase>[] = [
     {
@@ -210,7 +263,7 @@ export function KnowledgeBaseTable({ data, categories }: KBTableProps) {
                 return (
                   <DropdownMenuItem
                     key={src}
-                    onClick={() => handleDeleteBySource(src)}
+                    onClick={() => setBulkDeleteSource(src)}
                     className="text-destructive"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
@@ -222,6 +275,35 @@ export function KnowledgeBaseTable({ data, categories }: KBTableProps) {
           </DropdownMenu>
         </div>
       )}
+
+      <AlertDialog
+        open={!!bulkDeleteSource}
+        onOpenChange={open => { if (!open && !bulkDeleting) setBulkDeleteSource(null) }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar entradas</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Eliminar {bulkCount} entrada{bulkCount !== 1 ? "s" : ""} de fuente &ldquo;{bulkLabel}&rdquo;?
+              Esta acción también eliminará sus vectores de Pinecone y no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {bulkDeleting
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : `Eliminar ${bulkCount} entrada${bulkCount !== 1 ? "s" : ""}`
+              }
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <DataTable
         columns={columns}
         data={data}

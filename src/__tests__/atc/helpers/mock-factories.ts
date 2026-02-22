@@ -52,11 +52,26 @@ export function createMockIncident(overrides?: Record<string, unknown>) {
 
 export function createMockWeatherAlert(overrides?: Record<string, unknown>) {
   return {
+    id: "alert-test-1",
     alertType: "STORM",
+    severity: "HIGH",
+    description: "Tormenta prevista con vientos fuertes",
     action: "Cerrar terraza y reubicar reservas",
     threshold: "Viento > 60 km/h",
+    forecastDate: new Date("2026-02-20T00:00:00Z"),
+    location: "Madrid",
     triggeredAt: new Date("2026-02-19T14:00:00Z"),
     isActive: true,
+    status: "ACTIVE",
+    resolvedAt: null,
+    resolvedBy: null,
+    actionsTaken: null,
+    precipitationMm: null,
+    windSpeedKmh: 75,
+    temperatureC: null,
+    source: "MANUAL",
+    createdAt: new Date("2026-02-19"),
+    updatedAt: new Date("2026-02-19"),
     ...overrides,
   }
 }

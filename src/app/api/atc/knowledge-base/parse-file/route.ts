@@ -1,9 +1,14 @@
 import { getSession } from "@/lib/auth"
 import { NextResponse } from "next/server"
 import * as XLSX from "xlsx"
-// pdf-parse no tiene default export en ESM — usar require para evitar error de Turbopack
+// pdf-parse v2 exporta clase PDFParse — usar require para evitar error de Turbopack con ESM
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdf = require("pdf-parse") as (buffer: Buffer) => Promise<{ text: string; numpages: number }>
+const { PDFParse } = require("pdf-parse") as {
+  PDFParse: new (options: { data: Buffer | Uint8Array }) => {
+    getText(): Promise<{ text: string; total: number }>
+    destroy(): Promise<void>
+  }
+}
 
 export const runtime = "nodejs"
 
@@ -93,58 +98,63 @@ function parseExcel(buffer: ArrayBuffer, sectionsToAnonymize: Set<number>): Pars
 }
 
 async function parsePdf(buffer: Buffer, shouldAnonymize: boolean): Promise<ParsedSection[]> {
-  const data = await pdf(buffer)
-  let text = data.text
+  const parser = new PDFParse({ data: buffer })
+  try {
+    const result = await parser.getText()
+    let text = result.text
 
-  if (shouldAnonymize) {
-    text = anonymize(text)
-  }
-
-  // Limpiar saltos de línea excesivos
-  text = text.replace(/\n{3,}/g, "\n\n").trim()
-
-  const numPages = data.numpages
-  const preview = text.slice(0, 500) + (text.length > 500 ? "..." : "")
-
-  // Si el PDF tiene ≤10 páginas: 1 sección = todo el documento
-  if (numPages <= 10) {
-    return [{
-      name: `Documento PDF (${numPages} pág.)`,
-      text,
-      rowCount: numPages,
-      preview,
-      format: "pdf",
-    }]
-  }
-
-  // Si >10 páginas: dividir en bloques de texto de ~5000 chars (aprox. 5 págs.)
-  const CHUNK_SIZE = 5000
-  const sections: ParsedSection[] = []
-  let offset = 0
-  let sectionIdx = 1
-
-  while (offset < text.length) {
-    // Intentar cortar en un párrafo natural
-    let end = Math.min(offset + CHUNK_SIZE, text.length)
-    if (end < text.length) {
-      const lastBreak = text.lastIndexOf("\n\n", end)
-      if (lastBreak > offset + CHUNK_SIZE * 0.5) end = lastBreak
+    if (shouldAnonymize) {
+      text = anonymize(text)
     }
-    const chunk = text.slice(offset, end).trim()
-    if (chunk) {
-      sections.push({
-        name: `Sección ${sectionIdx} (págs. aprox. ${Math.ceil(offset / (text.length / numPages) + 1)})`,
-        text: chunk,
-        rowCount: 1,
-        preview: chunk.slice(0, 300) + (chunk.length > 300 ? "..." : ""),
+
+    // Limpiar saltos de línea excesivos
+    text = text.replace(/\n{3,}/g, "\n\n").trim()
+
+    const numPages = result.total
+    const preview = text.slice(0, 500) + (text.length > 500 ? "..." : "")
+
+    // Si el PDF tiene ≤10 páginas: 1 sección = todo el documento
+    if (numPages <= 10) {
+      return [{
+        name: `Documento PDF (${numPages} pág.)`,
+        text,
+        rowCount: numPages,
+        preview,
         format: "pdf",
-      })
-      sectionIdx++
+      }]
     }
-    offset = end
-  }
 
-  return sections
+    // Si >10 páginas: dividir en bloques de texto de ~5000 chars (aprox. 5 págs.)
+    const CHUNK_SIZE = 5000
+    const sections: ParsedSection[] = []
+    let offset = 0
+    let sectionIdx = 1
+
+    while (offset < text.length) {
+      // Intentar cortar en un párrafo natural
+      let end = Math.min(offset + CHUNK_SIZE, text.length)
+      if (end < text.length) {
+        const lastBreak = text.lastIndexOf("\n\n", end)
+        if (lastBreak > offset + CHUNK_SIZE * 0.5) end = lastBreak
+      }
+      const chunk = text.slice(offset, end).trim()
+      if (chunk) {
+        sections.push({
+          name: `Sección ${sectionIdx} (págs. aprox. ${Math.ceil(offset / (text.length / numPages) + 1)})`,
+          text: chunk,
+          rowCount: 1,
+          preview: chunk.slice(0, 300) + (chunk.length > 300 ? "..." : ""),
+          format: "pdf",
+        })
+        sectionIdx++
+      }
+      offset = end
+    }
+
+    return sections
+  } finally {
+    await parser.destroy()
+  }
 }
 
 function parseCsv(text: string, fileName: string, shouldAnonymize: boolean): ParsedSection[] {
