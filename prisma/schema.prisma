@@ -416,6 +416,8 @@ model Recipe {
   aiPrompt        String?
   aiVersion       String?
   status          RecipeStatus       @default(DRAFT)
+  externalId      String?            @unique
+  externalSource  String?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   productionBatch ProductionBatch[]
@@ -430,6 +432,7 @@ model Recipe {
   @@index([familyId])
   @@index([aiGenerated])
   @@index([status])
+  @@index([externalId])
   @@map("recipes")
 }
 
