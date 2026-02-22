@@ -91,16 +91,21 @@ model ChatMessage {
 
 ## 5. Testing Strategy
 
-The feature is verified through a comprehensive Vitest suite.
+El agente de voz está cubierto por tests unitarios y de componente.
 
-### Unit Tests
-- `src/__tests__/chat-service.test.ts`: Verifies session creation and message saving logic.
-- `src/__tests__/task-lists.test.ts`: Verifies CRUD operations used by the agent tools.
+### Tests Unitarios
+- `src/__tests__/chat-service.test.ts` — 4 tests: creación de sesiones y guardado de mensajes
+- `src/__tests__/task-lists.test.ts` — 5 tests: CRUD de task lists usadas por las tools del agente
 
-### Component Tests
-- `src/__tests__/chat-panel.test.tsx`: Verifies the UI renders and responds to interaction.
+### Tests de Componente
+- `src/__tests__/chat-panel.test.tsx` — 4 tests: render del panel, apertura del sheet, historial, envío de mensajes
+- `src/__tests__/login-form.test.tsx` — 3 tests: LoginForm con checkbox "Recuérdame"
+- `src/__tests__/change-password-form.test.tsx` — 6 tests: validación y submit del formulario
 
-### Running Tests
+### Ejecución
+
 ```bash
-npm test
+npm run test:run
 ```
+
+Para el inventario completo de tests del proyecto, consulta la [Guía de Testing](/guides/testing).

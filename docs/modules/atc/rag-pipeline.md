@@ -385,16 +385,19 @@ PINECONE_INDEX_NAME=dreamland-atc
 
 ## 🧪 Testing
 
-El pipeline RAG tiene una suite de tests en `src/__tests__/atc/`:
+El pipeline RAG tiene una suite completa de tests en `src/__tests__/atc/`:
+
+| Archivo | Tests | Cubre |
+|---------|-------|-------|
+| `rag.test.ts` | 30 | Embeddings, HyDE, Pinecone ops, `searchSimilar()` |
+| `rag-chat-tools.test.ts` | 24 | Tools del agente: `searchKnowledgeBase`, `lookupReservation`, `getActiveIncidents` |
+| `rag-chat-tracing.test.ts` | 5 | Trazabilidad Query + QueryResolution vía `onFinish` |
+| `rag-integration.test.ts` | 7 | Flujos de integración end-to-end con mocks de OpenAI + Pinecone |
+| `knowledge-base-actions.test.ts` | 18 | CRUD KB, sync por fuente, bulk import con deduplicación |
 
 ```bash
-# Ejecutar tests del pipeline RAG
-npx vitest src/__tests__/atc/
+npm run test:run                # Suite completa de unit tests (incluye ATC)
+npm run test:e2e:rag           # Tests E2E contra APIs reales (requiere seed + ~5s espera)
 ```
 
-Los tests cubren:
-- Generación y normalización de embeddings
-- Deduplicación por contentHash
-- Bulk import con skip de duplicados
-- Resolución de categorías
-- Tool calling con mocks de Pinecone
+Ver guía completa de testing: [Guía de Testing](/guides/testing)

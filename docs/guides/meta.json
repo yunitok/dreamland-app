@@ -4,6 +4,7 @@
         "deployment",
         "voice-commands",
         "estimation-standard",
-        "ai-context"
+        "ai-context",
+        "testing"
     ]
 }
