@@ -3,6 +3,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createTaskList, updateTaskList, deleteTaskList, getTaskLists } from '@/modules/projects/actions/task-lists'
 import { prisma } from '@/lib/prisma'
 
+// Mock @/lib/actions/rbac
+vi.mock('@/lib/actions/rbac', () => ({
+  hasProjectAccess: vi.fn().mockResolvedValue(true),
+}))
+
 // Mock next/cache
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
@@ -79,6 +84,10 @@ describe('Task List Actions', () => {
 
   describe('updateTaskList', () => {
     it('updates list name', async () => {
+        vi.mocked(prisma.taskList.findUnique).mockResolvedValue({
+            projectId: 'proj_1'
+        } as any)
+
         vi.mocked(prisma.taskList.update).mockResolvedValue({
             id: 'l1',
             name: 'New Name',

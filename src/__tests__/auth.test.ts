@@ -135,7 +135,7 @@ describe('Auth - Update Password', () => {
         
         const result = await updatePassword(formData)
         expect(result.success).toBe(false)
-        expect(result.error).toBe('Password must be at least 6 characters')
+        expect(result.error).toBe('passwordTooShort')
     })
 
     it('should fail if unauthorized (no session)', async () => {
@@ -146,7 +146,7 @@ describe('Auth - Update Password', () => {
 
         const result = await updatePassword(formData)
         expect(result.success).toBe(false)
-        expect(result.error).toBe('Unauthorized')
+        expect(result.error).toBe('unauthorized')
     })
 
     it('should success if session exists and password is valid', async () => {
