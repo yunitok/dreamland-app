@@ -104,6 +104,9 @@ src/__tests__/
     ├── reservations-actions.test.ts
     ├── queries-actions.test.ts
     └── backoffice-actions.test.ts
+
+src/lib/ai/__tests__/
+└── tool-mapping.test.ts
 ```
 
 ---
@@ -112,35 +115,39 @@ src/__tests__/
 
 | Módulo | Archivo | Tests | Qué cubre |
 |--------|---------|------:|-----------|
-| Core / Auth | `auth.test.ts` | 9 | `login()`, `updatePassword()` |
+| Core / Setup | `setup.test.ts` | 1 | Verificación de configuración Vitest |
+| Core / Auth | `auth.test.ts` | 6 | `login()`, `updatePassword()` |
 | Core / Auth | `permissions.test.ts` | 5 | `hasPermission()` (función pura) |
 | Core / Auth | `rate-limit.test.ts` | 6 | `checkRateLimit()`, `checkAIRateLimit()` |
-| Core / Schemas | `schemas.test.ts` | 9 | Validación Zod: cuid, task, project |
-| Core / Chat | `chat-service.test.ts` | 5 | `saveMessage()`, `getHistory()` |
+| Core / Schemas | `schemas.test.ts` | 8 | Validación Zod: cuid, task, project |
+| Core / Chat | `chat-service.test.ts` | 4 | `saveMessage()`, `getHistory()` |
 | Componentes | `chat-panel.test.tsx` | 4 | ChatPanel — render, apertura, historial |
 | Componentes | `login-form.test.tsx` | 3 | LoginForm — remember me |
 | Componentes | `change-password-form.test.tsx` | 6 | ChangePasswordForm — validación y submit |
-| Projects | `task-lists.test.ts` | 6 | CRUD task lists, posición, dependencias |
-| Projects | `tasks-actions.test.ts` | 32 | CRUD tasks, `moveTask()`, `updateTaskProgress()` |
-| Projects | `projects-actions.test.ts` | 22 | CRUD projects, filtros, transacciones |
-| Admin | `identity-users.test.ts` | 15 | CRUD usuarios, hash bcrypt, validaciones |
-| Admin | `identity-roles.test.ts` | 17 | CRUD roles, permisos, guard sistema |
+| Projects | `task-lists.test.ts` | 5 | CRUD task lists, posición, dependencias |
+| Projects | `tasks-actions.test.ts` | 40 | CRUD tasks, `moveTask()`, `updateTaskProgress()` |
+| Projects | `projects-actions.test.ts` | 23 | CRUD projects, filtros, transacciones |
+| Admin | `identity-users.test.ts` | 22 | CRUD usuarios, hash bcrypt, validaciones |
+| Admin | `identity-roles.test.ts` | 24 | CRUD roles, permisos, guard sistema |
 | Departments | `departments-actions.test.ts` | 21 | CRUD departamentos, join con projects |
 | Sentiment | `sentiment-actions.test.ts` | 24 | CRUD moods, validación Zod, `getDepartments()` |
 | Sherlock | `ingredients-actions.test.ts` | 19 | CRUD ingredientes, filtros de búsqueda |
-| Lib | `weather.test.ts` | 24 | `evaluateThresholds()` (función pura, 4 tipos de alerta) |
-| ATC / RAG | `rag.test.ts` | 31 | Embeddings, HyDE, Pinecone ops, `searchSimilar()` |
-| ATC / RAG | `rag-chat-tools.test.ts` | 20 | Tools del agente: `searchKnowledgeBase`, `lookupReservation`, etc. |
+| Lib | `weather.test.ts` | 19 | `evaluateThresholds()` (función pura, 4 tipos de alerta) |
+| AI Tools | `tool-mapping.test.ts` | 2 | `getGeminiTools()`, `getGroqTools()` — transformación de herramientas por proveedor |
+| ATC / RAG | `rag.test.ts` | 30 | Embeddings, HyDE, Pinecone ops, `searchSimilar()` |
+| ATC / RAG | `rag-chat-tools.test.ts` | 24 | Tools del agente: `searchKnowledgeBase`, `lookupReservation`, etc. |
 | ATC / RAG | `rag-chat-tracing.test.ts` | 5 | Trazabilidad Query + QueryResolution vía `onFinish` |
-| ATC / RAG | `rag-integration.test.ts` | 10 | Flujos de integración (mocks de OpenAI + Pinecone) |
-| ATC / KB | `knowledge-base-actions.test.ts` | 17 | CRUD KB, sync, bulk import, deduplicación |
-| ATC / Ops | `operations-actions.test.ts` | 29 | Incidents, weather alerts, pagos, `checkWeatherNow()` |
-| ATC / Reservas | `reservations-actions.test.ts` | 20 | CRUD reservas, waiting list, canales |
-| ATC / Queries | `queries-actions.test.ts` | 21 | Queries, feedback, escalación, búsqueda KB |
-| ATC / Backoffice | `backoffice-actions.test.ts` | 48 | Emails, clasificación, invoices, gift vouchers |
+| ATC / RAG | `rag-integration.test.ts` | 7 | Flujos de integración (mocks de OpenAI + Pinecone) |
+| ATC / KB | `knowledge-base-actions.test.ts` | 18 | CRUD KB, sync, bulk import, deduplicación |
+| ATC / Ops | `operations-actions.test.ts` | 42 | Incidents, weather alerts, pagos, `checkWeatherNow()` |
+| ATC / Reservas | `reservations-actions.test.ts` | 29 | CRUD reservas, waiting list, canales |
+| ATC / Queries | `queries-actions.test.ts` | 27 | Queries, feedback, escalación, búsqueda KB |
+| ATC / Backoffice | `backoffice-actions.test.ts` | 43 | Emails, clasificación, invoices, gift vouchers |
 | E2E | `rag-e2e.test.ts` | 10 | Pipeline RAG contra APIs reales (OpenRouter + Pinecone) |
 
-**Total: ~413 tests en 27 archivos**
+**Total unit tests: 457 tests en 28 archivos**
+
+**Tests E2E: 10 tests en 1 archivo**
 
 ---
 
