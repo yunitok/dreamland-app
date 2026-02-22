@@ -145,7 +145,7 @@ src/lib/ai/__tests__/
 | ATC / Backoffice | `backoffice-actions.test.ts` | 43 | Emails, clasificación, invoices, gift vouchers |
 | E2E | `rag-e2e.test.ts` | 10 | Pipeline RAG contra APIs reales (OpenRouter + Pinecone) |
 
-**Total unit tests: 457 tests en 28 archivos**
+**Total unit tests: 467 tests en 28 archivos**
 
 **Tests E2E: 10 tests en 1 archivo**
 
