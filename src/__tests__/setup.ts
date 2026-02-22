@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { vi } from 'vitest'
 import '@testing-library/jest-dom/vitest'
 

@@ -13,7 +13,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:e2e:rag": "vitest run src/__tests__/atc/rag-e2e.test.ts",
+    "test:e2e:rag": "vitest run --config vitest.e2e.config.ts",
     "db:cleanup-ai-logs": "npx tsx scripts/cleanup-ai-logs.ts"
   },
   "dependencies": {
