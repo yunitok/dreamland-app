@@ -1,12 +1,15 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/modules/shared/ui/sheet'
 import { Button } from '@/modules/shared/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/modules/shared/ui/avatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/modules/shared/ui/select'
 import { Badge } from '@/modules/shared/ui/badge'
-import { Users, UserPlus, Trash2, Loader2 } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/modules/shared/ui/popover'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/modules/shared/ui/command'
+import { Users, UserPlus, Trash2, Loader2, ChevronsUpDown, Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { ProjectRole } from '@prisma/client'
 import {
   getProjectMembers,
@@ -77,6 +80,8 @@ export function ProjectMembersPanel({ projectId, canManage }: ProjectMembersPane
   const [candidates, setCandidates] = useState<CandidateUser[]>([])
   const [selectedUserId, setSelectedUserId] = useState('')
   const [selectedRole, setSelectedRole] = useState<ProjectRole>('VIEWER')
+  const [comboOpen, setComboOpen] = useState(false)
+  const listRef = useRef<HTMLDivElement>(null)
   const [loading, setLoading] = useState(false)
   const [isPending, startTransition] = useTransition()
 
@@ -157,22 +162,53 @@ export function ProjectMembersPanel({ projectId, canManage }: ProjectMembersPane
           {canManage && (
             <div className="space-y-3 p-4 rounded-xl border bg-muted/40">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Añadir miembro</p>
-              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Selecciona un usuario…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {candidates.map(u => (
-                    <SelectItem key={u.id} value={u.id}>
-                      <span className="font-medium">{u.name ?? u.username}</span>
-                      {u.email && <span className="text-muted-foreground ml-1.5 text-xs">{u.email}</span>}
-                    </SelectItem>
-                  ))}
-                  {candidates.length === 0 && (
-                    <div className="py-3 px-3 text-sm text-muted-foreground text-center">No hay usuarios disponibles</div>
-                  )}
-                </SelectContent>
-              </Select>
+              <Popover open={comboOpen} onOpenChange={setComboOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={comboOpen}
+                    className="h-9 w-full justify-between font-normal"
+                  >
+                    {selectedUserId
+                      ? (() => {
+                          const u = candidates.find(c => c.id === selectedUserId)
+                          return u ? (u.name ?? u.username) : 'Selecciona un usuario…'
+                        })()
+                      : 'Selecciona un usuario…'}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72 p-0" align="start">
+                  <Command>
+                    <CommandInput
+                      placeholder="Buscar usuario…"
+                      onValueChange={() => {
+                        requestAnimationFrame(() => listRef.current?.scrollTo(0, 0))
+                      }}
+                    />
+                    <CommandList ref={listRef}>
+                      <CommandEmpty>No se encontraron usuarios.</CommandEmpty>
+                      <CommandGroup>
+                        {candidates.map(u => (
+                          <CommandItem
+                            key={u.id}
+                            value={`${u.name ?? ''} ${u.username} ${u.email ?? ''}`}
+                            onSelect={() => {
+                              setSelectedUserId(u.id)
+                              setComboOpen(false)
+                            }}
+                          >
+                            <Check className={cn('mr-2 h-4 w-4', selectedUserId === u.id ? 'opacity-100' : 'opacity-0')} />
+                            <span className="font-medium">{u.name ?? u.username}</span>
+                            {u.email && <span className="text-muted-foreground ml-1.5 text-xs truncate">{u.email}</span>}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
 
               <div className="flex gap-2">
                 <Select value={selectedRole} onValueChange={v => setSelectedRole(v as ProjectRole)}>

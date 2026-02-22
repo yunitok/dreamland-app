@@ -251,6 +251,37 @@ export function TaskDetailSheet({
     })
   }
 
+  const toDateInputValue = (date: Date | null) => {
+    if (!date) return ''
+    const d = new Date(date)
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  const handleStartDateChange = async (value: string) => {
+    if (!task) return
+    const newDate = value ? new Date(value + 'T00:00:00') : null
+    setTask({ ...task, startDate: newDate })
+    try {
+      await updateTask(task.id, { startDate: newDate })
+    } catch (error) {
+      console.error('Failed to update start date:', error)
+    }
+  }
+
+  const handleDueDateChange = async (value: string) => {
+    if (!task) return
+    const newDate = value ? new Date(value + 'T00:00:00') : null
+    setTask({ ...task, dueDate: newDate })
+    try {
+      await updateTask(task.id, { dueDate: newDate })
+    } catch (error) {
+      console.error('Failed to update due date:', error)
+    }
+  }
+
   const formatDateTime = (date: Date) => {
     return new Date(date).toLocaleString('es-ES', {
       month: 'short',
@@ -543,11 +574,12 @@ export function TaskDetailSheet({
                     <Calendar className="h-3.5 w-3.5" />
                     {t('startDate')}
                   </span>
-                  <div className="h-9 flex items-center px-3 border rounded-md text-sm bg-transparent">
-                    <span className="text-foreground">
-                      {formatDate(task.startDate)}
-                    </span>
-                  </div>
+                  <Input
+                    type="date"
+                    className="h-9"
+                    value={toDateInputValue(task.startDate)}
+                    onChange={(e) => handleStartDateChange(e.target.value)}
+                  />
                 </div>
 
                 {/* Due Date */}
@@ -556,15 +588,16 @@ export function TaskDetailSheet({
                     <Calendar className="h-3.5 w-3.5" />
                     {t('dueDate')}
                   </span>
-                  <div className="h-9 flex items-center px-3 border rounded-md text-sm bg-transparent">
-                    <span className={cn(
+                  <Input
+                    type="date"
+                    className={cn(
+                      "h-9",
                       task.dueDate && new Date(task.dueDate) < new Date() && !task.status.isClosed
-                        ? "text-red-500 font-medium"
-                        : "text-foreground"
-                    )}>
-                      {formatDate(task.dueDate)}
-                    </span>
-                  </div>
+                        && "text-red-500 font-medium"
+                    )}
+                    value={toDateInputValue(task.dueDate)}
+                    onChange={(e) => handleDueDateChange(e.target.value)}
+                  />
                 </div>
               </div>
             </div>

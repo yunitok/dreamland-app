@@ -3,11 +3,9 @@
 import { Badge } from '@/modules/shared/ui/badge'
 import { Button } from '@/modules/shared/ui/button'
 import { Progress } from '@/modules/shared/ui/progress'
-import { 
-  Calendar, 
-  Clock, 
-  MoreHorizontal,
-  Settings,
+import {
+  Calendar,
+  Clock,
   Users,
   ArrowLeft
 } from 'lucide-react'
@@ -15,8 +13,7 @@ import { Link } from "@/i18n/navigation"
 import { useTranslations } from 'next-intl'
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { LanguageSwitcher } from "@/components/layout/language-switcher"
-import { Bell } from "lucide-react"
-import { AiUsageIndicator } from "@/components/voice/ai-usage-indicator"
+import { NotificationBell } from "@/modules/notifications/ui/notification-bell"
 import { ProjectMembersPanel } from '@/modules/projects/ui/project-members-panel'
 
 interface ProjectHeaderProps {
@@ -33,6 +30,7 @@ interface ProjectHeaderProps {
     color: string | null
   }
   canManage?: boolean
+  userId?: string
 }
 
 const priorityStyles = {
@@ -41,7 +39,7 @@ const priorityStyles = {
   Low: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
 }
 
-export function ProjectHeader({ project, canManage = false }: ProjectHeaderProps) {
+export function ProjectHeader({ project, canManage = false, userId }: ProjectHeaderProps) {
   const t = useTranslations('tasks')
   
   const formatDate = (date: Date | null) => {
@@ -150,23 +148,11 @@ export function ProjectHeader({ project, canManage = false }: ProjectHeaderProps
           </div>
 
           <div className="flex items-center gap-2 ml-auto md:ml-0">
-            <div className="h-6 w-px bg-border mx-2 hidden md:block" />
-            <AiUsageIndicator />
-            <div className="h-6 w-px bg-border mx-2 hidden md:block" />
             <ThemeToggle />
             <LanguageSwitcher />
-            <Button variant="ghost" size="icon" className="hidden sm:flex h-9 w-9">
-              <Bell className="h-4 w-4" />
-              <span className="sr-only">Notifications</span>
-            </Button>
+            <NotificationBell userId={userId} />
             <div className="h-6 w-px bg-border mx-2 hidden md:block" />
             <ProjectMembersPanel projectId={project.id} canManage={canManage} />
-            <Button variant="outline" size="icon" className="h-8 w-8">
-              <Settings className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" className="h-8 w-8">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       </div>
