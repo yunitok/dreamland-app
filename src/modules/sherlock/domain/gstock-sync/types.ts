@@ -5,7 +5,7 @@ export interface GstockMeasureUnit {
   id: string
   name: string
   abbreviation: string
-  type?: string // 'VOLUME' | 'WEIGHT' | 'UNIT'
+  type?: 'VOLUME' | 'WEIGHT' | 'UNIT'
   conversionFactor?: number
   isBase?: boolean
 }
@@ -50,7 +50,7 @@ export interface GstockProduct {
   measureUnitId?: string
   costPrice?: number
   taxRate?: number
-  status?: string
+  status?: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED'
   currentStock?: number
   minStock?: number
   maxStock?: number
@@ -72,7 +72,7 @@ export interface GstockRecipe {
   theoreticalCost?: number
   realCost?: number
   description?: string
-  allergens?: string[] // array of AllergenType strings if GStock provides them
+  allergens?: string[] // raw allergen codes from GStock API (mapped to AllergenType in sync layer)
   ingredients?: GstockRecipeIngredientLine[]
   subrecipes?: GstockRecipeIngredientLine[]
 }

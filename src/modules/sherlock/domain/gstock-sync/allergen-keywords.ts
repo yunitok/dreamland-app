@@ -36,7 +36,7 @@ export const ALLERGEN_KEYWORDS: Record<AllergenType, string[]> = {
   ],
   APIO: ["apio"],
   MOSTAZA: ["mostaza"],
-  SESAMO: ["sésamo", "sesamo", "tahini", "sésame"],
+  SESAMO: ["sésamo", "sesamo", "tahini"],
   DIOXIDO_AZUFRE: ["sulfito", "sulfitos", "vino", "vinagre", "mosto"],
   ALTRAMUCES: ["altramuz", "altramuces", "lupino", "lupina"],
   MOLUSCOS: [
@@ -76,7 +76,7 @@ export const inferAllergensForRecipe = (ingredientNames: string[]): AllergenType
   return Array.from(allergenSet)
 }
 
-// Merge GStock-provided allergens with inferred ones (GStock takes priority, inferred adds more)
+// Merge GStock-provided allergens with inferred ones (preserves GStock values, inferred adds what's missing)
 export const mergeAllergens = (
   fromGstock: AllergenType[],
   inferred: AllergenType[],
