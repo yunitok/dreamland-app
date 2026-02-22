@@ -10,7 +10,8 @@ import {
   TrendingUp,
   AlertTriangle,
   History,
-  Plug
+  Plug,
+  ShieldCheck,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/modules/shared/ui/card";
 import { Header } from "@/components/layout/header";
@@ -76,6 +77,14 @@ export default async function SherlockDashboard() {
       icon: Plug,
       color: "text-teal-500",
       bg: "bg-teal-500/10",
+    },
+    {
+      title: "Calidad de Datos",
+      description: "Auditoría de normalización y consistencia de datos GStock.",
+      href: "/sherlock/data-quality",
+      icon: ShieldCheck,
+      color: "text-cyan-500",
+      bg: "bg-cyan-500/10",
     },
   ];
 
