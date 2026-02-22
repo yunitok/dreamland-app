@@ -131,7 +131,7 @@ function ActionsCell({
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
-              className="bg-destructive hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Eliminar"}
             </AlertDialogAction>
@@ -293,7 +293,7 @@ export function KnowledgeBaseTable({ data, categories }: KBTableProps) {
             <AlertDialogAction
               onClick={handleBulkDelete}
               disabled={bulkDeleting}
-              className="bg-destructive hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {bulkDeleting
                 ? <Loader2 className="h-4 w-4 animate-spin" />

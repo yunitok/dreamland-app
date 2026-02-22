@@ -719,5 +719,14 @@
     "rainProbability": "Probabilità di pioggia",
     "windGusts": "Raffiche di vento",
     "noAlerts": "Nessun avviso"
+  },
+  "notifications": {
+    "title": "Notifiche",
+    "markAllRead": "Segna tutto come letto",
+    "noNotifications": "Nessuna notifica",
+    "clearAll": "Cancella tutto",
+    "clearAllTitle": "Cancellare le notifiche?",
+    "clearAllDescription": "Tutte le notifiche verranno eliminate. Questa azione non può essere annullata.",
+    "clearAllConfirm": "Elimina tutte"
   }
 }

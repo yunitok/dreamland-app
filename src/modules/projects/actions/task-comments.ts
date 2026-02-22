@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { hasProjectAccess } from '@/lib/actions/rbac'
+import { createNotification } from '@/lib/notification-service'
 
 // =============================================================================
 // TASK COMMENTS
@@ -35,7 +36,12 @@ export async function getComments(taskId: string) {
 export async function createComment(taskId: string, content: string, authorId: string) {
   const task = await prisma.task.findUnique({
     where: { id: taskId },
-    include: { list: { select: { projectId: true } } }
+    select: {
+      id: true,
+      title: true,
+      assigneeId: true,
+      list: { select: { projectId: true } },
+    },
   })
 
   if (!task) throw new Error('Task not found')
@@ -49,6 +55,44 @@ export async function createComment(taskId: string, content: string, authorId: s
   })
 
   revalidatePath(`/projects/${task.list.projectId}`)
+
+  const notifiedUserIds = new Set<string>()
+
+  // Notificar al asignado de la tarea (si no es el autor del comentario)
+  if (task.assigneeId && task.assigneeId !== authorId) {
+    notifiedUserIds.add(task.assigneeId)
+    await createNotification({
+      userId: task.assigneeId,
+      type: "TASK_COMMENTED",
+      title: `Nuevo comentario en "${task.title}"`,
+      body: content.slice(0, 150),
+      href: `/projects/${task.list.projectId}`,
+      metadata: { taskId, commentId: comment.id },
+    })
+  }
+
+  // Notificar a usuarios @mencionados en el comentario
+  const mentionedUsernames = content.match(/@(\w+)/g)?.map((m) => m.slice(1)) ?? []
+  if (mentionedUsernames.length > 0) {
+    const mentionedUsers = await prisma.user.findMany({
+      where: { username: { in: mentionedUsernames } },
+      select: { id: true },
+    })
+    for (const u of mentionedUsers) {
+      if (u.id !== authorId && !notifiedUserIds.has(u.id)) {
+        notifiedUserIds.add(u.id)
+        await createNotification({
+          userId: u.id,
+          type: "TASK_COMMENTED",
+          title: `Te mencionaron en "${task.title}"`,
+          body: content.slice(0, 150),
+          href: `/projects/${task.list.projectId}`,
+          metadata: { taskId, commentId: comment.id },
+        })
+      }
+    }
+  }
+
   return comment
 }
 

@@ -11,10 +11,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/modules/shared/ui/dropdown-menu"
-import { MoreHorizontal, CheckCircle } from "lucide-react"
+import { MoreHorizontal, CheckCircle, Trash2 } from "lucide-react"
 import { IncidentType, IncidentSeverity, IncidentStatus } from "@prisma/client"
-import { resolveIncident } from "@/modules/atc/actions/operations"
+import { resolveIncident, deleteIncident } from "@/modules/atc/actions/operations"
 import { toast } from "sonner"
+import { useState } from "react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/modules/shared/ui/alert-dialog"
 
 type IncidentRow = {
   id: string
@@ -40,8 +51,9 @@ const statusColors: Record<IncidentStatus, string> = {
   CLOSED:      "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
 }
 
-function ActionsCell({ row }: { row: { original: IncidentRow } }) {
+function ActionsCell({ row, isSuperAdmin }: { row: { original: IncidentRow }; isSuperAdmin: boolean }) {
   const incident = row.original
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   async function handleResolve() {
     const result = await resolveIncident(incident.id)
@@ -52,30 +64,75 @@ function ActionsCell({ row }: { row: { original: IncidentRow } }) {
     }
   }
 
+  async function handleDelete() {
+    const result = await deleteIncident(incident.id)
+    if (result.success) {
+      toast.success("Incidencia eliminada")
+    } else {
+      toast.error(result.error)
+    }
+  }
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Acciones</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={handleResolve}
-          disabled={incident.status === "RESOLVED" || incident.status === "CLOSED"}
-        >
-          <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-          Resolver
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Acciones</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={handleResolve}
+            disabled={incident.status === "RESOLVED" || incident.status === "CLOSED"}
+          >
+            <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+            Resolver
+          </DropdownMenuItem>
+          {isSuperAdmin && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setDeleteOpen(true)}
+                className="text-destructive focus:text-destructive cursor-pointer"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Eliminar
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar incidencia?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminará la incidencia <span className="font-medium text-foreground">{incident.type}</span> permanentemente.
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDelete}
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
 
-const columns: ColumnDef<IncidentRow>[] = [
+function getColumns(isSuperAdmin: boolean): ColumnDef<IncidentRow>[] {
+  return [
   {
     accessorKey: "type",
     header: "Tipo",
@@ -129,15 +186,17 @@ const columns: ColumnDef<IncidentRow>[] = [
   {
     id: "actions",
     enableSorting: false,
-    cell: ({ row }) => <ActionsCell row={row} />,
+    cell: ({ row }) => <ActionsCell row={row} isSuperAdmin={isSuperAdmin} />,
   },
-]
+]}
 
 interface IncidentsTableProps {
   data: IncidentRow[]
+  isSuperAdmin?: boolean
 }
 
-export function IncidentsTable({ data }: IncidentsTableProps) {
+export function IncidentsTable({ data, isSuperAdmin = false }: IncidentsTableProps) {
+  const columns = getColumns(isSuperAdmin)
   return (
     <DataTable
       columns={columns}

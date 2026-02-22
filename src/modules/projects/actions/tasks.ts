@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { hasProjectAccess } from '@/lib/actions/rbac'
+import { createNotification } from '@/lib/notification-service'
 
 // =============================================================================
 // TYPES
@@ -222,6 +223,18 @@ export async function createTask(data: CreateTaskInput) {
   if (task.list) {
     revalidatePath(`/projects/${task.list.projectId}`)
   }
+
+  if (data.assigneeId) {
+    await createNotification({
+      userId: data.assigneeId,
+      type: "TASK_ASSIGNED",
+      title: "Nueva tarea asignada",
+      body: task.title,
+      href: `/projects/${task.list.projectId}`,
+      metadata: { taskId: task.id },
+    })
+  }
+
   return task
 }
 
@@ -278,6 +291,22 @@ export async function updateTask(id: string, data: UpdateTaskInput) {
   if (task.list) {
     revalidatePath(`/projects/${task.list.projectId}`)
   }
+
+  // Notificar al nuevo asignado si cambió
+  if (
+    data.assigneeId &&
+    data.assigneeId !== currentTask.assigneeId
+  ) {
+    await createNotification({
+      userId: data.assigneeId,
+      type: "TASK_ASSIGNED",
+      title: "Tarea asignada",
+      body: task.title ?? data.title ?? "",
+      href: `/projects/${task.list.projectId}`,
+      metadata: { taskId: id },
+    })
+  }
+
   return task
 }
 

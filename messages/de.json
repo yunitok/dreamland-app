@@ -720,5 +720,14 @@
     "rainProbability": "Regenwahrscheinlichkeit",
     "windGusts": "Windböen",
     "noAlerts": "Keine Warnungen"
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "markAllRead": "Alle als gelesen markieren",
+    "noNotifications": "Keine Benachrichtigungen",
+    "clearAll": "Alle löschen",
+    "clearAllTitle": "Benachrichtigungen löschen?",
+    "clearAllDescription": "Alle Benachrichtigungen werden gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "clearAllConfirm": "Alle löschen"
   }
 }

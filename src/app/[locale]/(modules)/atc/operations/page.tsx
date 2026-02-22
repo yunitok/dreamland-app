@@ -3,6 +3,7 @@ import { Header } from "@/components/layout/header"
 import { Skeleton } from "@/modules/shared/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/modules/shared/ui/tabs"
 import { getTranslations, setRequestLocale } from "next-intl/server"
+import { getSession } from "@/lib/auth"
 import { getIncidents, getWeatherAlerts, getRestaurantLocations, getWeatherConfig } from "@/modules/atc/actions/operations"
 import { IncidentsTable } from "@/modules/atc/ui/operations/incidents-table"
 import { IncidentDialog } from "@/modules/atc/ui/operations/incident-dialog"
@@ -19,6 +20,9 @@ export default async function AtcOperationsPage({
   const { locale } = await params
   setRequestLocale(locale)
   const t = await getTranslations("atc")
+
+  const session = await getSession() as { user?: { role?: string } } | null
+  const isSuperAdmin = session?.user?.role === "SUPER_ADMIN"
 
   const [incidentsResult, alertsResult, locationsResult, configResult] = await Promise.all([
     getIncidents(),
@@ -57,7 +61,7 @@ export default async function AtcOperationsPage({
 
           <TabsContent value="incidents">
             <Suspense fallback={<Skeleton className="h-100 w-full" />}>
-              <IncidentsTable data={incidentsResult.data ?? []} />
+              <IncidentsTable data={incidentsResult.data ?? []} isSuperAdmin={isSuperAdmin} />
             </Suspense>
           </TabsContent>
 
@@ -65,7 +69,7 @@ export default async function AtcOperationsPage({
             <div className="space-y-6">
               <WeatherForecastPanel />
               <Suspense fallback={<Skeleton className="h-100 w-full" />}>
-                <WeatherAlertsDashboard data={alertsResult.data ?? []} />
+                <WeatherAlertsDashboard data={alertsResult.data ?? []} isSuperAdmin={isSuperAdmin} />
               </Suspense>
             </div>
           </TabsContent>

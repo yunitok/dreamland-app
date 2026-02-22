@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { hasProjectAccess, requireAuth } from '@/lib/actions/rbac'
 import { ProjectRole } from '@prisma/client'
+import { createNotification } from '@/lib/notification-service'
 
 // Jerarquía local para validaciones de escalado de rol
 const ROLE_HIERARCHY: Record<ProjectRole, number> = {
@@ -61,6 +62,20 @@ export async function addProjectMember(projectId: string, userId: string, role: 
   })
 
   revalidatePath(`/projects/${projectId}`)
+
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    select: { title: true },
+  })
+  await createNotification({
+    userId,
+    type: "PROJECT_MEMBER_ADDED",
+    title: "Añadido a un proyecto",
+    body: `Has sido añadido al proyecto "${project?.title ?? projectId}"`,
+    href: `/projects/${projectId}`,
+    metadata: { projectId, role },
+  })
+
   return membership
 }
 

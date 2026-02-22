@@ -719,5 +719,14 @@
     "rainProbability": "Вероятность дождя",
     "windGusts": "Порывы ветра",
     "noAlerts": "Нет предупреждений"
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "markAllRead": "Отметить все как прочитанные",
+    "noNotifications": "Нет уведомлений",
+    "clearAll": "Удалить все",
+    "clearAllTitle": "Удалить уведомления?",
+    "clearAllDescription": "Все уведомления будут удалены. Это действие нельзя отменить.",
+    "clearAllConfirm": "Удалить все"
   }
 }

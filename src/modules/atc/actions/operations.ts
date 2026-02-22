@@ -2,13 +2,14 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { requirePermission } from "@/lib/actions/rbac"
+import { requirePermission, requireAuth } from "@/lib/actions/rbac"
 import {
   incidentSchema, IncidentFormValues,
   weatherAlertSchema, WeatherAlertFormValues,
   resolveWeatherAlertSchema, ResolveWeatherAlertFormValues,
 } from "@/modules/atc/domain/schemas"
 import { IncidentStatus, WeatherAlertStatus, WeatherAlertSeverity } from "@prisma/client"
+import { createNotification, createNotificationsForPermission } from "@/lib/notification-service"
 
 export async function getIncidents(status?: IncidentStatus) {
   await requirePermission("atc", "read")
@@ -30,6 +31,18 @@ export async function createIncident(data: IncidentFormValues) {
     const validated = incidentSchema.parse(data)
     const incident = await prisma.incident.create({ data: validated })
     revalidatePath("/atc/operations")
+
+    const isHighSeverity = incident.severity === "HIGH" || incident.severity === "CRITICAL"
+    const notifType = isHighSeverity ? "INCIDENT_SEVERITY_HIGH" : "INCIDENT_CREATED"
+    const severityLabel = incident.severity === "CRITICAL" ? "CRÍTICA" : incident.severity === "HIGH" ? "ALTA" : incident.severity === "MEDIUM" ? "MEDIA" : "BAJA"
+    await createNotificationsForPermission("atc", "read", {
+      type: notifType,
+      title: `Incidencia ${severityLabel}: ${incident.type}`,
+      body: incident.description.slice(0, 150),
+      href: "/atc/operations",
+      metadata: { incidentId: incident.id, severity: incident.severity },
+    })
+
     return { success: true, data: incident }
   } catch (error) {
     console.error("Error creating incident:", error)
@@ -158,6 +171,15 @@ export async function createWeatherAlert(data: WeatherAlertFormValues) {
       },
     })
     revalidatePath("/atc/operations")
+
+    await createNotificationsForPermission("atc", "read", {
+      type: "WEATHER_ALERT",
+      title: `Alerta meteorológica: ${alert.alertType}`,
+      body: `${alert.description} — ${alert.forecastDate.toLocaleDateString("es-ES")}`,
+      href: "/atc/operations",
+      metadata: { alertId: alert.id, severity: alert.severity },
+    })
+
     return { success: true, data: alert }
   } catch (error) {
     console.error("Error creating weather alert:", error)
@@ -288,6 +310,38 @@ export async function updateWeatherConfig(data: {
   } catch (error) {
     console.error("Error updating weather config:", error)
     return { success: false, error: "Error al guardar la configuración" }
+  }
+}
+
+// --- DELETE (SUPER_ADMIN only) ---
+
+export async function deleteIncident(id: string) {
+  const auth = await requireAuth()
+  if (!auth.authenticated || auth.roleCode !== "SUPER_ADMIN") {
+    return { success: false, error: "Solo el SUPER_ADMIN puede eliminar incidencias" }
+  }
+  try {
+    await prisma.incident.delete({ where: { id } })
+    revalidatePath("/atc/operations")
+    return { success: true }
+  } catch (error) {
+    console.error("Error deleting incident:", error)
+    return { success: false, error: "Error al eliminar la incidencia" }
+  }
+}
+
+export async function deleteWeatherAlert(id: string) {
+  const auth = await requireAuth()
+  if (!auth.authenticated || auth.roleCode !== "SUPER_ADMIN") {
+    return { success: false, error: "Solo el SUPER_ADMIN puede eliminar alertas" }
+  }
+  try {
+    await prisma.weatherAlert.delete({ where: { id } })
+    revalidatePath("/atc/operations")
+    return { success: true }
+  } catch (error) {
+    console.error("Error deleting weather alert:", error)
+    return { success: false, error: "Error al eliminar la alerta" }
   }
 }
 

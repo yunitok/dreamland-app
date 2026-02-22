@@ -6,6 +6,7 @@ import { requirePermission } from "@/lib/actions/rbac"
 import { getSession } from "@/lib/auth"
 import { querySchema, QueryFormValues } from "@/modules/atc/domain/schemas"
 import { QueryStatus } from "@prisma/client"
+import { createNotificationsForPermission } from "@/lib/notification-service"
 
 export async function getQueries(status?: QueryStatus) {
   await requirePermission("atc", "read")
@@ -80,11 +81,21 @@ export async function resolveQueryManually(id: string, responseText: string) {
 export async function escalateQuery(id: string) {
   await requirePermission("atc", "manage")
   try {
-    await prisma.query.update({
+    const query = await prisma.query.update({
       where: { id },
       data: { status: "ESCALATED" },
+      select: { guestInput: true },
     })
     revalidatePath("/atc/queries")
+
+    await createNotificationsForPermission("atc", "manage", {
+      type: "QUERY_ESCALATED",
+      title: "Consulta escalada",
+      body: query.guestInput.slice(0, 150),
+      href: "/atc/queries",
+      metadata: { queryId: id },
+    })
+
     return { success: true }
   } catch (error) {
     console.error("Error escalating query:", error)

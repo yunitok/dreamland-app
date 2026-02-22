@@ -2,7 +2,7 @@
 
 import { ThemeToggle } from "./theme-toggle"
 import { LanguageSwitcher } from "./language-switcher"
-import { Bell, Menu, ArrowLeft } from "lucide-react"
+import { Menu, ArrowLeft } from "lucide-react"
 import { Button } from "@/modules/shared/ui/button"
 import { Link } from "@/i18n/navigation"
 import { useTranslations } from "next-intl"
@@ -16,6 +16,7 @@ import {
 import { SidebarContent } from "./sidebar"
 import { useState, useEffect } from "react"
 import { getSession } from "@/lib/auth"
+import { NotificationBell } from "@/modules/notifications/ui/notification-bell"
 
 interface HeaderProps {
   titleKey?: string
@@ -107,10 +108,7 @@ export function Header({ titleKey, descriptionKey, backHref, backLabelKey, user,
           <div className="flex items-center gap-1.5 sm:gap-2">
             <ThemeToggle />
             <LanguageSwitcher />
-            <Button variant="ghost" size="icon" className="h-9 w-9">
-              <Bell className="h-4 w-4" />
-              <span className="sr-only">{tCommon("notifications")}</span>
-            </Button>
+            <NotificationBell userId={sessionUser?.id} />
           </div>
         </div>
       </div>

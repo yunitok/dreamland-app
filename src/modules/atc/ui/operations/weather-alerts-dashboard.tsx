@@ -166,9 +166,10 @@ function SummaryBar({ summary }: { summary: AlertsSummary }) {
 
 interface WeatherAlertsDashboardProps {
   data: WeatherAlertRow[]
+  isSuperAdmin?: boolean
 }
 
-export function WeatherAlertsDashboard({ data }: WeatherAlertsDashboardProps) {
+export function WeatherAlertsDashboard({ data, isSuperAdmin = false }: WeatherAlertsDashboardProps) {
   const t = useTranslations("atc")
   const [selectedCity, setSelectedCity] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
@@ -234,6 +235,7 @@ export function WeatherAlertsDashboard({ data }: WeatherAlertsDashboardProps) {
           data={data}
           selectedCity={selectedCity}
           onClearFilter={() => setSelectedCity(null)}
+          isSuperAdmin={isSuperAdmin}
         />
       </div>
     </div>

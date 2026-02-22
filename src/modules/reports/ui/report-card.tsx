@@ -101,7 +101,7 @@ export function ReportCard({ report }: ReportCardProps) {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                 {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : t("delete")}
               </AlertDialogAction>
             </AlertDialogFooter>

@@ -198,6 +198,7 @@ model User {
   comments           TaskComment[]    @relation("TaskComments")
   role               Role             @relation(fields: [roleId], references: [id])
   projectMemberships ProjectMember[]
+  notifications      Notification[]
 }
 
 model Role {
@@ -980,6 +981,37 @@ model VoucherTransaction {
 
   @@index([voucherId])
   @@map("voucher_transactions")
+}
+
+// ─── Notifications ───────────────────────────────────────────
+
+enum NotificationType {
+  INCIDENT_CREATED
+  INCIDENT_SEVERITY_HIGH
+  WEATHER_ALERT
+  EMAIL_ASSIGNED
+  QUERY_ESCALATED
+  TASK_ASSIGNED
+  TASK_COMMENTED
+  PROJECT_MEMBER_ADDED
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  isRead    Boolean          @default(false)
+  href      String?
+  metadata  Json?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map("notifications")
 }
 
 // ─── ATC: Enums ──────────────────────────────────────────────

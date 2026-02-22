@@ -25,19 +25,30 @@ import {
   CloudFog,
   Clock,
   MapPin,
+  Trash2,
 } from "lucide-react"
 import {
   WeatherAlertType,
   WeatherAlertSeverity,
   WeatherAlertStatus,
 } from "@prisma/client"
-import { updateWeatherAlertStatus } from "@/modules/atc/actions/operations"
+import { updateWeatherAlertStatus, deleteWeatherAlert } from "@/modules/atc/actions/operations"
 import { toast } from "sonner"
 import { useState, useMemo } from "react"
 import { ResolveAlertDialog } from "./resolve-alert-dialog"
 import { AffectedReservationsDialog } from "./affected-reservations-dialog"
 import { useTranslations } from "next-intl"
 import { X } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/modules/shared/ui/alert-dialog"
 
 type WeatherAlertRow = {
   id: string
@@ -100,16 +111,26 @@ function AlertTypeCell({ type, t }: { type: WeatherAlertType; t: (key: string) =
   )
 }
 
-function ActionsCell({ row }: { row: { original: WeatherAlertRow } }) {
+function ActionsCell({ row, isSuperAdmin }: { row: { original: WeatherAlertRow }; isSuperAdmin: boolean }) {
   const alert = row.original
   const t = useTranslations("atc")
   const [resolveOpen, setResolveOpen] = useState(false)
   const [reservationsOpen, setReservationsOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   async function handleStatusChange(status: WeatherAlertStatus) {
     const result = await updateWeatherAlertStatus(alert.id, status)
     if (result.success) {
       toast.success(t("weatherAlertResolved"))
+    } else {
+      toast.error(result.error)
+    }
+  }
+
+  async function handleDelete() {
+    const result = await deleteWeatherAlert(alert.id)
+    if (result.success) {
+      toast.success("Alerta eliminada")
     } else {
       toast.error(result.error)
     }
@@ -150,6 +171,18 @@ function ActionsCell({ row }: { row: { original: WeatherAlertRow } }) {
             <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
             {t("resolveAlert")}
           </DropdownMenuItem>
+          {isSuperAdmin && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setDeleteOpen(true)}
+                className="text-destructive focus:text-destructive cursor-pointer"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Eliminar
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -163,11 +196,32 @@ function ActionsCell({ row }: { row: { original: WeatherAlertRow } }) {
         open={reservationsOpen}
         onOpenChange={setReservationsOpen}
       />
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar alerta meteorológica?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminará la alerta <span className="font-medium text-foreground">{alert.alertType}</span> de{" "}
+              <span className="font-medium text-foreground">{alert.location}</span> permanentemente.
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDelete}
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
 
-function useColumns(): ColumnDef<WeatherAlertRow>[] {
+function useColumns(isSuperAdmin: boolean): ColumnDef<WeatherAlertRow>[] {
   const t = useTranslations("atc")
 
   const severityLabels: Record<WeatherAlertSeverity, string> = {
@@ -255,7 +309,7 @@ function useColumns(): ColumnDef<WeatherAlertRow>[] {
     {
       id: "actions",
       enableSorting: false,
-      cell: ({ row }) => <ActionsCell row={row} />,
+      cell: ({ row }) => <ActionsCell row={row} isSuperAdmin={isSuperAdmin} />,
     },
   ]
 }
@@ -264,11 +318,12 @@ interface WeatherAlertsTableProps {
   data: WeatherAlertRow[]
   selectedCity?: string | null
   onClearFilter?: () => void
+  isSuperAdmin?: boolean
 }
 
-export function WeatherAlertsTable({ data, selectedCity, onClearFilter }: WeatherAlertsTableProps) {
+export function WeatherAlertsTable({ data, selectedCity, onClearFilter, isSuperAdmin = false }: WeatherAlertsTableProps) {
   const t = useTranslations("atc")
-  const columns = useColumns()
+  const columns = useColumns(isSuperAdmin)
 
   const filteredData = useMemo(() => {
     if (!selectedCity) return data

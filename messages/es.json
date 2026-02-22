@@ -708,5 +708,14 @@
     "rainProbability": "Probabilidad de lluvia",
     "windGusts": "Rachas de viento",
     "noAlerts": "Sin alertas"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "markAllRead": "Marcar todas como leídas",
+    "noNotifications": "No tienes notificaciones",
+    "clearAll": "Limpiar todas",
+    "clearAllTitle": "¿Limpiar notificaciones?",
+    "clearAllDescription": "Se eliminarán todas las notificaciones. Esta acción no se puede deshacer.",
+    "clearAllConfirm": "Eliminar todas"
   }
 }

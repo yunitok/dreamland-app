@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { requirePermission } from "@/lib/actions/rbac"
+import { createNotification } from "@/lib/notification-service"
 import {
   invoiceSchema,
   giftVoucherSchema,
@@ -66,8 +67,24 @@ export async function markEmailRead(id: string) {
 export async function assignEmail(id: string, userId: string | null) {
   await requirePermission("atc", "manage")
   try {
-    await prisma.emailInbox.update({ where: { id }, data: { assignedTo: userId } })
+    const email = await prisma.emailInbox.update({
+      where: { id },
+      data: { assignedTo: userId },
+      select: { subject: true, fromName: true },
+    })
     revalidatePath("/atc/backoffice")
+
+    if (userId) {
+      await createNotification({
+        userId,
+        type: "EMAIL_ASSIGNED",
+        title: "Email asignado",
+        body: email.subject ?? `Email de ${email.fromName ?? "remitente desconocido"}`,
+        href: "/atc/backoffice",
+        metadata: { emailId: id },
+      })
+    }
+
     return { success: true }
   } catch (error) {
     console.error("Error assigning email:", error)

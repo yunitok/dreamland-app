@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { checkAllLocationsWeather } from "@/lib/weather"
 import { sendSlackNotification, sendEmailNotification } from "@/lib/notifications"
+import { createNotificationsForPermission } from "@/lib/notification-service"
 
 export async function POST(req: Request) {
   // Auth: cron secret o n8n secret
@@ -38,9 +39,21 @@ export async function POST(req: Request) {
           description: `[${f.city}] ${f.alertsGenerated} alerta(s) generada(s)`,
           forecastDate: new Date(),
         }))
+      const affectedCities = result.forecasts
+        .filter(f => f.alertsGenerated > 0)
+        .map(f => f.city)
+        .join(", ")
+
       await Promise.allSettled([
         sendSlackNotification(notifPayload),
         sendEmailNotification(notifPayload),
+        createNotificationsForPermission("atc", "read", {
+          type: "WEATHER_ALERT",
+          title: `${result.totalAlertsCreated} alerta(s) meteorológica(s)`,
+          body: affectedCities,
+          href: "/atc/operations",
+          metadata: { totalAlerts: result.totalAlertsCreated, source: "cron" },
+        }),
       ])
     }
 

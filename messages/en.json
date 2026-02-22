@@ -707,5 +707,14 @@
     "rainProbability": "Rain probability",
     "windGusts": "Wind gusts",
     "noAlerts": "No alerts"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "noNotifications": "You have no notifications",
+    "clearAll": "Clear all",
+    "clearAllTitle": "Clear notifications?",
+    "clearAllDescription": "All notifications will be deleted. This action cannot be undone.",
+    "clearAllConfirm": "Delete all"
   }
 }
