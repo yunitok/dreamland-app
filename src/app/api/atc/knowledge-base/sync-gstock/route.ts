@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
-import { syncKnowledgeBaseBySource, BulkKBEntry } from "@/modules/atc/actions/knowledge-base"
+import { syncKnowledgeBaseBySource } from "@/modules/atc/actions/knowledge-base"
+import type { BulkKBEntry } from "@/modules/atc/actions/knowledge-base-core"
 
 export async function POST(req: Request) {
   const secret = req.headers.get("x-n8n-secret")

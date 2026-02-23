@@ -2,22 +2,27 @@ import { getTranslations } from "next-intl/server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/modules/shared/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/modules/shared/ui/card";
 import { getMeasureUnits, getCategories, getSuppliers } from "@/modules/sherlock/actions/settings";
+import { getGstockSyncInfo } from "@/modules/sherlock/actions/gstock-sync";
 import { UnitsTable } from "./_components/units-table";
 import { CategoriesList } from "./_components/categories-list";
 import { SuppliersTable } from "./_components/suppliers-table";
 import { CreateUnitDialog } from "./_components/create-unit-dialog";
 import { CreateCategoryDialog } from "./_components/create-category-dialog";
 import { CreateSupplierDialog } from "./_components/create-supplier-dialog";
+import { GstockSyncCard } from "./_components/gstock-sync-card";
 import { Header } from "@/components/layout/header";
+import { getSession } from "@/lib/auth";
 
 export default async function SherlockSettingsPage() {
   const t = await getTranslations("sherlock.settings");
 
   // Fetch data in parallel
-  const [units, categories, suppliers] = await Promise.all([
+  const [units, categories, suppliers, syncInfo, session] = await Promise.all([
     getMeasureUnits(),
     getCategories(),
-    getSuppliers()
+    getSuppliers(),
+    getGstockSyncInfo(),
+    getSession(),
   ]);
 
   return (
@@ -30,6 +35,13 @@ export default async function SherlockSettingsPage() {
 
       <div className="flex-1 p-6 overflow-y-auto">
         <div className="flex flex-col gap-6 max-w-7xl mx-auto">
+
+          {/* Card de sincronización GStock */}
+          <GstockSyncCard
+            lastSync={syncInfo.lastSync}
+            totalEntries={syncInfo.totalEntries}
+            isSuperAdmin={session?.user?.role === "SUPER_ADMIN"}
+          />
 
           <Tabs defaultValue="units" className="w-full">
             <TabsList className="grid w-full grid-cols-3 max-w-[600px]">

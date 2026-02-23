@@ -1,9 +1,11 @@
+// Sin "use server" — intencionado: este archivo es llamado por el sync orchestrator
+// y scripts CLI que no tienen contexto de Server Action de Next.js.
+// Los wrappers con RBAC están en knowledge-base.ts.
 import { createHash } from "crypto"
 import { prisma } from "@/lib/prisma"
 import { generateEmbeddingsBatch, buildKBText } from "@/lib/embeddings"
-import { upsertKnowledgeVectorsBatch, deleteVectorsBySource } from "@/lib/pinecone"
+import { upsertKnowledgeVectorsBatch, deleteVectorsBySource, KBVectorMetadata } from "@/lib/pinecone"
 import type { KnowledgeBase } from "@prisma/client"
-import { upsertKnowledgeVector } from "@/lib/pinecone"
 
 // ─── Tipos exportados ─────────────────────────────────────────────
 
@@ -61,7 +63,7 @@ export async function bulkImportKBCore(
   const embeddings = await generateEmbeddingsBatch(textsToEmbed)
 
   const created: KnowledgeBase[] = []
-  const vectors: Array<{ id: string; values: number[]; metadata: Parameters<typeof upsertKnowledgeVector>[2] }> = []
+  const vectors: Array<{ id: string; values: number[]; metadata: KBVectorMetadata }> = []
 
   for (let j = 0; j < indicesToProcess.length; j++) {
     const i = indicesToProcess[j]

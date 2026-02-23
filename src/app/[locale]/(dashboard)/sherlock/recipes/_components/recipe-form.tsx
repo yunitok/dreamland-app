@@ -52,13 +52,18 @@ export function RecipeForm({
 
     const defaultValues = initialData ? {
         ...initialData,
-        familyId: initialData.familyId || null,
+        description: initialData.description ?? "",
+        familyId: initialData.familyId ?? null,
+        prepTime: initialData.prepTime ?? 0,
+        cookTime: initialData.cookTime ?? 0,
+        servings: initialData.servings ?? 1,
+        protocoloDeSala: initialData.protocoloDeSala ?? "",
         steps: initialData.steps?.map((text: string) => ({ text })) || [],
         ingredients: initialData.ingredients?.map((ing: any) => ({
             ingredientId: ing.ingredientId,
             quantity: ing.quantity,
             unitId: ing.unitId,
-            notes: ing.notes || "",
+            notes: ing.notes ?? "",
         })) || [{ ingredientId: "", quantity: 0, unitId: "", notes: "" }],
     } : {
         name: "",

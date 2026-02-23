@@ -1,36 +1,44 @@
 // Re-export the generic API response wrapper from the shared GStock client
 export type { GstockApiResponse } from "@/lib/gstock"
 
+// GStock devuelve IDs como números (Int), no como strings
+type GstockId = string | number
+
 export interface GstockMeasureUnit {
-  id: string
+  id: GstockId
   name: string
-  abbreviation: string
+  // El campo de abreviatura puede tener nombres diferentes según la versión de API
+  abbreviation?: string
+  abbr?: string
+  symbol?: string
+  shortName?: string
   type?: 'VOLUME' | 'WEIGHT' | 'UNIT'
   conversionFactor?: number
   isBase?: boolean
+  [key: string]: unknown
 }
 
 export interface GstockCategory {
-  id: string
+  id: GstockId
   name: string
   description?: string
-  parentId?: string
+  parentId?: GstockId
 }
 
 export interface GstockRecipeCategory {
-  id: string
+  id: GstockId
   name: string
   description?: string
 }
 
 export interface GstockRecipeFamily {
-  id: string
+  id: GstockId
   name: string
   description?: string
 }
 
 export interface GstockSupplier {
-  id: string
+  id: GstockId
   name: string
   code?: string
   email?: string
@@ -42,12 +50,12 @@ export interface GstockSupplier {
 }
 
 export interface GstockProduct {
-  id: string
+  id: GstockId
   name: string
   reference?: string
-  categoryId?: string
-  supplierId?: string
-  measureUnitId?: string
+  categoryId?: GstockId
+  supplierId?: GstockId
+  measureUnitId?: GstockId
   costPrice?: number
   taxRate?: number
   status?: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED'
@@ -58,17 +66,17 @@ export interface GstockProduct {
 }
 
 export interface GstockRecipeIngredientLine {
-  productId?: string
-  recipeId?: string // for subrecipes
+  productId?: GstockId
+  recipeId?: GstockId
   quantity?: number
-  measureUnitId?: string
+  measureUnitId?: GstockId
 }
 
 export interface GstockRecipe {
-  id: string
+  id: GstockId
   name: string
-  categoryId?: string
-  familyId?: string
+  categoryId?: GstockId
+  familyId?: GstockId
   theoreticalCost?: number
   realCost?: number
   description?: string

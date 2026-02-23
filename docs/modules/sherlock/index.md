@@ -52,7 +52,8 @@ Sherlock es el **módulo de gestión integral de restaurantes** para Dreamland A
 
 ### 3. Integraciones
 - **[Yurest Integration](./integrations/yurest.md)**: Endpoints, autenticación, mapeo de campos
-- **[Gstock Integration](./integrations/gstock.md)**: OAuth2, webhooks, sincronización
+- **[Gstock Integration](./integrations/gstock.md)**: OAuth2, webhooks, sincronización (diseño)
+- **[GStock Sync Pipeline](./integrations/gstock-sync-pipeline.md)**: Implementación real del pipeline de 8 fases, idempotencia, RAG y reset de datos
 - **[n8n Workflows](./integrations/n8n-workflows.md)**: Automatizaciones de importación/exportación
 
 ### 4. Hoja de Ruta
@@ -174,24 +175,23 @@ Ver [Schema Documentation](./schema/prisma-schema.md) para detalles completos.
 
 ## 🚦 Estado Actual
 
-### ✅ Completado (Fase 1-2)
-- [x] Análisis completo de Yurest
-- [x] Análisis completo de Gstock
-- [x] Comparativa de plataformas
-- [x] Diseño de esquema Prisma
-- [x] Documentación de decisiones
+### ✅ Completado
+- [x] Análisis completo de Yurest y Gstock
+- [x] Diseño de esquema Prisma (18+ modelos)
+- [x] UI de gestión: recetas, ingredientes, inventario, mermas
+- [x] **Pipeline de sincronización GStock** (8 fases, upsert por `gstockId`)
+- [x] **RAG Knowledge Base** para chatbot ATC (alérgenos por receta)
+- [x] Inferencia de alérgenos por keywords en nombres de ingredientes
+- [x] Script CLI (`scripts/sync-gstock-recipes.ts`)
+- [x] UI de sincronización en Sherlock › Settings (con reset SUPER_ADMIN)
+- [x] Auditoría de calidad de datos GStock (`sherlock/data-quality`)
 
-### 🔄 En Progreso (Fase 3)
-- [ ] Migraciones de base de datos
-- [ ] Scripts de seed
-- [ ] Workflows n8n de integración
-
-### 📋 Planificado (Fase 4+)
-- [ ] Implementación Chef GPT
-- [ ] Integración Whisper
-- [ ] UI de gestión de recetas
-- [ ] UI de auditorías
-- [ ] Dashboard de costes
+### 📋 Planificado
+- [ ] Integración Yurest (importación de ventas/TPV)
+- [ ] Chef GPT (generación de recetas con IA)
+- [ ] Auditoría por voz (Whisper)
+- [ ] Dashboard de costes teórico vs real
+- [ ] Workflows n8n para sync automático (cron)
 
 ---
 

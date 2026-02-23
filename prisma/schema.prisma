@@ -293,6 +293,7 @@ model MeasureUnit {
   type              UnitType
   conversionFactor  Float?
   isBase            Boolean            @default(false)
+  gstockId          String?            @unique
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   ingredients       Ingredient[]
@@ -306,6 +307,7 @@ model Category {
   name        String
   description String?
   parentId    String?
+  gstockId    String?      @unique
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   parent      Category?    @relation("CategoryHierarchy", fields: [parentId], references: [id])
@@ -320,6 +322,7 @@ model RecipeCategory {
   id          String   @id @default(cuid())
   name        String
   description String?
+  gstockId    String?  @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   recipes     Recipe[]
@@ -331,6 +334,7 @@ model RecipeFamily {
   id          String   @id @default(cuid())
   name        String
   description String?
+  gstockId    String?  @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   recipes     Recipe[]
@@ -348,6 +352,7 @@ model Supplier {
   taxId        String?
   paymentTerms String?
   minOrder     Float?
+  gstockId     String?      @unique
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   ingredients  Ingredient[]

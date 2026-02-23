@@ -17,8 +17,6 @@ import {
   computeContentHash,
 } from "./knowledge-base-core"
 
-export type { BulkKBEntry }
-
 // ─── Lectura ────────────────────────────────────────────────────
 
 export async function getKnowledgeBaseEntries(filters?: {
@@ -160,7 +158,9 @@ export async function syncKnowledgeBaseBySource(
 
 export async function publishStagedEntries(entries: BulkKBEntry[], source = "staged") {
   await requirePermission("atc", "manage")
-  return bulkImportKnowledgeBaseEntries(entries.map(e => ({ ...e, source })))
+  const result = await bulkImportKBCore(entries.map(e => ({ ...e, source })))
+  revalidatePath("/atc/knowledge-base")
+  return result
 }
 
 // ─── Borrado masivo por source ──────────────────────────────────
