@@ -343,19 +343,33 @@ model RecipeFamily {
 }
 
 model Supplier {
-  id           String       @id @default(cuid())
-  name         String
-  code         String?      @unique
-  email        String?
-  phone        String?
-  address      String?
-  taxId        String?
-  paymentTerms String?
-  minOrder     Float?
-  gstockId     String?      @unique
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  ingredients  Ingredient[]
+  id              String       @id @default(cuid())
+  name            String
+  commercialName  String?
+  code            String?      @unique
+  email           String?
+  phone           String?
+  mobile          String?
+  contactPerson   String?
+  web             String?
+  address         String?
+  city            String?
+  postalCode      String?
+  province        String?
+  country         String?
+  taxId           String?
+  paymentTerms    String?
+  minOrder        Float?
+  discount        Float?
+  deliveryDays    String?
+  notes           String?
+  active          Boolean      @default(true)
+  categoryName    String?
+  subcategoryName String?
+  gstockId        String?      @unique
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  ingredients     Ingredient[]
 
   @@map("suppliers")
 }

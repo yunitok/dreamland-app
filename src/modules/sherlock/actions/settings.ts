@@ -47,10 +47,25 @@ export async function getSuppliers() {
 
 export async function createSupplier(data: {
   name: string;
+  commercialName?: string;
   code?: string;
   email?: string;
   phone?: string;
-  paymentTerms?: string
+  mobile?: string;
+  contactPerson?: string;
+  web?: string;
+  address?: string;
+  city?: string;
+  postalCode?: string;
+  province?: string;
+  country?: string;
+  taxId?: string;
+  paymentTerms?: string;
+  minOrder?: number;
+  discount?: number;
+  deliveryDays?: string;
+  notes?: string;
+  active?: boolean;
 }) {
   await requirePermission("sherlock", "manage")
   await prisma.supplier.create({ data })

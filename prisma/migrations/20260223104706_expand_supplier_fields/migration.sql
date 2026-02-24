@@ -1,0 +1,15 @@
+-- AlterTable
+ALTER TABLE "suppliers" ADD COLUMN     "active" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "categoryName" TEXT,
+ADD COLUMN     "city" TEXT,
+ADD COLUMN     "commercialName" TEXT,
+ADD COLUMN     "contactPerson" TEXT,
+ADD COLUMN     "country" TEXT,
+ADD COLUMN     "deliveryDays" TEXT,
+ADD COLUMN     "discount" DOUBLE PRECISION,
+ADD COLUMN     "mobile" TEXT,
+ADD COLUMN     "notes" TEXT,
+ADD COLUMN     "postalCode" TEXT,
+ADD COLUMN     "province" TEXT,
+ADD COLUMN     "subcategoryName" TEXT,
+ADD COLUMN     "web" TEXT;

@@ -83,7 +83,10 @@ async function syncMeasureUnits(opts: SyncOptions): Promise<[SyncPhaseResult, Gs
     try {
       const abbr = getAbbr(raw)
       const mapped = mapGstockToMeasureUnit(raw, abbr)
-      const existing = await prisma.measureUnit.findUnique({ where: { gstockId: String(raw.id) }, select: { id: true } })
+      // Buscar primero por gstockId; si no existe, buscar por abbreviation (unidades creadas manualmente)
+      const existing =
+        await prisma.measureUnit.findUnique({ where: { gstockId: String(raw.id) }, select: { id: true } }) ??
+        await prisma.measureUnit.findUnique({ where: { abbreviation: abbr }, select: { id: true } })
       if (existing) {
         await prisma.measureUnit.update({ where: { id: existing.id }, data: mapped })
         idMap.set(String(raw.id), existing.id)
@@ -198,12 +201,31 @@ async function syncSuppliers(opts: SyncOptions): Promise<[SyncPhaseResult, Gstoc
   const state = startPhase("Proveedores", "v1/suppliers", "Supplier")
   const idMap: GstockIdMap = new Map()
 
-  const { data } = await fetchGstock<GstockSupplier>("v1/suppliers")
+  // Fetch categorías/subcategorías en paralelo con los proveedores para enriquecer los datos
+  const [{ data: categories }, { data: subcategories }, { data }] = await Promise.all([
+    fetchGstock<{ id: string | number; name: string }>("v1/suppliers/category").catch(() => ({ data: [] as { id: string | number; name: string }[] })),
+    fetchGstock<{ id: string | number; name: string }>("v1/suppliers/subcategory").catch(() => ({ data: [] as { id: string | number; name: string }[] })),
+    fetchGstock<GstockSupplier>("v1/suppliers"),
+  ])
+
+  const catMap = new Map(categories.map(c => [String(c.id), c.name]))
+  const subcatMap = new Map(subcategories.map(s => [String(s.id), s.name]))
+
+  if (opts.verbose && data.length > 0) {
+    log(opts, "Supplier campos:", Object.keys(data[0] as object).join(", "))
+    log(opts, `Categorías de proveedor: ${categories.length}, Subcategorías: ${subcategories.length}`)
+  }
 
   for (const raw of data) {
     if (opts.dryRun) { state.skipped++; idMap.set(String(raw.id), String(raw.id)); continue }
     try {
-      const mapped = mapGstockToSupplier(raw)
+      // Enriquecer con nombre de categoría/subcategoría via los mapas de lookup
+      const enriched: GstockSupplier = {
+        ...raw,
+        ...(raw.categoryId && { categoryName: catMap.get(String(raw.categoryId)) }),
+        ...(raw.subcategoryId && { subcategoryName: subcatMap.get(String(raw.subcategoryId)) }),
+      }
+      const mapped = mapGstockToSupplier(enriched)
       const result = await prisma.supplier.upsert({
         where: { gstockId: String(raw.id) },
         update: mapped,

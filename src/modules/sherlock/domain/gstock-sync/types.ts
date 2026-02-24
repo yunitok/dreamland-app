@@ -41,12 +41,30 @@ export interface GstockSupplier {
   id: GstockId
   name: string
   code?: string
+  commercialName?: string
   email?: string
   phone?: string
+  mobile?: string
+  contactPerson?: string
+  web?: string
   address?: string
+  city?: string
+  postalCode?: string
+  province?: string
+  country?: string
   taxId?: string
   paymentTerms?: string
   minOrder?: number
+  discount?: number
+  deliveryDays?: string
+  notes?: string
+  active?: boolean
+  categoryId?: GstockId
+  subcategoryId?: GstockId
+  // Campos enriquecidos durante la sincronización (no vienen directamente de la API)
+  categoryName?: string
+  subcategoryName?: string
+  [key: string]: unknown
 }
 
 export interface GstockProduct {

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   Sheet,
   SheetContent,
@@ -91,6 +91,9 @@ export function TaskDetailSheet({
   const [newComment, setNewComment] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
   const [isAddingDependency, setIsAddingDependency] = useState(false)
+  const [localProgress, setLocalProgress] = useState<number>(0)
+  const progressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const assigneeListRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (taskId && isOpen) {
@@ -106,6 +109,7 @@ export function TaskDetailSheet({
       setTask(data)
       setEditedTitle(data?.title || '')
       setEditedDescription(data?.description || '')
+      setLocalProgress(data?.progress ?? 0)
     } catch (error) {
       console.error('Failed to load task:', error)
     } finally {
@@ -177,15 +181,26 @@ export function TaskDetailSheet({
     }
   }
 
-  const handleProgressChange = async (progress: number) => {
+  const handleProgressChange = (progress: number) => {
     if (!task) return
-    try {
-      await updateTaskProgress(task.id, progress)
-      setTask({ ...task, progress })
-    } catch (error) {
-      console.error('Failed to update progress:', error)
-    }
+    const clamped = Math.max(0, Math.min(100, progress))
+    setLocalProgress(clamped)
+    if (progressTimerRef.current) clearTimeout(progressTimerRef.current)
+    progressTimerRef.current = setTimeout(async () => {
+      try {
+        await updateTaskProgress(task.id, clamped)
+        setTask((prev: any) => prev ? { ...prev, progress: clamped } : prev)
+      } catch (error) {
+        console.error('Failed to update progress:', error)
+      }
+    }, 600)
   }
+
+  useEffect(() => {
+    return () => {
+      if (progressTimerRef.current) clearTimeout(progressTimerRef.current)
+    }
+  }, [])
 
   const handleSaveEdit = async () => {
     if (!task) return
@@ -530,8 +545,10 @@ export function TaskDetailSheet({
                     </PopoverTrigger>
                     <PopoverContent className="w-[200px] p-0" align="start">
                       <Command>
-                        <CommandInput placeholder={t('searchUsers')} />
-                        <CommandList>
+                        <CommandInput placeholder={t('searchUsers')} onValueChange={() => {
+                          requestAnimationFrame(() => assigneeListRef.current?.scrollTo(0, 0))
+                        }} />
+                        <CommandList ref={assigneeListRef}>
                           <CommandEmpty>{t('noUsersFound')}</CommandEmpty>
                           <CommandGroup>
                             <CommandItem
@@ -610,12 +627,12 @@ export function TaskDetailSheet({
                   {t('progress')}
                 </span>
                 <div className="flex items-center gap-3 flex-1">
-                  <Progress value={task.progress} className="flex-1 h-2" />
+                  <Progress value={localProgress} className="flex-1 h-2" />
                   <Input
                     type="number"
                     min={0}
                     max={100}
-                    value={task.progress}
+                    value={localProgress}
                     onChange={(e) => handleProgressChange(Number(e.target.value))}
                     className="w-16 h-8 text-center"
                   />

@@ -306,7 +306,7 @@ export function PortfolioTimeline({ projects }: PortfolioTimelineProps) {
                     className="flex items-center pl-10 pr-4 border-b last:border-0 text-xs text-muted-foreground hover:bg-muted/30"
                     style={{ height: 32 }}
                   >
-                     <div className="w-1.5 h-1.5 rounded-full bg-border mr-2 shrink-0 group-hover:bg-primary/50 transition-colors" />
+                     <div className="w-1.5 h-1.5 rounded-full mr-2 shrink-0 transition-colors" style={{ backgroundColor: task.status.color }} />
                      <span className="truncate">{task.title}</span>
                   </div>
                 ))}
@@ -397,15 +397,15 @@ export function PortfolioTimeline({ projects }: PortfolioTimelineProps) {
                   {/* Task Rows (Detailed View) */}
                   {viewMode === 'detailed' && project.lists.flatMap(l => l.tasks).map(task => {
                     const pos = getTaskPosition(task)
-                    const color = getProjectColor(project)
+                    const color = task.status.color
                     return (
                         <div key={task.id} className="relative border-b h-[32px] group hover:bg-muted/10 transition-colors">
                             {pos && (
-                                <div 
+                                <div
                                     className="absolute top-1.5 bottom-1.5 rounded-sm shadow-sm hover:shadow hover:ring-1 hover:ring-white/20 cursor-pointer transition-all"
-                                    style={{ 
-                                        left: pos.left, 
-                                        width: Math.max(4, pos.width - 2), 
+                                    style={{
+                                        left: pos.left,
+                                        width: Math.max(4, pos.width - 2),
                                         backgroundColor: color,
                                         opacity: task.progress === 100 ? 0.6 : 0.9
                                     }}

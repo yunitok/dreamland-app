@@ -21,10 +21,25 @@ export type CategoryFormValues = z.infer<typeof categorySchema>
 
 export const supplierSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio"),
+  commercialName: z.string().optional(),
   code: z.string().optional(),
   email: z.string().email("Email inválido").optional().or(z.literal('')),
   phone: z.string().optional(),
+  mobile: z.string().optional(),
+  contactPerson: z.string().optional(),
+  web: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  postalCode: z.string().optional(),
+  province: z.string().optional(),
+  country: z.string().optional(),
+  taxId: z.string().optional(),
   paymentTerms: z.string().optional(),
+  minOrder: z.coerce.number().min(0).optional(),
+  discount: z.coerce.number().min(0).max(100).optional(),
+  deliveryDays: z.string().optional(),
+  notes: z.string().optional(),
+  active: z.boolean().default(true),
 })
 
 export type SupplierFormValues = z.infer<typeof supplierSchema>
