@@ -40,6 +40,7 @@ interface BackofficeViewProps {
   invoices:   InvoiceRow[]
   vouchers:   VoucherRow[]
   categories: CategoryInfo[]
+  canDelete?: boolean
 }
 
 const voucherStatusColors: Record<GiftVoucherStatus, string> = {
@@ -49,7 +50,7 @@ const voucherStatusColors: Record<GiftVoucherStatus, string> = {
   CANCELLED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
 }
 
-export function BackofficeView({ emails, invoices, vouchers, categories }: BackofficeViewProps) {
+export function BackofficeView({ emails, invoices, vouchers, categories, canDelete }: BackofficeViewProps) {
   const unreadCount = emails.filter(e => !e.isRead).length
 
   return (
@@ -85,7 +86,7 @@ export function BackofficeView({ emails, invoices, vouchers, categories }: Backo
 
       {/* Email Inbox */}
       <TabsContent value="inbox" className="mt-4">
-        <EmailInboxTab emails={emails} categories={categories} />
+        <EmailInboxTab emails={emails} categories={categories} canDelete={canDelete} />
       </TabsContent>
 
       {/* Invoices */}

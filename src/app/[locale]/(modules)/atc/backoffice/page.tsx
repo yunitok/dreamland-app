@@ -4,6 +4,7 @@ import { Skeleton } from "@/modules/shared/ui/skeleton"
 import { getTranslations, setRequestLocale } from "next-intl/server"
 import { getEmailInbox, getInvoices, getGiftVouchers, getEmailCategories } from "@/modules/atc/actions/backoffice"
 import { BackofficeView } from "@/modules/atc/ui/backoffice/backoffice-view"
+import { getSession } from "@/lib/auth"
 
 export default async function AtcBackofficePage({
   params,
@@ -14,12 +15,14 @@ export default async function AtcBackofficePage({
   setRequestLocale(locale)
   const t = await getTranslations("atc")
 
-  const [inboxResult, invoicesResult, vouchersResult, categoriesResult] = await Promise.all([
+  const [session, inboxResult, invoicesResult, vouchersResult, categoriesResult] = await Promise.all([
+    getSession(),
     getEmailInbox(),
     getInvoices(),
     getGiftVouchers(),
     getEmailCategories(),
   ])
+  const isSuperAdmin = session?.user.role === "SUPER_ADMIN"
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
@@ -36,6 +39,7 @@ export default async function AtcBackofficePage({
             invoices={invoicesResult.data ?? []}
             vouchers={vouchersResult.data ?? []}
             categories={categoriesResult.data ?? []}
+            canDelete={isSuperAdmin}
           />
         </Suspense>
       </div>

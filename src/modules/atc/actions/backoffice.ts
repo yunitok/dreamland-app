@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { requirePermission } from "@/lib/actions/rbac"
+import { requirePermission, requireAuth } from "@/lib/actions/rbac"
 import { createNotification } from "@/lib/notification-service"
 import {
   invoiceSchema,
@@ -49,6 +49,21 @@ export async function getEmailInbox(filters: EmailInboxFilters = {}) {
   } catch (error) {
     console.error("Error fetching inbox:", error)
     return { success: false, error: "Error al cargar el buzón" }
+  }
+}
+
+export async function deleteEmail(id: string) {
+  const auth = await requireAuth()
+  if (!auth.authenticated || auth.roleCode !== "SUPER_ADMIN") {
+    return { success: false, error: "Solo el SUPER_ADMIN puede eliminar emails" }
+  }
+  try {
+    await prisma.emailInbox.delete({ where: { id } })
+    revalidatePath("/atc/backoffice")
+    return { success: true }
+  } catch (error) {
+    console.error("Error deleting email:", error)
+    return { success: false, error: "Error al eliminar el email" }
   }
 }
 

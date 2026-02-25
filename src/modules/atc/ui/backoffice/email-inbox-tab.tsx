@@ -18,8 +18,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/modules/shared/ui/dropdown-menu"
-import { Mail, MailOpen, MoreHorizontal, Search, Eye } from "lucide-react"
-import { markEmailRead } from "@/modules/atc/actions/backoffice"
+import { Mail, MailOpen, MoreHorizontal, Search, Eye, Trash2 } from "lucide-react"
+import { markEmailRead, deleteEmail } from "@/modules/atc/actions/backoffice"
 import { toast } from "sonner"
 import { EmailDetailDialog } from "./email-detail-dialog"
 
@@ -53,6 +53,7 @@ export type EmailRow = {
 interface EmailInboxTabProps {
   emails: EmailRow[]
   categories: CategoryInfo[]
+  canDelete?: boolean
 }
 
 const priorityLabels: Record<number, string> = {
@@ -71,7 +72,7 @@ const priorityColors: Record<number, string> = {
   1: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
 }
 
-export function EmailInboxTab({ emails, categories }: EmailInboxTabProps) {
+export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabProps) {
   const [localEmails, setLocalEmails] = useState(emails)
   const [showRead, setShowRead]       = useState(false)
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
@@ -105,6 +106,18 @@ export function EmailInboxTab({ emails, categories }: EmailInboxTabProps) {
         toast.success("Email marcado como leído")
       } else {
         toast.error("Error al marcar el email")
+      }
+    })
+  }
+
+  function handleDeleteEmail(id: string) {
+    startTransition(async () => {
+      const result = await deleteEmail(id)
+      if (result.success) {
+        setLocalEmails(prev => prev.filter(e => e.id !== id))
+        toast.success("Email eliminado")
+      } else {
+        toast.error(result.error ?? "Error al eliminar el email")
       }
     })
   }
@@ -239,6 +252,15 @@ export function EmailInboxTab({ emails, categories }: EmailInboxTabProps) {
                         {!email.isRead && (
                           <DropdownMenuItem onClick={() => handleMarkRead(email.id)}>
                             Marcar como leído
+                          </DropdownMenuItem>
+                        )}
+                        {canDelete && (
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteEmail(email.id)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Eliminar
                           </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
