@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { createNotificationsForPermission } from "@/lib/notification-service"
 
 interface EmailIngestPayload {
   messageId:          string
@@ -64,6 +65,10 @@ export async function POST(req: Request) {
         categoryId = cat?.id
       }
 
+      const priority = email.aiPriority != null
+        ? Math.min(Math.max(Math.round(email.aiPriority), 1), 5)
+        : undefined
+
       await prisma.emailInbox.create({
         data: {
           messageId:         email.messageId,
@@ -73,9 +78,7 @@ export async function POST(req: Request) {
           subject:           email.subject,
           body:              email.body,
           aiLabel:           email.aiLabel,
-          aiPriority:        email.aiPriority != null
-                               ? Math.min(Math.max(Math.round(email.aiPriority), 1), 5)
-                               : undefined,
+          aiPriority:        priority,
           aiConfidenceScore: email.aiConfidenceScore,
           aiSummary:         email.aiSummary,
           categoryId,
@@ -83,6 +86,18 @@ export async function POST(req: Request) {
         },
       })
       results.created++
+
+      // Notificar a todos los agentes ATC si el email es de alta prioridad (P4 o P5)
+      if (priority && priority >= 4) {
+        const urgencyLabel = priority === 5 ? "URGENTE" : "Alta prioridad"
+        await createNotificationsForPermission("atc", "manage", {
+          type: "EMAIL_HIGH_PRIORITY",
+          title: `Email ${urgencyLabel}: ${email.subject}`,
+          body: `De: ${email.fromName || email.fromEmail}${email.aiSummary ? ` — ${email.aiSummary}` : ""}`,
+          href: "/atc/backoffice",
+          metadata: { emailMessageId: email.messageId, aiPriority: priority },
+        })
+      }
     } catch (e) {
       console.error("[email/ingest] Error processing email:", email.messageId, e)
       results.errors++
