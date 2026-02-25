@@ -4,9 +4,7 @@ import { cookies } from "next/headers"
 import { getSession } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { encrypt } from "@/lib/session"
-import { writeFile, unlink } from "fs/promises"
-import { join } from "path"
-import { existsSync } from "fs"
+import { uploadToStorage, deleteFromStorage, getPublicUrl } from "@/lib/supabase-storage"
 
 // Actualizar información del perfil
 export async function updateProfile(formData: FormData) {
@@ -112,19 +110,15 @@ export async function uploadAvatar(formData: FormData) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Determinar extensión
+    // Determinar extensión y path en Storage
     const extension = file.type.split("/")[1] || "jpg"
-    const filename = `${userId}.${extension}`
+    const storagePath = `${userId}.${extension}`
 
-    // Crear directorio si no existe
-    const uploadDir = join(process.cwd(), "public", "avatars")
-    
-    // Guardar archivo
-    const filepath = join(uploadDir, filename)
-    await writeFile(filepath, buffer)
+    // Subir a Supabase Storage (bucket público 'avatars')
+    await uploadToStorage('avatars', storagePath, buffer, file.type)
 
-    // Actualizar base de datos
-    const imageUrl = `/avatars/${filename}`
+    // Obtener URL pública
+    const imageUrl = getPublicUrl('avatars', storagePath)
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { image: imageUrl },
@@ -181,12 +175,14 @@ export async function deleteAvatar() {
       return { success: false, error: "noAvatar" }
     }
 
-    // Eliminar archivo físico si existe
-    const filename = user.image.split("/").pop()
-    if (filename) {
-      const filepath = join(process.cwd(), "public", "avatars", filename)
-      if (existsSync(filepath)) {
-        await unlink(filepath)
+    // Eliminar archivo de Supabase Storage
+    const storagePath = user.image.split('/').pop()
+    if (storagePath && !user.image.startsWith('/avatars/')) {
+      // Solo eliminar si es una URL de Supabase (no rutas legacy del filesystem)
+      try {
+        await deleteFromStorage('avatars', storagePath)
+      } catch (err) {
+        console.error('Storage delete warning (may be legacy file):', err)
       }
     }
 

@@ -73,6 +73,7 @@ src/__tests__/
 ├── auth.test.ts
 ├── permissions.test.ts
 ├── rate-limit.test.ts
+├── rbac-coverage.test.ts             # ← cobertura RBAC de todos los server actions
 ├── schemas.test.ts
 ├── chat-service.test.ts
 ├── chat-panel.test.tsx
@@ -119,6 +120,7 @@ src/lib/ai/__tests__/
 | Core / Auth | `auth.test.ts` | 6 | `login()`, `updatePassword()` |
 | Core / Auth | `permissions.test.ts` | 5 | `hasPermission()` (función pura) |
 | Core / Auth | `rate-limit.test.ts` | 6 | `checkRateLimit()`, `checkAIRateLimit()` |
+| **Core / RBAC** | **`rbac-coverage.test.ts`** | **1** | **Análisis estático: verifica que todos los server actions exportados llaman a un guard RBAC** |
 | Core / Schemas | `schemas.test.ts` | 8 | Validación Zod: cuid, task, project |
 | Core / Chat | `chat-service.test.ts` | 4 | `saveMessage()`, `getHistory()` |
 | Componentes | `chat-panel.test.tsx` | 4 | ChatPanel — render, apertura, historial |
@@ -145,9 +147,34 @@ src/lib/ai/__tests__/
 | ATC / Backoffice | `backoffice-actions.test.ts` | 43 | Emails, clasificación, invoices, gift vouchers |
 | E2E | `rag-e2e.test.ts` | 10 | Pipeline RAG contra APIs reales (OpenRouter + Pinecone) |
 
-**Total unit tests: 467 tests en 28 archivos**
+**Total unit tests: 468 tests en 29 archivos**
 
 **Tests E2E: 10 tests en 1 archivo**
+
+---
+
+## Test de Cobertura RBAC
+
+**Archivo**: `src/__tests__/rbac-coverage.test.ts`
+
+Test de **análisis estático** que escanea automáticamente todos los server actions del proyecto y verifica que cada función exportada llama a alguno de los guards de autorización:
+
+| Guard | Descripción |
+|-------|-------------|
+| `requirePermission(resource, action)` | RBAC estándar por recurso |
+| `requireAuth()` | Solo verificar sesión activa |
+| `hasProjectAccess(projectId, role)` | Acceso a proyecto específico |
+| `getSession()` | Gestión manual de sesión |
+| `getAccessibleProjectIds()` | IDs de proyectos accesibles |
+| `getCurrentUserId()` | ID del usuario actual |
+
+Si un nuevo server action no está protegido, el test falla mostrando el archivo y la función infractora:
+
+```
+❌ modules/example/actions/example.ts → myUnprotectedAction()
+```
+
+Para añadir excepciones justificadas (funciones públicas), editar `EXEMPT_FUNCTIONS` en el archivo del test.
 
 ---
 

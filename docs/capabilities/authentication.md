@@ -1,90 +1,205 @@
 ---
 title: Authentication & User Management
-description: Secure credential-based login, session management, and role-based access control
+description: Credential-based login with JWT sessions, session middleware, and role-based access control
 ---
 
 # Authentication & User Management
 
 ## Overview
 
-Dreamland Manager uses a robust authentication system built on top of **NextAuth.js** (v5) and **Prisma**. It supports secure credential-based login, session management, and role-based access control (RBAC).
+Dreamland Manager usa autenticación basada en **credenciales propias** (username/password), sesiones **JWT firmadas con HS256** almacenadas en cookies httpOnly, y un middleware de Next.js que protege todas las rutas automáticamente.
+
+No usa NextAuth.js ni Supabase Auth — el sistema es completamente autónomo.
 
 ---
 
-## Security Features
+## Arquitectura del Sistema
 
-### 1. Forced Password Change
-To enhance security, administrators can flag users to require a password change upon their next login.
-
-- **Mechanism**: A `mustChangePassword` boolean flag in the `User` database model.
-- **Flow**:
-    1. User logs in with temporary credentials.
-    2. System checks `mustChangePassword` flag.
-    3. If `true`, middleware redirects user strictly to `/change-password`.
-    4. User cannot access any other route until the password is updated.
-    5. Upon successful update, the flag is set to `false` and the user is redirected to the dashboard.
-
-### 2. "Remember Me"
-Users can opt to keep their session active for an extended period.
-
-- **Standard Session**: 24 hours.
-- **"Remember Me" Session**: 30 days.
-- **Implementation**: The login form passes a `remember` flag to the backend, which adjusts the session cookie's `expires` attribute accordingly.
-
-### 3. Password Hashing
-All passwords are securely hashed using **bcryptjs** with a cost factor of 10 before storage.
+```
+src/lib/
+├── session.ts          ← encrypt() / decrypt() con jose (JWT HS256)
+├── auth.ts             ← login(), logout(), getSession(), updatePassword()
+src/middleware.ts       ← protección de rutas + locale routing (next-intl)
+src/lib/actions/
+└── rbac.ts             ← requirePermission(), requireAuth() — server-side
+src/lib/
+└── permissions.ts      ← hasPermission() — client-side (UI only)
+```
 
 ---
 
-## User Management
+## Session Management
 
-### Bulk User Import
-A utility script is available to bulk import users from a JSON file, suitable for initializing the system with data from external sources (e.g., NotebookLM exports).
+### JWT con jose
 
-**Script Location**: `scripts/import-users.ts`
+Las sesiones se codifican como JWTs firmados con HMAC-SHA256.
 
-**Input Format**:
-The script expects a JSON file (default: `data/users.json`) with the following structure:
+**Archivo**: `src/lib/session.ts`
 
+```typescript
+encrypt(payload: JWTPayload) // → JWT firmado (24h por defecto)
+decrypt(input: string)       // → JWTPayload o lanza error
+```
+
+El payload incluye:
+```typescript
+{
+  user: {
+    id: string
+    username: string
+    name: string | null
+    role: string
+    permissions: string[]    // ["read:atc", "manage:projects", ...]
+    mustChangePassword: boolean
+  },
+  expires: Date
+}
+```
+
+### Cookie de Sesión
+
+- Nombre: `session`
+- Opciones: `httpOnly: true`, `secure: true` (producción), `path: '/'`
+- Duración estándar: **24 horas**
+- Duración con "Recordarme": **30 días**
+
+---
+
+## Middleware de Rutas
+
+**Archivo**: `src/middleware.ts`
+
+El middleware intercepta **todas las requests** (excepto `/api/`, archivos estáticos y assets) y hace dos cosas:
+
+1. **Valida la sesión JWT**: si la cookie `session` no existe o es inválida/expirada, redirige a `/{locale}/login`
+2. **Locale routing**: delega en `next-intl/middleware` para resolver el prefijo de idioma
+
+### Rutas públicas (sin sesión requerida)
+
+| Ruta | Descripción |
+|------|-------------|
+| `/[locale]/login` | Formulario de login |
+
+Todo lo demás requiere sesión válida.
+
+### Matcher
+
+```typescript
+matcher: ['/((?!api|_next/static|_next/image|favicon\\.ico|.*\\.[^/]*$).*)']
+```
+
+---
+
+## Flujo de Login
+
+```
+1. Usuario accede a /{locale}/login
+2. Envía FormData con username, password, remember?
+3. login(formData) [Server Action en src/lib/auth.ts]:
+   a. prisma.user.findUnique({ where: { username } })
+   b. bcryptjs.compare(password, user.password)
+   c. Construye payload JWT con permisos del rol
+   d. encrypt(payload) → JWT
+   e. Set cookie "session" con expires según remember
+4. Redirect a /{locale}/
+5. Middleware valida la nueva cookie → acceso concedido
+```
+
+---
+
+## Seguridad
+
+### 1. Cambio de Contraseña Forzado
+
+Los administradores pueden marcar usuarios para que cambien su contraseña al siguiente login.
+
+- **Flag en BD**: `User.mustChangePassword: boolean`
+- **Página**: `/{locale}/change-password`
+- **Flujo**: El middleware no aplica redirección automática al change-password; la redirección se gestiona a nivel de aplicación una vez que el server action detecta `mustChangePassword: true` en la sesión
+
+### 2. "Recordarme"
+
+| Modo | Duración |
+|------|----------|
+| Sin checkbox | 24 horas |
+| Con "Recordarme" | 30 días |
+
+### 3. Hashing de Contraseñas
+
+Todas las contraseñas se almacenan con **bcryptjs** (cost factor 10).
+
+### 4. Clave JWT
+
+```bash
+JWT_SECRET="tu-clave-secreta-aqui"  # requerido en producción
+```
+
+Si `JWT_SECRET` no está definida, se usa un fallback hardcoded (solo desarrollo).
+
+---
+
+## RBAC — Control de Acceso
+
+Dos capas independientes:
+
+### Capa 1: Client-side (`src/lib/permissions.ts`)
+
+Solo para mostrar/ocultar elementos UI. **No autoritativa.**
+
+```typescript
+hasPermission(session.user, 'read', 'atc')     // → boolean
+hasAnyPermission(session.user, ['read:atc', 'manage:atc'])
+```
+
+### Capa 2: Server-side (`src/lib/actions/rbac.ts`)
+
+Consulta la DB en vivo. Es la fuente de verdad.
+
+```typescript
+// En server actions — siempre como primera línea:
+await requirePermission('atc', 'manage')    // lanza error si denegado
+await requireAuth()                          // solo verificar sesión activa
+await hasProjectAccess(projectId, 'EDITOR') // acceso a proyecto específico
+```
+
+### SUPER_ADMIN
+
+El rol `SUPER_ADMIN` bypassa **todos** los permisos automáticamente.
+
+---
+
+## Gestión de Usuarios
+
+### Importación en Bloque
+
+Script para importar usuarios desde JSON:
+
+```bash
+npx tsx scripts/import-users.ts
+```
+
+**Formato de entrada** (`data/users.json`):
 ```json
 [
   {
     "username": "jdoe",
     "email": "jdoe@example.com",
     "name": "John Doe",
-    "role": "STRATEGIC_PM" 
-  },
-  // ... more users
+    "role": "STRATEGIC_PM"
+  }
 ]
 ```
 
-**Features**:
-- **Automatic Password Generation**: All imported users are assigned a default password (e.g., `dreamland2026`).
-- **Forced Reset**: The `mustChangePassword` flag is automatically set to `true` for all imported users.
-- **Role Assignment**: Assigns the specified role code. If the role doesn't exist, it defaults to a `BASIC_USER` role (which is created if missing).
-- **Idempotency**: Skips users that already exist (by username or email).
-
-**Running the Import**:
-```bash
-# Ensure typescript-node execution is set up (e.g. via tsx)
-npx tsx scripts/import-users.ts
-```
+- Contraseña por defecto: `dreamland2026`
+- `mustChangePassword: true` para todos los importados
+- Idempotente: salta usuarios que ya existen
 
 ---
 
-## Internationalization (i18n)
+## Internacionalización
 
-All authentication-related screens are fully localized in:
-- English (`en`)
-- Spanish (`es`)
-- French (`fr`)
-- German (`de`)
-- Italian (`it`)
-- Russian (`ru`)
+Todas las pantallas de auth están localizadas en: `es`, `en`, `de`, `fr`, `it`, `ru`
 
-This includes:
-- Login Form
-- Change Password Form
-- Error Messages (e.g., "Invalid credentials", "Password too short")
+Esto incluye login, change-password y todos los mensajes de error.
 
-See [Internationalization Guide](./internationalization.md) for more details.
+Ver [Internationalization Guide](./internationalization.md) para más detalles.

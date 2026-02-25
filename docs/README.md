@@ -31,6 +31,7 @@ Cross-cutting features used across the application.
 
 - [AI Assistant](./capabilities/ai-assistant/chat-agent.md) - Chat agent and voice commands
 - [Authentication](./capabilities/authentication.md) - Session management and security
+- [File Storage](./capabilities/file-storage.md) - Supabase Storage: avatars and task attachments
 - [Internationalization](./capabilities/internationalization.md) - Multi-language support
 
 ### Database

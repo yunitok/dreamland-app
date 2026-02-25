@@ -1,0 +1,366 @@
+{
+  "name": "ATC Email Classification Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 3
+            }
+          ]
+        }
+      },
+      "id": "trigger-schedule",
+      "name": "Every 3 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-1600, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ══════════════════════════════════════════════════\n// CONFIGURACIÓN DEL WORKFLOW\n// Edita la URL aquí. Los secretos (API keys) se\n// gestionan desde Credentials en n8n (cifrados).\n// ══════════════════════════════════════════════════\nreturn [{\n  json: {\n    DREAMLAND_APP_URL: 'https://dreamland-app.vercel.app'\n  }\n}];"
+      },
+      "id": "set-config",
+      "name": "Set Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-1400, 0]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "getAll",
+        "limit": 10,
+        "simple": false,
+        "filters": {
+          "includeSpamTrash": false,
+          "q": "is:unread"
+        },
+        "options": {}
+      },
+      "id": "gmail-get-unread",
+      "name": "Gmail - Get Unread",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [-1160, 0],
+      "credentials": {
+        "googleApi": {
+          "id": "XyV4OgnMNyZQQ75y",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\n\nfor (const item of $input.all()) {\n  const msg = item.json;\n\n  // Gmail internal ID (needed for markAsRead)\n  const gmailId = msg.id || '';\n  const threadId = msg.threadId || '';\n\n  // RFC Message-ID (for dedup in database)\n  const messageId = msg.messageId || '';\n\n  // Subject and date already parsed by n8n Gmail node\n  const subject = msg.subject || '';\n  const date = msg.date || '';\n\n  // Sender: use replyTo if from is noreply (form submissions)\n  const fromValue = msg.from?.value?.[0] || {};\n  const replyToValue = msg.replyTo?.value?.[0];\n\n  let fromEmail = fromValue.address || '';\n  let fromName = fromValue.name || '';\n\n  if (replyToValue && /^no[-.]?reply@/i.test(fromEmail)) {\n    fromEmail = replyToValue.address || fromEmail;\n    fromName = replyToValue.name || fromName;\n  }\n\n  // Body: prefer text (already extracted by n8n), fallback to stripped html\n  let body = msg.text || '';\n  if (!body && msg.html) {\n    body = msg.html\n      .replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi, '')\n      .replace(/<script[^>]*>[\\s\\S]*?<\\/script>/gi, '')\n      .replace(/<[^>]+>/g, ' ')\n      .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')\n      .replace(/&lt;/g, '<').replace(/&gt;/g, '>')\n      .replace(/&quot;/g, '\"').replace(/&#\\d+;/g, '')\n      .replace(/\\s+/g, ' ').trim();\n  }\n\n  if (body.length > 3000) body = body.substring(0, 3000) + '...[truncado]';\n\n  results.push({\n    json: { gmailId, messageId, threadId, fromEmail, fromName, subject, date, body }\n  });\n}\n\nreturn results;"
+      },
+      "id": "extract-email-data",
+      "name": "Extract Email Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-920, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Set Config').first().json.DREAMLAND_APP_URL }}/api/atc/email/check-exists",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "messageId",
+              "value": "={{ $json.messageId }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 10000
+        }
+      },
+      "id": "check-dedup",
+      "name": "Check Dedup",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-680, 0],
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Dreamland Webhook Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "condition-not-exists",
+              "leftValue": "={{ $json.exists }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notEquals",
+                "singleValue": false
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "is-new-email",
+      "name": "Is New Email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-440, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "HTTP-Referer",
+              "value": "={{ $('Set Config').first().json.DREAMLAND_APP_URL }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"openai/gpt-4o-mini\",\n  \"temperature\": 0.1,\n  \"response_format\": { \"type\": \"json_object\" },\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Eres un clasificador de emails para el departamento de Atención al Cliente (ATC) de un restaurante-hotel de alta gama.\\n\\nAnaliza cada email y devuelve un JSON con la clasificación.\\n\\nCATEGORÍAS DISPONIBLES (usa el slug exacto):\\n- reservas_nueva: nueva reserva\\n- reservas_modificacion: cambio en reserva existente\\n- reservas_cancelacion: cancelación\\n- reservas_confirmacion: confirma asistencia\\n- reclamaciones_servicio: queja sobre atención/trato\\n- reclamaciones_comida: queja sobre comida/calidad\\n- reclamaciones_cobro: error de cobro/facturación\\n- consultas_horarios: horarios, disponibilidad\\n- consultas_menu: carta, platos, opciones\\n- consultas_servicios: parking, terraza, wifi, accesibilidad\\n- facturacion_solicitud: pide factura\\n- facturacion_error: error en factura emitida\\n- eventos: evento privado, grupo grande, celebración\\n- alergias: alérgenos, intolerancias, dietas especiales\\n- objetos_perdidos: objeto olvidado en el local\\n- colaboraciones: propuesta comercial, proveedor, influencer\\n- empleo: CV, solicitud de empleo\\n- bonos: bono regalo, tarjeta regalo\\n- spam: publicidad, newsletter, irrelevante\\n- otro: no encaja en ninguna categoría\\n\\nPRIORIDAD (1 = mínima, 5 = máxima):\\n- 5: URGENTE - queja grave, incidente de salud (alergia), amenaza legal, VIP confirmado\\n- 4: ALTA - reclamación, error de cobro, cancelación con reembolso, grupo grande\\n- 3: MEDIA - reserva nueva, modificación, solicitud de factura\\n- 2: BAJA - consulta general, horarios, información\\n- 1: MÍNIMA - spam, newsletters, empleo, colaboraciones no solicitadas\\n\\nINDICADORES VIP (sube +1 la prioridad):\\n- Dominio de email corporativo conocido\\n- Mención de grupo de X personas con X > 10\\n- Mención de evento corporativo\\n- Cliente que menciona visitas frecuentes\\n\\nRESPONDE SIEMPRE en JSON con este formato exacto:\\n{\\n  \\\"category\\\": \\\"<slug>\\\",\\n  \\\"label\\\": \\\"<nombre corto, max 25 chars>\\\",\\n  \\\"priority\\\": <1-5>,\\n  \\\"confidence\\\": <0.0-1.0>,\\n  \\\"summary\\\": \\\"<resumen en 1 frase, max 100 chars>\\\"\\n}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify('De: ' + $('Extract Email Data').item.json.fromEmail + '\\nAsunto: ' + $('Extract Email Data').item.json.subject + '\\n\\n' + $('Extract Email Data').item.json.body) }}\n    }\n  ]\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "classify-llm",
+      "name": "Classify with LLM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-120, -100],
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "OpenRouter API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const emailData = $('Extract Email Data').item.json;\nconst llmResponse = $input.item.json;\n\nlet classification = null;\ntry {\n  const content = llmResponse.choices?.[0]?.message?.content;\n  if (content) {\n    classification = JSON.parse(content);\n    const required = ['category', 'label', 'priority', 'confidence', 'summary'];\n    for (const f of required) {\n      if (classification[f] === undefined) throw new Error('Missing: ' + f);\n    }\n    classification.priority = Math.max(1, Math.min(5, Math.round(classification.priority)));\n    classification.confidence = Math.max(0, Math.min(1, classification.confidence));\n    classification.label = classification.label.substring(0, 25);\n    classification.summary = classification.summary.substring(0, 100);\n  } else {\n    throw new Error('No content in LLM response');\n  }\n} catch (err) {\n  classification = {\n    category: 'otro',\n    label: 'Sin clasificar',\n    priority: 2,\n    confidence: 0,\n    summary: 'Error en clasificación automática: ' + (err.message || 'unknown').substring(0, 60)\n  };\n}\n\nreturn [{\n  json: {\n    messageId: emailData.messageId,\n    threadId: emailData.threadId,\n    fromEmail: emailData.fromEmail,\n    fromName: emailData.fromName,\n    subject: emailData.subject,\n    body: emailData.body,\n    receivedAt: emailData.date ? new Date(emailData.date).toISOString() : new Date().toISOString(),\n    category: classification.category,\n    aiLabel: classification.label,\n    aiPriority: classification.priority,\n    aiConfidenceScore: classification.confidence,\n    aiSummary: classification.summary\n  }\n}];"
+      },
+      "id": "parse-llm-response",
+      "name": "Parse LLM Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [140, -100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Set Config').first().json.DREAMLAND_APP_URL }}/api/atc/email/ingest",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messageId: $json.messageId, threadId: $json.threadId, fromEmail: $json.fromEmail, fromName: $json.fromName, subject: $json.subject, body: $json.body, receivedAt: $json.receivedAt, category: $json.category, aiLabel: $json.aiLabel, aiPriority: $json.aiPriority, aiConfidenceScore: $json.aiConfidenceScore, aiSummary: $json.aiSummary }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "id": "ingest-email",
+      "name": "Ingest Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [400, -100],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Dreamland Webhook Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $('Extract Email Data').item.json.gmailId }}"
+      },
+      "id": "gmail-mark-read",
+      "name": "Gmail - Mark as Read",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [660, -100]
+    },
+    {
+      "parameters": {},
+      "id": "skip-duplicate",
+      "name": "Skip Duplicate",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [-120, 120]
+    }
+  ],
+  "connections": {
+    "Every 3 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Set Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Config": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Get Unread",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Get Unread": {
+      "main": [
+        [
+          {
+            "node": "Extract Email Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Email Data": {
+      "main": [
+        [
+          {
+            "node": "Check Dedup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Dedup": {
+      "main": [
+        [
+          {
+            "node": "Is New Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is New Email?": {
+      "main": [
+        [
+          {
+            "node": "Classify with LLM",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify with LLM": {
+      "main": [
+        [
+          {
+            "node": "Parse LLM Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse LLM Response": {
+      "main": [
+        [
+          {
+            "node": "Ingest Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ingest Email": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Mark as Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "877a1ec097ce73a18eadfd6a602288208de9f708b0a5028e3ba258335298a171"
+  }
+}

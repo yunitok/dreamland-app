@@ -1,6 +1,6 @@
 ---
 title: Deployment Guide
-description: Production deployment instructions for Vercel, Railway, and AWS
+description: Production deployment instructions for Vercel, Railway, and other platforms
 ---
 
 # Deployment Guide - Dreamland Manager
@@ -8,26 +8,51 @@ description: Production deployment instructions for Vercel, Railway, and AWS
 ## Prerequisites
 
 - Node.js 18+
-- PostgreSQL database
-- Groq and/or Gemini API keys
+- PostgreSQL database (Supabase)
+- Supabase project con Storage habilitado
+- API keys para AI providers (OpenRouter, Groq, Gemini)
 
 ---
 
 ## Environment Variables
 
-Create `.env` file in production:
+Crear el archivo `.env` en producción con las siguientes variables:
 
 ```bash
-# Database
-DATABASE_URL="postgresql://user:password@host:5432/dbname"
+# Base de datos Supabase (Transaction Pooler — recomendado para runtime)
+DATABASE_URL="postgresql://postgres.[ref]:[password]@aws-1-eu-central-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres.[ref]:[password]@aws-1-eu-central-1.pooler.supabase.com:5432/postgres"
+
+# Supabase Storage
+# Obtener en: Supabase Dashboard > Project Settings > API
+NEXT_PUBLIC_SUPABASE_URL="https://[project-ref].supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="eyJ..."   # ⚠️ NUNCA exponer al cliente
 
 # AI Provider
-AI_PROVIDER="groq"  # or "gemini"
-GROQ_API_KEY="gsk_..."
+AI_PROVIDER="openrouter"             # "openrouter" | "gemini" | "groq"
+OPENROUTER_API_KEY="sk-or-v1-..."
 GOOGLE_GENERATIVE_AI_API_KEY="AIza..."
+GROQ_API_KEY="gsk_..."
+AI_CHAT_MODEL="google/gemini-3-flash-preview"
+AI_REPORT_MODEL="openai/gpt-4o-mini"
+AI_COMMAND_MODEL="openai/gpt-4o-mini"
 
-# Security (generate secure secrets)
-JWT_SECRET="your-super-secret-jwt-key-here"
+# Seguridad
+JWT_SECRET="genera-un-secret-aleatorio-de-32+-caracteres"
+APP_URL="https://tu-dominio.com"
+
+# Pinecone (RAG — módulo ATC)
+PINECONE_API_KEY="pcsk_..."
+PINECONE_INDEX_NAME="dreamland-atc"
+
+# Integraciones opcionales
+YUREST_API_URL="https://..."
+YUREST_TOKEN="..."
+GSTOCK_API_URL="https://..."
+GSTOCK_CLIENT_ID="..."
+GSTOCK_CLIENT_SECRET="..."
+AEMET_API_KEY="..."
+N8N_WEBHOOK_SECRET="..."
 ```
 
 ---
@@ -52,19 +77,30 @@ npx prisma generate
 npx prisma migrate deploy
 ```
 
-###4. Run Seed (First Deploy Only)
+### 4. Setup Supabase Storage Buckets
+
+Ejecutar en Supabase Dashboard → SQL Editor:
+
+```sql
+-- Copiar y ejecutar el contenido de: scripts/setup-supabase-storage.sql
+-- Crea los buckets 'avatars' (público) y 'attachments' (privado)
+```
+
+Este paso es necesario para que funcionen la subida de avatares y adjuntos de tareas.
+
+### 5. Run Seed (First Deploy Only)
 
 ```bash
 npx tsx prisma/seed.ts
 ```
 
-### 5. Build Application
+### 6. Build Application
 
 ```bash
 npm run build
 ```
 
-### 6. Start Production Server
+### 7. Start Production Server
 
 ```bash
 npm start
@@ -76,35 +112,47 @@ npm start
 
 ### Vercel (Recommended)
 
-1. Connect GitHub repository
-2. Set environment variables in dashboard
+1. Conectar repositorio GitHub
+2. Configurar todas las variables de entorno en el Dashboard de Vercel
 3. Build command: `npm run build`
-4. Deploy automatically on push
+4. Output directory: `.next`
+5. Deploy automático en cada push a `main`
+
+> **Nota**: Al usar Vercel, el filesystem local NO persiste entre deploys. Supabase Storage es obligatorio para que los adjuntos y avatares funcionen correctamente.
 
 ### Railway
 
-1. Create new project from GitHub
-2. Add PostgreSQL database service
-3. Set environment variables
+1. Crear nuevo proyecto desde GitHub
+2. Añadir servicio PostgreSQL (o usar Supabase externo)
+3. Configurar variables de entorno
 4. Deploy
 
 ---
 
 ## Post-Deployment
 
-### Change Default Password
+### Verificar Supabase Storage
+
+Comprobar en Supabase Dashboard → Storage → Buckets:
+- `avatars` (public) ✅
+- `attachments` (private) ✅
+
+### Cambiar Contraseña del Admin
 
 ```sql
 UPDATE "User" SET password = '...' WHERE username = 'admin';
 ```
 
+O usar el formulario de cambio de contraseña de la aplicación.
+
 ### Monitor AI Usage
 
-Check quotas regularly to avoid service interruptions.
+Revisar cuotas regularmente para evitar interrupciones del servicio.
 
 ---
 
 ## Further Reading
 
-- [Environment Variables](./environment-variables.md)
-- [System Overview](../architecture/system-overview.md)
+- [Authentication](../capabilities/authentication.md) — Sistema de sesiones JWT y middleware de rutas
+- [File Storage](../capabilities/file-storage.md) — Supabase Storage, buckets y URLs firmadas
+- [System Overview](../architecture/system-overview.md) — Arquitectura general
