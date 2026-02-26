@@ -56,21 +56,25 @@ export async function POST(req: Request) {
         continue
       }
 
-      // Resolver categoryId desde slug
+      // Resolver categoryId desde slug (incluir notifyRoles y name para cross-departamento)
       let categoryId: string | undefined
+      let categoryNotifyRoles: string[] = []
+      let categoryName: string | undefined
       if (email.category) {
         const cat = await prisma.emailCategory.findUnique({
           where: { slug: email.category },
-          select: { id: true },
+          select: { id: true, notifyRoles: true, name: true },
         })
         categoryId = cat?.id
+        categoryNotifyRoles = cat?.notifyRoles ?? []
+        categoryName = cat?.name
       }
 
       const priority = email.aiPriority != null
         ? Math.min(Math.max(Math.round(email.aiPriority), 1), 5)
         : undefined
 
-      await prisma.emailInbox.create({
+      const created = await prisma.emailInbox.create({
         data: {
           messageId:         email.messageId,
           threadId:          email.threadId,
@@ -86,6 +90,7 @@ export async function POST(req: Request) {
           categoryId,
           receivedAt:        email.receivedAt ? new Date(email.receivedAt) : new Date(),
         },
+        select: { id: true },
       })
       results.created++
 
@@ -99,6 +104,31 @@ export async function POST(req: Request) {
           href: "/atc/backoffice",
           metadata: { emailMessageId: email.messageId, aiPriority: priority },
         })
+      }
+
+      // Notificar a roles de otros departamentos si la categoría lo requiere
+      if (categoryNotifyRoles.length > 0) {
+        try {
+          const usersToNotify = await prisma.user.findMany({
+            where: { role: { code: { in: categoryNotifyRoles } } },
+            select: { id: true },
+          })
+          if (usersToNotify.length > 0) {
+            await prisma.notification.createMany({
+              data: usersToNotify.map(u => ({
+                userId: u.id,
+                type: "EMAIL_CROSS_DEPARTMENT" as const,
+                title: `Email de ${categoryName ?? "ATC"}: ${email.subject}`,
+                body: email.aiSummary || `De: ${email.fromName || email.fromEmail}`,
+                href: `/shared/email/${created.id}`,
+                metadata: { emailId: created.id, category: categoryName },
+              })),
+              skipDuplicates: true,
+            })
+          }
+        } catch (notifError) {
+          console.error("[email/ingest] Error sending cross-department notifications:", notifError)
+        }
       }
     } catch (e) {
       console.error("[email/ingest] Error processing email:", email.messageId, e)

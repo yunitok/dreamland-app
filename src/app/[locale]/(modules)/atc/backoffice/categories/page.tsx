@@ -2,7 +2,7 @@ import { Suspense } from "react"
 import { Header } from "@/components/layout/header"
 import { Skeleton } from "@/modules/shared/ui/skeleton"
 import { setRequestLocale } from "next-intl/server"
-import { getEmailCategories } from "@/modules/atc/actions/backoffice"
+import { getEmailCategories, getRoles } from "@/modules/atc/actions/backoffice"
 import { EmailCategoryManager } from "@/modules/atc/ui/backoffice/email-category-manager"
 
 export default async function EmailCategoriesPage({
@@ -13,8 +13,12 @@ export default async function EmailCategoriesPage({
   const { locale } = await params
   setRequestLocale(locale)
 
-  const result = await getEmailCategories()
+  const [result, rolesResult] = await Promise.all([
+    getEmailCategories(),
+    getRoles(),
+  ])
   const categories = result.data ?? []
+  const roles = rolesResult.data ?? []
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
@@ -26,7 +30,7 @@ export default async function EmailCategoriesPage({
 
       <div className="flex-1 overflow-y-auto p-8 w-full">
         <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
-          <EmailCategoryManager categories={categories} />
+          <EmailCategoryManager categories={categories} roles={roles} />
         </Suspense>
       </div>
     </div>

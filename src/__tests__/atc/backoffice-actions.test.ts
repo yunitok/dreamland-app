@@ -14,7 +14,7 @@ vi.mock("@/lib/prisma", () => ({ prisma: { emailInbox: mockPrismaEmailInbox, ema
 import { getEmailInbox, markEmailRead, assignEmail, reclassifyEmail, getEmailCategories, createEmailCategory, updateEmailCategory, deleteEmailCategory, getInvoices, createInvoice, getGiftVouchers, createGiftVoucher, redeemVoucher } from "@/modules/atc/actions/backoffice"
 import type { EmailCategoryFormValues, InvoiceFormValues, GiftVoucherFormValues } from "@/modules/atc/domain/schemas"
 function createMockGiftVoucher(overrides: Record<string, unknown> = {}) { return { id: "voucher-1", code: "GIFT2026", value: 100, remainingValue: 100, status: "ACTIVE", purchasedBy: null, expiresAt: null, createdAt: new Date(), updatedAt: new Date(), ...overrides } }
-const validCategory: EmailCategoryFormValues = { name: "Reservas", slug: "reservas", color: "#6B7280", isActive: true, sortOrder: 0 }
+const validCategory: EmailCategoryFormValues = { name: "Reservas", slug: "reservas", description: undefined, color: "#6B7280", icon: undefined, parentId: undefined, isActive: true, sortOrder: 0, notifyRoles: [] }
 const validInvoice: InvoiceFormValues = { guestName: "Juan Garcia", items: [{ description: "Menu degustacion", quantity: 2, unitPrice: 75 }], subtotal: 150, tax: 31.5, total: 181.5 }
 const validVoucher: GiftVoucherFormValues = { code: "GIFT2026", value: 100 }
 beforeEach(() => { vi.clearAllMocks(); mockRequirePermission.mockResolvedValue(undefined); mockPrismaTransaction.mockResolvedValue([createMockGiftVoucher(), {}]) })

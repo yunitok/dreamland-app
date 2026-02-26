@@ -917,6 +917,8 @@ model EmailCategory {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
+  notifyRoles String[]        @default([])
+
   parent      EmailCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    EmailCategory[] @relation("CategoryHierarchy")
   emails      EmailInbox[]
@@ -1015,6 +1017,7 @@ enum NotificationType {
   WEATHER_ALERT
   EMAIL_ASSIGNED
   EMAIL_HIGH_PRIORITY
+  EMAIL_CROSS_DEPARTMENT
   QUERY_ESCALATED
   TASK_ASSIGNED
   TASK_COMMENTED

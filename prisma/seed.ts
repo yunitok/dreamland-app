@@ -301,12 +301,12 @@ async function main() {
     { name: 'Reservas',             slug: 'reservas',         description: 'Emails sobre reservas',                              color: '#3B82F6', icon: 'CalendarDays',   sortOrder: 1 },
     { name: 'Reclamaciones',        slug: 'reclamaciones',    description: 'Quejas y reclamaciones formales o informales',       color: '#EF4444', icon: 'AlertTriangle',  sortOrder: 2 },
     { name: 'Consultas Generales',  slug: 'consultas',        description: 'Preguntas sobre horarios, menús y servicios',       color: '#8B5CF6', icon: 'HelpCircle',     sortOrder: 3 },
-    { name: 'Facturación',          slug: 'facturacion',      description: 'Solicitudes y consultas de facturación',            color: '#F59E0B', icon: 'FileText',       sortOrder: 4 },
+    { name: 'Facturación',          slug: 'facturacion',      description: 'Solicitudes y consultas de facturación',            color: '#F59E0B', icon: 'FileText',       sortOrder: 4, notifyRoles: ['ADMIN'] },
     { name: 'Eventos y Grupos',     slug: 'eventos',          description: 'Eventos privados, celebraciones, grupos grandes',   color: '#EC4899', icon: 'PartyPopper',    sortOrder: 5 },
     { name: 'Alergias / Dietético', slug: 'alergias',         description: 'Alérgenos, intolerancias, opciones especiales',     color: '#14B8A6', icon: 'Wheat',          sortOrder: 6 },
     { name: 'Objetos Perdidos',     slug: 'objetos_perdidos', description: 'Objetos olvidados o perdidos en el local',          color: '#6366F1', icon: 'Search',         sortOrder: 7 },
-    { name: 'Colaboraciones',       slug: 'colaboraciones',   description: 'Propuestas comerciales, proveedores, partnerships', color: '#78716C', icon: 'Handshake',      sortOrder: 8 },
-    { name: 'Empleo',               slug: 'empleo',           description: 'CVs, solicitudes de empleo, consultas laborales',   color: '#0EA5E9', icon: 'Briefcase',      sortOrder: 9 },
+    { name: 'Colaboraciones',       slug: 'colaboraciones',   description: 'Propuestas comerciales, proveedores, partnerships', color: '#78716C', icon: 'Handshake',      sortOrder: 8, notifyRoles: ['ADMIN'] },
+    { name: 'Empleo',               slug: 'empleo',           description: 'CVs, solicitudes de empleo, consultas laborales',   color: '#0EA5E9', icon: 'Briefcase',      sortOrder: 9, notifyRoles: ['ADMIN'] },
     { name: 'Bonos Regalo',         slug: 'bonos',            description: 'Consultas sobre bonos regalo y tarjetas',           color: '#D946EF', icon: 'Gift',           sortOrder: 10 },
     { name: 'Spam / No Relevante',  slug: 'spam',             description: 'Publicidad, newsletters, emails automáticos',       color: '#9CA3AF', icon: 'Ban',            sortOrder: 99 },
     { name: 'Otro',                 slug: 'otro',             description: 'Emails que no encajan en ninguna categoría',        color: '#6B7280', icon: 'MoreHorizontal', sortOrder: 100 },
@@ -314,10 +314,11 @@ async function main() {
 
   const createdParents: Record<string, string> = {};
   for (const cat of parentCategories) {
+    const { notifyRoles, ...createData } = cat as typeof cat & { notifyRoles?: string[] };
     const result = await prisma.emailCategory.upsert({
       where: { slug: cat.slug },
-      update: {},
-      create: cat,
+      update: notifyRoles ? { notifyRoles } : {},
+      create: { ...createData, ...(notifyRoles ? { notifyRoles } : {}) },
     });
     createdParents[cat.slug] = result.id;
   }

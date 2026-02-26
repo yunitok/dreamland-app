@@ -67,6 +67,44 @@ export async function deleteEmail(id: string) {
   }
 }
 
+export async function deleteAllEmails() {
+  const auth = await requireAuth()
+  if (!auth.authenticated || auth.roleCode !== "SUPER_ADMIN") {
+    return { success: false, error: "Solo el SUPER_ADMIN puede eliminar emails" }
+  }
+  try {
+    const result = await prisma.emailInbox.deleteMany({})
+    revalidatePath("/atc/backoffice")
+    return { success: true, data: { count: result.count } }
+  } catch (error) {
+    console.error("Error deleting all emails:", error)
+    return { success: false, error: "Error al eliminar todos los emails" }
+  }
+}
+
+export async function getEmailsByCategory(categorySlugs: string[]) {
+  await requirePermission("atc", "manage")
+  try {
+    const emails = await prisma.emailInbox.findMany({
+      where: {
+        category: {
+          OR: [
+            { slug: { in: categorySlugs } },
+            { parent: { slug: { in: categorySlugs } } },
+          ],
+        },
+      },
+      include: { category: { select: { id: true, name: true, color: true, icon: true, slug: true } } },
+      orderBy: [{ aiPriority: "desc" }, { receivedAt: "desc" }],
+      take: 50,
+    })
+    return { success: true, data: emails }
+  } catch (error) {
+    console.error("Error fetching emails by category:", error)
+    return { success: false, error: "Error al cargar los emails por categoría" }
+  }
+}
+
 export async function markEmailRead(id: string) {
   await requirePermission("atc", "manage")
   try {
@@ -133,6 +171,20 @@ export async function getEmailCategories() {
   } catch (error) {
     console.error("Error fetching email categories:", error)
     return { success: false, error: "Error al cargar las categorías" }
+  }
+}
+
+export async function getRoles() {
+  await requirePermission("atc", "manage")
+  try {
+    const roles = await prisma.role.findMany({
+      select: { code: true, name: true },
+      orderBy: { name: "asc" },
+    })
+    return { success: true, data: roles }
+  } catch (error) {
+    console.error("Error fetching roles:", error)
+    return { success: false, error: "Error al cargar los roles" }
   }
 }
 

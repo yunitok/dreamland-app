@@ -76,6 +76,7 @@ export const emailCategorySchema = z.object({
   parentId:    z.string().optional().or(z.literal("")).transform(v => v || undefined),
   isActive:    z.boolean().default(true),
   sortOrder:   z.number().int().min(0).default(0),
+  notifyRoles: z.array(z.string()).default([]),
 })
 
 export const weatherAlertSchema = z.object({

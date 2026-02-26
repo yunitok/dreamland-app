@@ -283,7 +283,8 @@
       "name": "Prepare Mark Read",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [240, -200]
+      "position": [240, -200],
+      "disabled": true
     },
     {
       "parameters": {
@@ -296,6 +297,7 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [480, -200],
+      "disabled": true,
       "credentials": {
         "googleApi": {
           "id": "XyV4OgnMNyZQQ75y",
