@@ -9,7 +9,7 @@ import {
 import { Badge } from "@/modules/shared/ui/badge"
 import { Button } from "@/modules/shared/ui/button"
 import { Separator } from "@/modules/shared/ui/separator"
-import { Mail, MailOpen, Calendar, Tag, Zap, Brain } from "lucide-react"
+import { Mail, MailOpen, Calendar, CalendarClock, Tag, Zap, Brain } from "lucide-react"
 import type { EmailRow } from "./email-inbox-tab"
 
 interface EmailDetailDialogProps {
@@ -107,6 +107,26 @@ export function EmailDetailDialog({ email, onClose, onMarkRead }: EmailDetailDia
             {email.aiLabel && email.aiLabel !== email.category?.name && (
               <Badge variant="secondary" className="text-xs">{email.aiLabel}</Badge>
             )}
+
+            {/* Fecha objetivo */}
+            {email.targetDate && (() => {
+              const target = new Date(email.targetDate)
+              const now = new Date()
+              now.setHours(0, 0, 0, 0)
+              const daysUntil = Math.round((target.getTime() - now.getTime()) / 86400000)
+              const colorClass = daysUntil <= 1
+                ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200"
+                : daysUntil <= 3
+                  ? "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200"
+                  : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300"
+              const label = daysUntil < 0 ? "Pasada" : daysUntil === 0 ? "Hoy" : daysUntil === 1 ? "Mañana" : `En ${daysUntil} días`
+              return (
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${colorClass}`}>
+                  <CalendarClock className="h-3 w-3" />
+                  {target.toLocaleDateString("es-ES", { weekday: "long", day: "2-digit", month: "long" })} ({label})
+                </span>
+              )
+            })()}
           </div>
 
           {/* Resumen IA */}

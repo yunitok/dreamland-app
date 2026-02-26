@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/modules/shared/ui/dropdown-menu"
-import { Mail, MailOpen, MoreHorizontal, Search, Eye, Trash2 } from "lucide-react"
+import { Mail, MailOpen, MoreHorizontal, Search, Eye, Trash2, CalendarClock } from "lucide-react"
 import { markEmailRead, deleteEmail } from "@/modules/atc/actions/backoffice"
 import { toast } from "sonner"
 import { EmailDetailDialog } from "./email-detail-dialog"
@@ -43,6 +43,7 @@ export type EmailRow = {
   aiPriority: number | null
   aiConfidenceScore: number | null
   aiSummary: string | null
+  targetDate: Date | null
   isRead: boolean
   assignedTo: string | null
   categoryId: string | null
@@ -239,6 +240,24 @@ export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabPr
                         P{email.aiPriority} {priorityLabels[email.aiPriority]}
                       </span>
                     )}
+                    {/* Badge fecha objetivo */}
+                    {email.targetDate && (() => {
+                      const target = new Date(email.targetDate)
+                      const now = new Date()
+                      now.setHours(0, 0, 0, 0)
+                      const daysUntil = Math.round((target.getTime() - now.getTime()) / 86400000)
+                      const colorClass = daysUntil <= 1
+                        ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200"
+                        : daysUntil <= 3
+                          ? "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200"
+                          : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                      return (
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${colorClass}`}>
+                          <CalendarClock className="h-3 w-3" />
+                          {target.toLocaleDateString("es-ES", { day: "2-digit", month: "short" })}
+                        </span>
+                      )
+                    })()}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-7 w-7 cursor-pointer">

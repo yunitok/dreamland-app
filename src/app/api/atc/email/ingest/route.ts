@@ -15,6 +15,7 @@ interface EmailIngestPayload {
   aiPriority?:        number
   aiConfidenceScore?: number
   aiSummary?:         string
+  targetDate?:        string  // YYYY-MM-DD — fecha objetivo extraída del email
 }
 
 export async function POST(req: Request) {
@@ -81,6 +82,7 @@ export async function POST(req: Request) {
           aiPriority:        priority,
           aiConfidenceScore: email.aiConfidenceScore,
           aiSummary:         email.aiSummary,
+          targetDate:        email.targetDate ? new Date(email.targetDate) : undefined,
           categoryId,
           receivedAt:        email.receivedAt ? new Date(email.receivedAt) : new Date(),
         },

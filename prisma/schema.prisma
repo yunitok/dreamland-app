@@ -938,6 +938,7 @@ model EmailInbox {
   aiPriority         Int?
   aiConfidenceScore  Float?
   aiSummary          String?
+  targetDate         DateTime?
   isRead             Boolean        @default(false)
   assignedTo         String?
   categoryId         String?
@@ -951,6 +952,7 @@ model EmailInbox {
   @@index([receivedAt])
   @@index([categoryId])
   @@index([assignedTo])
+  @@index([targetDate])
   @@map("email_inbox")
 }
 
