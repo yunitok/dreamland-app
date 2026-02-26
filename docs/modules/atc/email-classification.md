@@ -8,24 +8,27 @@ description: Pipeline Gmail → n8n → LLM → Dreamland App para clasificar em
 ## Estado actual
 
 **Código desplegado** — todo el backend y la UI están en producción.
-**Pendiente** — configurar n8n con la credencial de Gmail (Domain-Wide Delegation propagando).
+**Workflow v2 (Batch)** — optimizado para procesar 50+ emails por ejecución.
 
-## Arquitectura del flujo
+## Arquitectura del flujo (v2 Batch)
 
 ```
 Gmail (Workspace: contacto@volteretarestaurante.com)
-    ↓ polling cada 3 min (is:unread)
-n8n Workflow (11 nodos)
+    ↓ polling cada 5 min (is:unread, limit 50)
+n8n Workflow v2 (17 nodos)
     ├── Set Config: URL de la app (centralizado)
-    ├── Extraer: from, subject, body (text plano de n8n, max 3000 chars)
-    ├── Check dedup: POST /api/atc/email/check-exists (Header Auth credential)
-    ├── Clasificar: OpenRouter gpt-4o-mini → {category, priority, summary}
-    └── Ingestar: POST /api/atc/email/ingest (Header Auth credential)
+    ├── Extraer: from, subject, body (max 3000 chars)
+    ├── Batch Check dedup: POST /api/atc/email/check-exists-batch (1 llamada)
+    ├── Filtrar nuevos → Dividir en lotes de 5
+    ├── Clasificar batch: OpenRouter gpt-4o-mini → JSON array por lote
+    ├── Parsear + fusionar clasificaciones
+    └── Batch Ingestar: POST /api/atc/email/ingest (1 llamada, array)
          ↓
 Dreamland App
     ├── Dedup por messageId (@unique)
     ├── Resolver categoryId desde slug
-    └── INSERT en email_inbox
+    ├── INSERT en email_inbox
+    └── Notificaciones automáticas si priority >= 4
          ↓
 UI Backoffice (/atc/backoffice)
     ├── Filtros: categoría, prioridad, búsqueda, leídos/no leídos
@@ -33,13 +36,22 @@ UI Backoffice (/atc/backoffice)
     └── Gestión CRUD de categorías (/atc/backoffice/categories)
 ```
 
+### Reducción de llamadas HTTP (v1 → v2)
+
+| Escenario | v1 (3 calls/email) | v2 Batch |
+|---|---|---|
+| 10 emails, 5 nuevos | 20 llamadas | 3 llamadas |
+| 50 emails, 30 nuevos | N/A (límite 10) | 8 llamadas |
+| 50 emails, 0 nuevos | N/A | 1 llamada |
+
 ## Archivos clave en el código
 
 | Archivo | Función |
 |---------|---------|
 | `prisma/schema.prisma` | Modelos `EmailCategory` y `EmailInbox` |
 | `src/app/api/atc/email/ingest/route.ts` | Webhook de ingesta (n8n → app) |
-| `src/app/api/atc/email/check-exists/route.ts` | Endpoint de deduplicación |
+| `src/app/api/atc/email/check-exists/route.ts` | Endpoint de deduplicación (single) |
+| `src/app/api/atc/email/check-exists-batch/route.ts` | Endpoint de deduplicación batch (array) |
 | `src/modules/atc/actions/backoffice.ts` | Server actions (CRUD categorías, filtros inbox) |
 | `src/modules/atc/ui/backoffice/email-inbox-tab.tsx` | UI de bandeja con filtros |
 | `src/modules/atc/ui/backoffice/email-detail-dialog.tsx` | Dialog detalle email |
@@ -119,9 +131,9 @@ UI Backoffice (/atc/backoffice)
 |------|-----------|
 | `Gmail - Get Unread` | Google Service Account (Paso 3) |
 | `Gmail - Mark as Read` | Google Service Account (Paso 3) |
-| `Check Dedup` | Dreamland Webhook Auth (Paso 4a) |
-| `Classify with LLM` | OpenRouter API Key (Paso 4b) |
-| `Ingest Email` | Dreamland Webhook Auth (Paso 4a) |
+| `Batch Check-Exists` | Dreamland Webhook Auth (Paso 4a) |
+| `Classify Batch LLM` | OpenRouter API Key (Paso 4b) |
+| `Batch Ingest` | Dreamland Webhook Auth (Paso 4a) |
 
 ### Paso 7 — Configurar URL de la app
 
@@ -134,7 +146,7 @@ UI Backoffice (/atc/backoffice)
 1. Enviar un email de prueba a `contacto@volteretarestaurante.com`
 2. En n8n → **Test Workflow** (botón play)
 3. Verificar que el email aparece clasificado en `/atc/backoffice`
-4. Si todo OK → activar el workflow (toggle ON) para polling automático cada 3 min
+4. Si todo OK → activar el workflow (toggle ON) para polling automático cada 5 min
 
 ---
 
@@ -157,9 +169,10 @@ La Domain-Wide Delegation no ha propagado. Opciones:
 
 ### Email duplicado
 
-Normal — el sistema tiene doble protección:
-1. `check-exists` previo (ahorra llamada al LLM)
-2. `@unique` en `messageId` a nivel de base de datos
+Normal — el sistema tiene triple protección:
+1. `check-exists-batch` previo (ahorra llamadas al LLM)
+2. Dedup interno en el endpoint `ingest` (verifica antes de INSERT)
+3. `@unique` en `messageId` a nivel de base de datos
 
 ---
 
@@ -206,8 +219,8 @@ El LLM clasifica usando estos slugs exactos:
 
 ## Coste estimado
 
-- gpt-4o-mini vía OpenRouter: ~$0.000135/email
-- 100 emails/día → ~$0.42/mes
+- gpt-4o-mini vía OpenRouter: ~$0.000135/email (menos en batch por compartir system prompt)
+- 100 emails/día → ~$0.35/mes (optimizado con clasificación batch de 5 emails/llamada)
 
 ---
 
@@ -231,12 +244,16 @@ El archivo JSON importable está en:
 
 Para importar: en n8n → **Workflows → Import from JSON** → pegar el contenido del archivo.
 
-### Flujo del workflow (11 nodos)
+### Flujo del workflow v2 (17 nodos)
 
 ```
-Every 3 Min → Set Config → Gmail Get Unread → Extract Email Data → Check Dedup → Is New Email?
-  ├─ true  → Classify LLM → Parse Response (con fallback interno) → Ingest → Mark Read
-  └─ false → Skip Duplicate (NoOp)
+Every 5 Min → Set Config → Gmail Get 50 Unread → Extract Email Data
+  → Collect MessageIds → Batch Check-Exists (1 llamada)
+  → Filter New Emails → Has New Emails?
+  ├─ true  → Prepare Batches (lotes de 5)
+  │          → Build LLM Prompt → Classify Batch LLM → Parse & Merge
+  │          → Collect All → Batch Ingest (1 llamada) → Prepare Mark Read → Gmail Mark Read
+  └─ false → All Duplicates (NoOp)
 ```
 
 ### Configuración centralizada
@@ -245,3 +262,11 @@ Every 3 Min → Set Config → Gmail Get Unread → Extract Email Data → Check
 - **Webhook secret**: credencial Header Auth "Dreamland Webhook Auth" (cifrada)
 - **API key LLM**: credencial Header Auth "OpenRouter API Key" (cifrada)
 - **Gmail**: credencial Google Service Account (cifrada)
+
+### Mejoras respecto a v1
+
+- **50 emails/ejecución** (antes 10)
+- **Clasificación batch**: 5 emails por llamada LLM (antes 1)
+- **Dedup batch**: 1 llamada HTTP para N emails (antes N llamadas)
+- **Ingest batch**: 1 llamada HTTP con array (antes N llamadas)
+- **Sin bug de item pairing**: datos fluyen explícitamente por Code nodes, sin depender de referencias cruzadas de n8n
