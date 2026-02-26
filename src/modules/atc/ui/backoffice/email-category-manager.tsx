@@ -363,14 +363,14 @@ export function EmailCategoryManager({ categories: initialCategories }: EmailCat
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Categoría padre (opcional)</FormLabel>
-                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                    <Select value={field.value ?? "none"} onValueChange={v => field.onChange(v === "none" ? null : v)}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Sin categoría padre (nivel raíz)" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Sin categoría padre</SelectItem>
+                        <SelectItem value="none">Sin categoría padre</SelectItem>
                         {parents
                           .filter(p => p.id !== editing?.id)
                           .map(p => (
