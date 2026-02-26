@@ -74,6 +74,16 @@ export async function POST(req: Request) {
         ? Math.min(Math.max(Math.round(email.aiPriority), 1), 5)
         : undefined
 
+      // Detectar clasificaciones potencialmente fallidas
+      if (email.aiConfidenceScore === 0 || email.aiConfidenceScore == null) {
+        console.warn(
+          "[email/ingest] Low/null confidence:",
+          email.messageId,
+          "| label:", email.aiLabel,
+          "| category:", email.category
+        )
+      }
+
       const created = await prisma.emailInbox.create({
         data: {
           messageId:         email.messageId,
