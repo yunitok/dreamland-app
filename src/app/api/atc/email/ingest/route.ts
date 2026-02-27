@@ -16,6 +16,7 @@ interface EmailIngestPayload {
   aiConfidenceScore?: number
   aiSummary?:         string
   targetDate?:        string  // YYYY-MM-DD — fecha objetivo extraída del email
+  actionRequired?:    boolean // false si es follow-up/cierre de hilo ya gestionado
 }
 
 export async function POST(req: Request) {
@@ -97,6 +98,7 @@ export async function POST(req: Request) {
           aiConfidenceScore: email.aiConfidenceScore,
           aiSummary:         email.aiSummary,
           targetDate:        email.targetDate ? new Date(email.targetDate) : undefined,
+          actionRequired:    email.actionRequired ?? true,
           categoryId,
           receivedAt:        email.receivedAt ? new Date(email.receivedAt) : new Date(),
         },
@@ -104,8 +106,8 @@ export async function POST(req: Request) {
       })
       results.created++
 
-      // Notificar a todos los agentes ATC si el email es de alta prioridad (P4 o P5)
-      if (priority && priority >= 4) {
+      // Notificar a todos los agentes ATC si el email es de alta prioridad (P4 o P5) y requiere acción
+      if (priority && priority >= 4 && email.actionRequired !== false) {
         const urgencyLabel = priority === 5 ? "URGENTE" : "Alta prioridad"
         await createNotificationsForPermission("atc", "manage", {
           type: "EMAIL_HIGH_PRIORITY",

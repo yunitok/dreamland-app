@@ -154,23 +154,73 @@
     },
     {
       "parameters": {
-        "jsCode": "// Divide emails nuevos en lotes de 5 para clasificacion LLM batch\nconst emails = $input.first().json.emails;\nconst BATCH_SIZE = 5;\nconst batches = [];\n\nfor (let i = 0; i < emails.length; i += BATCH_SIZE) {\n  batches.push({\n    json: {\n      batchIndex: Math.floor(i / BATCH_SIZE),\n      emails: emails.slice(i, i + BATCH_SIZE)\n    }\n  });\n}\n\nreturn batches;"
+        "jsCode": "// Extrae threadIds unicos de los emails nuevos para consultar contexto de hilos\nconst data = $input.first().json;\nconst emails = data.emails;\nconst threadIds = [...new Set(emails.map(e => e.threadId).filter(Boolean))];\nreturn [{ json: { threadIds, emails } }];"
+      },
+      "id": "collect-thread-ids",
+      "name": "Collect ThreadIds",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-1280, -200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Set Config').first().json.DREAMLAND_APP_URL }}/api/atc/email/thread-context-batch",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ threadIds: $json.threadIds }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "id": "fetch-thread-context",
+      "name": "Fetch Thread Context",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-1040, -200],
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "zhLT7GI5DSwc3rAG",
+          "name": "Dreamland Header Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Enriquece emails con contexto de hilo y divide en lotes de 5\nconst threadContext = $('Fetch Thread Context').first().json.threads || {};\nconst emails = $('Collect ThreadIds').first().json.emails;\nconst BATCH_SIZE = 5;\nconst batches = [];\n\nconst enrichedEmails = emails.map(email => ({\n  ...email,\n  threadContext: email.threadId ? (threadContext[email.threadId] || []) : []\n}));\n\nfor (let i = 0; i < enrichedEmails.length; i += BATCH_SIZE) {\n  batches.push({\n    json: {\n      batchIndex: Math.floor(i / BATCH_SIZE),\n      emails: enrichedEmails.slice(i, i + BATCH_SIZE)\n    }\n  });\n}\n\nreturn batches;"
       },
       "id": "prepare-batches",
       "name": "Prepare Batches",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-1200, -200]
+      "position": [-800, -200]
     },
     {
       "parameters": {
-        "jsCode": "// Construye el prompt multi-email y el body completo para OpenRouter\n// Incluye fecha actual para que el LLM resuelva fechas relativas\nconst items = $input.all();\nconst results = [];\nconst todayISO = new Date().toISOString().split('T')[0];\n\nfor (const item of items) {\n  const emails = item.json.emails;\n\n  // Bloques de email para el prompt\n  const emailBlocks = emails.map((email, i) => {\n    const body = email.body.length > 1500\n      ? email.body.substring(0, 1500) + '...[truncado]'\n      : email.body;\n    return '--- EMAIL #' + (i + 1) + ' ---\\n' +\n      'Message-ID: ' + email.messageId + '\\n' +\n      'De: ' + (email.fromName || '') + ' <' + email.fromEmail + '>\\n' +\n      'Asunto: ' + email.subject + '\\n\\n' +\n      body + '\\n' +\n      '--- FIN EMAIL #' + (i + 1) + ' ---';\n  }).join('\\n\\n');\n\n  // System prompt con categorias, prioridad base y extraccion de targetDate\n  const systemPrompt =\n    'Eres un clasificador de emails para el departamento de ATC de un grupo de restaurantes de alta gama (Dreamland).\\n' +\n    'HOY ES: ' + todayISO + '. Usa esta fecha para resolver referencias relativas (manana, el viernes, la proxima semana, etc.).\\n\\n' +\n    'Analiza TODOS los emails proporcionados y devuelve un JSON con la clasificacion de cada uno.\\n\\n' +\n    'CATEGORIAS (usa el slug mas especifico posible):\\n\\n' +\n    'Subcategorias (preferentes):\\n' +\n    '- reservas_nueva: solicitud de nueva reserva\\n' +\n    '- reservas_modificacion: cambio en reserva existente (fecha, hora, personas)\\n' +\n    '- reservas_cancelacion: cancelacion de reserva\\n' +\n    '- reservas_confirmacion: confirmacion de asistencia\\n' +\n    '- reclamaciones_servicio: queja sobre atencion o trato del personal\\n' +\n    '- reclamaciones_comida: queja sobre calidad, sabor o presentacion\\n' +\n    '- reclamaciones_cobro: error de cobro, cuenta incorrecta, cobro duplicado\\n' +\n    '- consultas_horarios: preguntas sobre horarios y disponibilidad\\n' +\n    '- consultas_menu: preguntas sobre carta, platos, opciones\\n' +\n    '- consultas_servicios: parking, terraza, wifi, accesibilidad\\n' +\n    '- facturacion_solicitud: solicitud de factura con datos fiscales\\n' +\n    '- facturacion_error: factura incorrecta o con datos erroneos\\n\\n' +\n    'Categorias generales (si ninguna subcategoria aplica):\\n' +\n    '- reservas, reclamaciones, consultas, facturacion\\n' +\n    '- eventos: evento privado, celebracion, grupo grande\\n' +\n    '- alergias: alergenos, intolerancias, dietas especiales\\n' +\n    '- objetos_perdidos: objeto olvidado en el local\\n' +\n    '- colaboraciones: propuesta comercial, proveedor, influencer\\n' +\n    '- empleo: CV, solicitud de empleo\\n' +\n    '- bonos: bono regalo, tarjeta regalo\\n' +\n    '- spam: publicidad, newsletter, email automatico irrelevante\\n' +\n    '- otro: no encaja en ninguna categoria\\n\\n' +\n    'PRIORIDAD BASE (solo por tipo de peticion, SIN considerar urgencia temporal):\\n' +\n    '- 5: URGENTE - queja grave, incidente salud/alergia, amenaza legal, VIP\\n' +\n    '- 4: ALTA - reclamacion formal, error cobro, cancelacion con reembolso, grupo >10\\n' +\n    '- 3: MEDIA - reserva nueva, modificacion, solicitud de factura, evento\\n' +\n    '- 2: BAJA - consulta general, horarios, informacion\\n' +\n    '- 1: MINIMA - spam, newsletters, empleo no solicitado\\n\\n' +\n    'VIP (sube +1 la prioridad base): email corporativo, grupo >10, evento corporativo, cliente frecuente.\\n\\n' +\n    'targetDate: la fecha que el cliente necesita gestionar (fecha de la reserva, evento, cancelacion, cita, etc.).\\n' +\n    'Resuelve fechas relativas como \"manana\", \"el viernes\", \"la proxima semana\" usando la fecha actual (' + todayISO + ').\\n' +\n    'Si el email no menciona ninguna fecha concreta o relevante, devuelve null.\\n' +\n    'Formato: YYYY-MM-DD o null.\\n\\n' +\n    'RESPONDE UNICAMENTE con un JSON valido con esta estructura exacta:\\n' +\n    '{ \"classifications\": [{ \"messageId\": \"<Message-ID>\", \"category\": \"<slug>\", \"label\": \"<max 25 chars>\", \"priority\": <1-5>, \"confidence\": <0.0-1.0>, \"summary\": \"<max 100 chars>\", \"targetDate\": \"YYYY-MM-DD o null\" }] }\\n\\n' +\n    'El array \"classifications\" debe tener EXACTAMENTE ' + emails.length + ' objetos, uno por email, en el MISMO orden.';\n\n  const llmBody = JSON.stringify({\n    model: 'openai/gpt-4o-mini',\n    temperature: 0.1,\n    response_format: { type: 'json_object' },\n    max_tokens: 6000,\n    messages: [\n      { role: 'system', content: systemPrompt },\n      { role: 'user', content: 'Clasifica estos ' + emails.length + ' emails:\\n\\n' + emailBlocks }\n    ]\n  });\n\n  results.push({ json: { llmBody, emails } });\n}\n\nreturn results;"
+        "jsCode": "// Construye el prompt multi-email con contexto de hilo para OpenRouter\n// Incluye fecha actual para que el LLM resuelva fechas relativas\nconst items = $input.all();\nconst results = [];\nconst todayISO = new Date().toISOString().split('T')[0];\n\nfor (const item of items) {\n  const emails = item.json.emails;\n\n  // Bloques de email para el prompt (con contexto de hilo si existe)\n  const emailBlocks = emails.map((email, i) => {\n    const body = email.body.length > 1500\n      ? email.body.substring(0, 1500) + '...[truncado]'\n      : email.body;\n\n    let block = '--- EMAIL #' + (i + 1) + ' ---\\n' +\n      'Message-ID: ' + email.messageId + '\\n' +\n      'De: ' + (email.fromName || '') + ' <' + email.fromEmail + '>\\n' +\n      'Asunto: ' + email.subject + '\\n\\n' +\n      body + '\\n' +\n      '--- FIN EMAIL #' + (i + 1) + ' ---';\n\n    // Anadir contexto del hilo si existe\n    const ctx = email.threadContext || [];\n    if (ctx.length > 0) {\n      block += '\\n[HILO: ' + ctx.length + ' email(s) previo(s)]:\\n';\n      ctx.forEach((prev, j) => {\n        const date = prev.receivedAt ? new Date(prev.receivedAt).toISOString().split('T')[0] : '?';\n        block += '  ' + (j + 1) + '. [' + date + '] De: ' + prev.fromEmail +\n          ' | P' + (prev.aiPriority || '?') +\n          ' | \"' + (prev.aiSummary || 'Sin resumen') + '\"' +\n          ' | Accion: ' + (prev.actionRequired ? 'Si' : 'No') + '\\n';\n      });\n      block += '[FIN HILO]';\n    }\n\n    return block;\n  }).join('\\n\\n');\n\n  // System prompt con categorias, prioridad base, targetDate y contexto de hilo\n  const systemPrompt =\n    'Eres un clasificador de emails para el departamento de ATC de un grupo de restaurantes de alta gama (Dreamland).\\n' +\n    'HOY ES: ' + todayISO + '. Usa esta fecha para resolver referencias relativas (manana, el viernes, la proxima semana, etc.).\\n\\n' +\n    'Analiza TODOS los emails proporcionados y devuelve un JSON con la clasificacion de cada uno.\\n\\n' +\n    'CATEGORIAS (usa el slug mas especifico posible):\\n\\n' +\n    'Subcategorias (preferentes):\\n' +\n    '- reservas_nueva: solicitud de nueva reserva\\n' +\n    '- reservas_modificacion: cambio en reserva existente (fecha, hora, personas)\\n' +\n    '- reservas_cancelacion: cancelacion de reserva\\n' +\n    '- reservas_confirmacion: confirmacion de asistencia\\n' +\n    '- reclamaciones_servicio: queja sobre atencion o trato del personal\\n' +\n    '- reclamaciones_comida: queja sobre calidad, sabor o presentacion\\n' +\n    '- reclamaciones_cobro: error de cobro, cuenta incorrecta, cobro duplicado\\n' +\n    '- consultas_horarios: preguntas sobre horarios y disponibilidad\\n' +\n    '- consultas_menu: preguntas sobre carta, platos, opciones\\n' +\n    '- consultas_servicios: parking, terraza, wifi, accesibilidad\\n' +\n    '- facturacion_solicitud: solicitud de factura con datos fiscales\\n' +\n    '- facturacion_error: factura incorrecta o con datos erroneos\\n\\n' +\n    'Categorias generales (si ninguna subcategoria aplica):\\n' +\n    '- reservas, reclamaciones, consultas, facturacion\\n' +\n    '- eventos: evento privado, celebracion, grupo grande\\n' +\n    '- alergias: alergenos, intolerancias, dietas especiales\\n' +\n    '- objetos_perdidos: objeto olvidado en el local\\n' +\n    '- colaboraciones: propuesta comercial, proveedor, influencer\\n' +\n    '- empleo: CV, solicitud de empleo\\n' +\n    '- bonos: bono regalo, tarjeta regalo\\n' +\n    '- spam: publicidad, newsletter, email automatico irrelevante\\n' +\n    '- otro: no encaja en ninguna categoria\\n\\n' +\n    'PRIORIDAD BASE (solo por tipo de peticion, SIN considerar urgencia temporal):\\n' +\n    '- 5: URGENTE - queja grave, incidente salud/alergia, amenaza legal, VIP\\n' +\n    '- 4: ALTA - reclamacion formal, error cobro, cancelacion con reembolso, grupo >10\\n' +\n    '- 3: MEDIA - reserva nueva, modificacion, solicitud de factura, evento\\n' +\n    '- 2: BAJA - consulta general, horarios, informacion\\n' +\n    '- 1: MINIMA - spam, newsletters, empleo no solicitado\\n\\n' +\n    'VIP (sube +1 la prioridad base): email corporativo, grupo >10, evento corporativo, cliente frecuente.\\n\\n' +\n    'targetDate: la fecha que el cliente necesita gestionar (fecha de la reserva, evento, cancelacion, cita, etc.).\\n' +\n    'Resuelve fechas relativas como \"manana\", \"el viernes\", \"la proxima semana\" usando la fecha actual (' + todayISO + ').\\n' +\n    'Si el email no menciona ninguna fecha concreta o relevante, devuelve null.\\n' +\n    'Formato: YYYY-MM-DD o null.\\n\\n' +\n    'CONTEXTO DE HILO:\\n' +\n    'Algunos emails incluyen historial de mensajes previos del mismo hilo de conversacion.\\n' +\n    'Usa este contexto para determinar si el email requiere accion:\\n' +\n    '- Seguimiento de conversacion ya resuelta (cliente dice \"gracias\", \"ok\", \"recibido\", \"perfecto\") → actionRequired: false, priority: 1\\n' +\n    '- Email que aporta nueva informacion y requiere accion del equipo → actionRequired: true\\n' +\n    '- Escalacion o queja sobre gestion previa → actionRequired: true, subir prioridad\\n' +\n    '- Sin historial previo → actionRequired: true por defecto\\n\\n' +\n    'actionRequired:\\n' +\n    '- true: el email requiere accion del equipo ATC (responder, gestionar, investigar)\\n' +\n    '- false: informativo, cierre de hilo, agradecimiento, confirmacion automatica, o tema ya resuelto\\n\\n' +\n    'RESPONDE UNICAMENTE con un JSON valido con esta estructura exacta:\\n' +\n    '{ \"classifications\": [{ \"messageId\": \"<Message-ID>\", \"category\": \"<slug>\", \"label\": \"<max 25 chars>\", \"priority\": <1-5>, \"confidence\": <0.0-1.0>, \"summary\": \"<max 100 chars>\", \"targetDate\": \"YYYY-MM-DD o null\", \"actionRequired\": <true|false> }] }\\n\\n' +\n    'El array \"classifications\" debe tener EXACTAMENTE ' + emails.length + ' objetos, uno por email, en el MISMO orden.';\n\n  const llmBody = JSON.stringify({\n    model: 'openai/gpt-4o-mini',\n    temperature: 0.1,\n    response_format: { type: 'json_object' },\n    max_tokens: 6000,\n    messages: [\n      { role: 'system', content: systemPrompt },\n      { role: 'user', content: 'Clasifica estos ' + emails.length + ' emails:\\n\\n' + emailBlocks }\n    ]\n  });\n\n  results.push({ json: { llmBody, emails } });\n}\n\nreturn results;"
       },
       "id": "build-llm-prompt",
       "name": "Build LLM Prompt",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-960, -200]
+      "position": [-560, -200]
     },
     {
       "parameters": {
@@ -207,7 +257,7 @@
       "name": "Classify Batch LLM",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [-720, -200],
+      "position": [-320, -200],
       "credentials": {
         "httpHeaderAuth": {
           "id": "dmN4i6OWOCnL2ahf",
@@ -217,23 +267,23 @@
     },
     {
       "parameters": {
-        "jsCode": "// Parsea respuestas LLM, aplica ajuste temporal de prioridad y fusiona con datos originales\nconst llmResponses = $input.all();\nconst batchData = $('Build LLM Prompt').all();\nconst results = [];\n\n// Fecha de hoy a medianoche para calculo de dias\nconst today = new Date();\ntoday.setHours(0, 0, 0, 0);\n\nfor (let i = 0; i < llmResponses.length; i++) {\n  const llmResponse = llmResponses[i].json;\n  const batchEmails = batchData[i]?.json?.emails || [];\n  if (batchEmails.length === 0) continue;\n\n  let classifications = [];\n\n  try {\n    // Detectar si la respuesta del LLM es valida\n    const content = llmResponse.choices?.[0]?.message?.content;\n\n    if (!content) {\n      console.error('[Parse & Merge] Batch ' + i + ' - LLM response missing content:', JSON.stringify(llmResponse).substring(0, 500));\n      throw new Error('LLM response missing content');\n    }\n\n    // Log del raw content para debugging\n    console.log('[Parse & Merge] Batch ' + i + ' raw (' + content.length + ' chars): ' + content.substring(0, 300));\n\n    let parsed = JSON.parse(content);\n\n    if (!Array.isArray(parsed)) {\n      // Estrategia 1: buscar key conocida\n      if (parsed.classifications && Array.isArray(parsed.classifications)) {\n        parsed = parsed.classifications;\n      } else {\n        // Estrategia 2: buscar el primer valor que sea un array en el objeto\n        const arrayProp = Object.values(parsed).find(v => Array.isArray(v));\n        if (arrayProp) {\n          console.log('[Parse & Merge] Array found under non-standard key. Keys: ' + Object.keys(parsed).join(', '));\n          parsed = arrayProp;\n        } else if (parsed.messageId) {\n          // Estrategia 3: clasificacion individual\n          console.log('[Parse & Merge] Single classification object detected');\n          parsed = [parsed];\n        } else {\n          console.error('[Parse & Merge] No array found in response. Keys: ' + Object.keys(parsed).join(', '));\n          throw new Error('No classification array found in LLM response');\n        }\n      }\n    }\n\n    classifications = parsed.filter(item => item && typeof item === 'object');\n  } catch (e) {\n    console.error('[Parse & Merge] Error for batch ' + i + ':', e.message || e);\n    classifications = batchEmails.map(email => ({\n      messageId: email.messageId,\n      category: 'otro',\n      label: 'Error clasificacion',\n      priority: 3,\n      confidence: 0,\n      summary: 'Error: ' + (e.message || 'unknown').substring(0, 80),\n      targetDate: null\n    }));\n  }\n\n  const classMap = new Map();\n  for (const cls of classifications) {\n    if (cls.messageId) classMap.set(cls.messageId, cls);\n  }\n\n  for (let j = 0; j < batchEmails.length; j++) {\n    const email = batchEmails[j];\n    const cls = classMap.get(email.messageId) || classifications[j] || {};\n\n    // Extraer y validar targetDate del LLM\n    let targetDateISO = null;\n    const rawTarget = cls.targetDate || null;\n    if (rawTarget && rawTarget !== 'null') {\n      const parsedDate = new Date(rawTarget + 'T12:00:00');\n      if (!isNaN(parsedDate.getTime())) {\n        targetDateISO = parsedDate.toISOString().split('T')[0];\n      }\n    }\n\n    // Calcular modificador temporal\n    let temporalMod = 0;\n    if (targetDateISO) {\n      const target = new Date(targetDateISO + 'T12:00:00');\n      const daysUntil = Math.round((target - today) / 86400000);\n      if (daysUntil <= 1) temporalMod = 2;\n      else if (daysUntil <= 3) temporalMod = 1;\n      else if (daysUntil > 30) temporalMod = -1;\n    }\n\n    // Prioridad final = base (tipo) + modificador temporal, clamped 1-5\n    const basePriority = Math.min(Math.max(Math.round(cls.priority || 3), 1), 5);\n    const finalPriority = Math.min(Math.max(basePriority + temporalMod, 1), 5);\n\n    results.push({\n      json: {\n        messageId: email.messageId,\n        gmailId: email.gmailId,\n        threadId: email.threadId,\n        fromEmail: email.fromEmail,\n        fromName: email.fromName,\n        subject: email.subject,\n        body: email.body,\n        receivedAt: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),\n        category: cls.category || 'otro',\n        aiLabel: (cls.label || 'Sin clasificar').substring(0, 25),\n        aiPriority: finalPriority,\n        aiConfidenceScore: Math.min(Math.max(cls.confidence || 0, 0), 1),\n        aiSummary: (cls.summary || '').substring(0, 100),\n        targetDate: targetDateISO\n      }\n    });\n  }\n}\n\nreturn results;"
+        "jsCode": "// Parsea respuestas LLM, aplica ajuste temporal de prioridad y fusiona con datos originales\nconst llmResponses = $input.all();\nconst batchData = $('Build LLM Prompt').all();\nconst results = [];\n\n// Fecha de hoy a medianoche para calculo de dias\nconst today = new Date();\ntoday.setHours(0, 0, 0, 0);\n\nfor (let i = 0; i < llmResponses.length; i++) {\n  const llmResponse = llmResponses[i].json;\n  const batchEmails = batchData[i]?.json?.emails || [];\n  if (batchEmails.length === 0) continue;\n\n  let classifications = [];\n\n  try {\n    // Detectar si la respuesta del LLM es valida\n    const content = llmResponse.choices?.[0]?.message?.content;\n\n    if (!content) {\n      console.error('[Parse & Merge] Batch ' + i + ' - LLM response missing content:', JSON.stringify(llmResponse).substring(0, 500));\n      throw new Error('LLM response missing content');\n    }\n\n    // Log del raw content para debugging\n    console.log('[Parse & Merge] Batch ' + i + ' raw (' + content.length + ' chars): ' + content.substring(0, 300));\n\n    let parsed = JSON.parse(content);\n\n    if (!Array.isArray(parsed)) {\n      // Estrategia 1: buscar key conocida\n      if (parsed.classifications && Array.isArray(parsed.classifications)) {\n        parsed = parsed.classifications;\n      } else {\n        // Estrategia 2: buscar el primer valor que sea un array en el objeto\n        const arrayProp = Object.values(parsed).find(v => Array.isArray(v));\n        if (arrayProp) {\n          console.log('[Parse & Merge] Array found under non-standard key. Keys: ' + Object.keys(parsed).join(', '));\n          parsed = arrayProp;\n        } else if (parsed.messageId) {\n          // Estrategia 3: clasificacion individual\n          console.log('[Parse & Merge] Single classification object detected');\n          parsed = [parsed];\n        } else {\n          console.error('[Parse & Merge] No array found in response. Keys: ' + Object.keys(parsed).join(', '));\n          throw new Error('No classification array found in LLM response');\n        }\n      }\n    }\n\n    classifications = parsed.filter(item => item && typeof item === 'object');\n  } catch (e) {\n    console.error('[Parse & Merge] Error for batch ' + i + ':', e.message || e);\n    classifications = batchEmails.map(email => ({\n      messageId: email.messageId,\n      category: 'otro',\n      label: 'Error clasificacion',\n      priority: 3,\n      confidence: 0,\n      summary: 'Error: ' + (e.message || 'unknown').substring(0, 80),\n      targetDate: null,\n      actionRequired: true\n    }));\n  }\n\n  const classMap = new Map();\n  for (const cls of classifications) {\n    if (cls.messageId) classMap.set(cls.messageId, cls);\n  }\n\n  for (let j = 0; j < batchEmails.length; j++) {\n    const email = batchEmails[j];\n    const cls = classMap.get(email.messageId) || classifications[j] || {};\n\n    // Extraer y validar targetDate del LLM\n    let targetDateISO = null;\n    const rawTarget = cls.targetDate || null;\n    if (rawTarget && rawTarget !== 'null') {\n      const parsedDate = new Date(rawTarget + 'T12:00:00');\n      if (!isNaN(parsedDate.getTime())) {\n        targetDateISO = parsedDate.toISOString().split('T')[0];\n      }\n    }\n\n    // Calcular modificador temporal\n    let temporalMod = 0;\n    if (targetDateISO) {\n      const target = new Date(targetDateISO + 'T12:00:00');\n      const daysUntil = Math.round((target - today) / 86400000);\n      if (daysUntil <= 1) temporalMod = 2;\n      else if (daysUntil <= 3) temporalMod = 1;\n      else if (daysUntil > 30) temporalMod = -1;\n    }\n\n    // Prioridad final = base (tipo) + modificador temporal, clamped 1-5\n    const basePriority = Math.min(Math.max(Math.round(cls.priority || 3), 1), 5);\n    const finalPriority = Math.min(Math.max(basePriority + temporalMod, 1), 5);\n\n    // Extraer actionRequired del LLM (default true si no viene)\n    const actionRequired = cls.actionRequired !== undefined ? !!cls.actionRequired : true;\n\n    results.push({\n      json: {\n        messageId: email.messageId,\n        gmailId: email.gmailId,\n        threadId: email.threadId,\n        fromEmail: email.fromEmail,\n        fromName: email.fromName,\n        subject: email.subject,\n        body: email.body,\n        receivedAt: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),\n        category: cls.category || 'otro',\n        aiLabel: (cls.label || 'Sin clasificar').substring(0, 25),\n        aiPriority: finalPriority,\n        aiConfidenceScore: Math.min(Math.max(cls.confidence || 0, 0), 1),\n        aiSummary: (cls.summary || '').substring(0, 100),\n        targetDate: targetDateISO,\n        actionRequired: actionRequired\n      }\n    });\n  }\n}\n\nreturn results;"
       },
       "id": "parse-and-merge",
       "name": "Parse & Merge",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-480, -200]
+      "position": [-80, -200]
     },
     {
       "parameters": {
-        "jsCode": "// Recoge todos los emails clasificados y prepara payload batch para ingest\nconst items = $input.all();\nconst classifiedEmails = [];\nconst gmailIds = [];\n\nfor (const item of items) {\n  const d = item.json;\n  classifiedEmails.push({\n    messageId: d.messageId,\n    threadId: d.threadId,\n    fromEmail: d.fromEmail,\n    fromName: d.fromName,\n    subject: d.subject,\n    body: d.body,\n    receivedAt: d.receivedAt,\n    category: d.category,\n    aiLabel: d.aiLabel,\n    aiPriority: d.aiPriority,\n    aiConfidenceScore: d.aiConfidenceScore,\n    aiSummary: d.aiSummary,\n    targetDate: d.targetDate || null\n  });\n  gmailIds.push(d.gmailId);\n}\n\nreturn [{\n  json: {\n    classifiedEmails,\n    gmailIds,\n    totalCount: classifiedEmails.length\n  }\n}];"
+        "jsCode": "// Recoge todos los emails clasificados y prepara payload batch para ingest\nconst items = $input.all();\nconst classifiedEmails = [];\nconst gmailIds = [];\n\nfor (const item of items) {\n  const d = item.json;\n  classifiedEmails.push({\n    messageId: d.messageId,\n    threadId: d.threadId,\n    fromEmail: d.fromEmail,\n    fromName: d.fromName,\n    subject: d.subject,\n    body: d.body,\n    receivedAt: d.receivedAt,\n    category: d.category,\n    aiLabel: d.aiLabel,\n    aiPriority: d.aiPriority,\n    aiConfidenceScore: d.aiConfidenceScore,\n    aiSummary: d.aiSummary,\n    targetDate: d.targetDate || null,\n    actionRequired: d.actionRequired ?? true\n  });\n  gmailIds.push(d.gmailId);\n}\n\nreturn [{\n  json: {\n    classifiedEmails,\n    gmailIds,\n    totalCount: classifiedEmails.length\n  }\n}];"
       },
       "id": "collect-all-classified",
       "name": "Collect All Classified",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-240, -200]
+      "position": [160, -200]
     },
     {
       "parameters": {
@@ -266,7 +316,7 @@
       "name": "Batch Ingest",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [0, -200],
+      "position": [400, -200],
       "credentials": {
         "httpHeaderAuth": {
           "id": "zhLT7GI5DSwc3rAG",
@@ -282,7 +332,7 @@
       "name": "Prepare Mark Read",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [240, -200],
+      "position": [640, -200],
       "disabled": true
     },
     {
@@ -295,7 +345,7 @@
       "name": "Gmail - Mark as Read",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
-      "position": [480, -200],
+      "position": [880, -200],
       "disabled": true,
       "credentials": {
         "googleApi": {
@@ -310,7 +360,7 @@
       "name": "All Duplicates",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
-      "position": [-1200, 200]
+      "position": [-1280, 200]
     }
   ],
   "connections": {
@@ -395,7 +445,7 @@
       "main": [
         [
           {
-            "node": "Prepare Batches",
+            "node": "Collect ThreadIds",
             "type": "main",
             "index": 0
           }
@@ -403,6 +453,28 @@
         [
           {
             "node": "All Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect ThreadIds": {
+      "main": [
+        [
+          {
+            "node": "Fetch Thread Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Thread Context": {
+      "main": [
+        [
+          {
+            "node": "Prepare Batches",
             "type": "main",
             "index": 0
           }
