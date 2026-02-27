@@ -9,7 +9,7 @@ import {
 import { Badge } from "@/modules/shared/ui/badge"
 import { Button } from "@/modules/shared/ui/button"
 import { Separator } from "@/modules/shared/ui/separator"
-import { Mail, MailOpen, Calendar, CalendarClock, Tag, Zap, Brain } from "lucide-react"
+import { Mail, MailOpen, Calendar, CalendarClock, Tag, Zap, Brain, CheckCircle2 } from "lucide-react"
 import type { EmailRow } from "./email-inbox-tab"
 
 interface EmailDetailDialogProps {
@@ -39,9 +39,9 @@ export function EmailDetailDialog({ email, onClose, onMarkRead }: EmailDetailDia
 
   return (
     <Dialog open={!!email} onOpenChange={open => { if (!open) onClose() }}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto *:min-w-0">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-base">
+          <DialogTitle className="flex items-center gap-2 text-base min-w-0">
             {email.isRead
               ? <MailOpen className="h-4 w-4 text-muted-foreground shrink-0" />
               : <Mail className="h-4 w-4 text-primary shrink-0" />
@@ -52,11 +52,11 @@ export function EmailDetailDialog({ email, onClose, onMarkRead }: EmailDetailDia
 
         {/* Metadatos básicos */}
         <div className="space-y-1 text-sm">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <span className="font-medium text-foreground">De:</span>
+          <div className="flex items-center gap-2 text-muted-foreground min-w-0">
+            <span className="font-medium text-foreground shrink-0">De:</span>
             {email.fromName
-              ? <span>{email.fromName} &lt;{email.fromEmail}&gt;</span>
-              : <span>{email.fromEmail}</span>
+              ? <span className="truncate">{email.fromName} &lt;{email.fromEmail}&gt;</span>
+              : <span className="truncate">{email.fromEmail}</span>
             }
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
@@ -102,6 +102,16 @@ export function EmailDetailDialog({ email, onClose, onMarkRead }: EmailDetailDia
                 P{email.aiPriority} — {priorityLabels[email.aiPriority]}
               </span>
             )}
+
+            {/* Acción requerida */}
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
+              email.actionRequired
+                ? "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200"
+                : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+            }`}>
+              <CheckCircle2 className="h-3 w-3" />
+              {email.actionRequired ? "Requiere acción" : "Informativo"}
+            </span>
 
             {/* Etiqueta IA */}
             {email.aiLabel && email.aiLabel !== email.category?.name && (
@@ -162,7 +172,7 @@ export function EmailDetailDialog({ email, onClose, onMarkRead }: EmailDetailDia
         <div className="space-y-2">
           <p className="text-sm font-medium">Contenido</p>
           <div className="rounded-lg border bg-card p-4">
-            <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed text-foreground">
+            <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed text-foreground wrap-break-word">
               {email.body}
             </pre>
           </div>
