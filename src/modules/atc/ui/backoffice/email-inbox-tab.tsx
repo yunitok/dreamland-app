@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useTransition } from "react"
+import { useState, useEffect, useMemo, useTransition } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/modules/shared/ui/card"
 import { Badge } from "@/modules/shared/ui/badge"
 import { Button } from "@/modules/shared/ui/button"
@@ -47,6 +47,7 @@ export type EmailRow = {
   isRead: boolean
   assignedTo: string | null
   categoryId: string | null
+  actionRequired: boolean
   receivedAt: Date
   category: CategoryInfo | null
 }
@@ -75,6 +76,7 @@ const priorityColors: Record<number, string> = {
 
 export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabProps) {
   const [localEmails, setLocalEmails] = useState(emails)
+  useEffect(() => { setLocalEmails(emails) }, [emails])
   const [showRead, setShowRead]       = useState(false)
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [priorityFilter, setPriorityFilter] = useState<string>("all")
@@ -232,6 +234,12 @@ export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabPr
                         }}
                       >
                         {email.category.name}
+                      </span>
+                    )}
+                    {/* Badge informativo (no requiere acción) */}
+                    {!email.actionRequired && (
+                      <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                        Informativo
                       </span>
                     )}
                     {/* Badge prioridad */}
