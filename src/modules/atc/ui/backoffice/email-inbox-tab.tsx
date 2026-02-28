@@ -12,6 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/modules/shared/ui/select"
+import { ScrollArea, ScrollBar } from "@/modules/shared/ui/scroll-area"
+import { cn } from "@/lib/utils"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +31,7 @@ type CategoryInfo = {
   color: string
   icon: string | null
   slug: string
+  parentId: string | null
 }
 
 export type EmailRow = {
@@ -84,10 +87,37 @@ export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabPr
   const [selectedEmail, setSelectedEmail] = useState<EmailRow | null>(null)
   const [, startTransition] = useTransition()
 
+  // Categorías padre e hijos para la barra jerárquica
+  const parentCategories = useMemo(() => categories.filter(c => !c.parentId), [categories])
+  const childrenOf = useMemo(() => {
+    const map: Record<string, CategoryInfo[]> = {}
+    for (const cat of categories) {
+      if (cat.parentId) {
+        ;(map[cat.parentId] ??= []).push(cat)
+      }
+    }
+    return map
+  }, [categories])
+
+  // Set de categoryIds que pasan el filtro (padre + hijos)
+  const activeCategoryIds = useMemo(() => {
+    if (categoryFilter === "all") return null
+    const selected = categories.find(c => c.id === categoryFilter)
+    if (!selected) return null
+    // Si es padre, incluir el padre + todos sus hijos
+    if (!selected.parentId) {
+      const ids = new Set([selected.id])
+      for (const child of childrenOf[selected.id] ?? []) ids.add(child.id)
+      return ids
+    }
+    // Si es hijo, solo ese
+    return new Set([selected.id])
+  }, [categoryFilter, categories, childrenOf])
+
   const filtered = useMemo(() => {
     return localEmails.filter(email => {
       if (!showRead && email.isRead) return false
-      if (categoryFilter !== "all" && email.categoryId !== categoryFilter) return false
+      if (activeCategoryIds && (!email.categoryId || !activeCategoryIds.has(email.categoryId))) return false
       if (priorityFilter !== "all" && String(email.aiPriority) !== priorityFilter) return false
       if (search) {
         const q = search.toLowerCase()
@@ -99,7 +129,7 @@ export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabPr
       }
       return true
     })
-  }, [localEmails, showRead, categoryFilter, priorityFilter, search])
+  }, [localEmails, showRead, activeCategoryIds, priorityFilter, search])
 
   function handleMarkRead(id: string) {
     startTransition(async () => {
@@ -127,11 +157,122 @@ export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabPr
 
   const unreadCount = localEmails.filter(e => !e.isRead).length
 
+  // Contadores: por categoría individual + agregados por padre
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const email of localEmails) {
+      if (!email.isRead && email.categoryId) {
+        counts[email.categoryId] = (counts[email.categoryId] ?? 0) + 1
+      }
+    }
+    return counts
+  }, [localEmails])
+
+  const parentCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const parent of parentCategories) {
+      let total = categoryCounts[parent.id] ?? 0
+      for (const child of childrenOf[parent.id] ?? []) {
+        total += categoryCounts[child.id] ?? 0
+      }
+      counts[parent.id] = total
+    }
+    return counts
+  }, [parentCategories, childrenOf, categoryCounts])
+
+  // Detectar si el filtro activo es una categoría padre (para mostrar subcategorías)
+  const activeParentId = useMemo(() => {
+    if (categoryFilter === "all") return null
+    const selected = categories.find(c => c.id === categoryFilter)
+    if (!selected) return null
+    return selected.parentId ?? selected.id
+  }, [categoryFilter, categories])
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
+      {/* Barra de categorías padre */}
+      <div className="space-y-1.5">
+        <ScrollArea className="w-full whitespace-nowrap">
+          <div className="flex gap-1.5 pb-1">
+            <button
+              onClick={() => setCategoryFilter("all")}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition-colors cursor-pointer border",
+                categoryFilter === "all"
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-muted text-muted-foreground border-transparent hover:bg-muted/80"
+              )}
+            >
+              Todas
+              <span className="tabular-nums">{unreadCount}</span>
+            </button>
+            {parentCategories
+              .filter(cat => (parentCounts[cat.id] ?? 0) > 0)
+              .map(cat => {
+                const isActive = activeParentId === cat.id
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setCategoryFilter(isActive && categoryFilter === cat.id ? "all" : cat.id)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition-colors cursor-pointer border",
+                      isActive
+                        ? "border-current"
+                        : "bg-muted text-muted-foreground border-transparent hover:bg-muted/80"
+                    )}
+                    style={isActive ? {
+                      backgroundColor: cat.color + "22",
+                      color: cat.color,
+                      borderColor: cat.color + "44",
+                    } : undefined}
+                  >
+                    <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                    {cat.name}
+                    <span className="tabular-nums">{parentCounts[cat.id]}</span>
+                  </button>
+                )
+              })}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+
+        {/* Subcategorías (solo visibles al seleccionar un padre con hijos) */}
+        {activeParentId && (childrenOf[activeParentId]?.length ?? 0) > 0 && (
+          <div className="flex gap-1.5 pl-4">
+            {childrenOf[activeParentId]!
+              .filter(child => (categoryCounts[child.id] ?? 0) > 0)
+              .map(child => {
+                const isActive = categoryFilter === child.id
+                const parent = parentCategories.find(p => p.id === activeParentId)
+                const color = parent?.color ?? child.color
+                return (
+                  <button
+                    key={child.id}
+                    onClick={() => setCategoryFilter(isActive ? activeParentId : child.id)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap transition-colors cursor-pointer border",
+                      isActive
+                        ? "border-current"
+                        : "bg-muted/60 text-muted-foreground border-transparent hover:bg-muted/80"
+                    )}
+                    style={isActive ? {
+                      backgroundColor: color + "22",
+                      color: color,
+                      borderColor: color + "44",
+                    } : undefined}
+                  >
+                    {child.name}
+                    <span className="tabular-nums">{categoryCounts[child.id]}</span>
+                  </button>
+                )
+              })}
+          </div>
+        )}
+      </div>
+
       {/* Filtros */}
       <div className="flex flex-wrap gap-3 items-center">
-        <div className="relative flex-1 min-w-[200px]">
+        <div className="relative flex-1 min-w-50">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por remitente o asunto..."
@@ -140,26 +281,6 @@ export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabPr
             className="pl-8"
           />
         </div>
-
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Categoría" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas las categorías</SelectItem>
-            {categories.map(cat => (
-              <SelectItem key={cat.id} value={cat.id}>
-                <span className="flex items-center gap-2">
-                  <span
-                    className="inline-block h-2 w-2 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: cat.color }}
-                  />
-                  {cat.name}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
 
         <Select value={priorityFilter} onValueChange={setPriorityFilter}>
           <SelectTrigger className="w-[150px]">

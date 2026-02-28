@@ -41,7 +41,7 @@ export async function getEmailInbox(filters: EmailInboxFilters = {}) {
 
     const emails = await prisma.emailInbox.findMany({
       where,
-      include: { category: { select: { id: true, name: true, color: true, icon: true, slug: true } } },
+      include: { category: { select: { id: true, name: true, color: true, icon: true, slug: true, parentId: true } } },
       orderBy: [{ aiPriority: "desc" }, { receivedAt: "desc" }],
       take: 100,
     })
@@ -94,7 +94,7 @@ export async function getEmailsByCategory(categorySlugs: string[]) {
           ],
         },
       },
-      include: { category: { select: { id: true, name: true, color: true, icon: true, slug: true } } },
+      include: { category: { select: { id: true, name: true, color: true, icon: true, slug: true, parentId: true } } },
       orderBy: [{ aiPriority: "desc" }, { receivedAt: "desc" }],
       take: 50,
     })
