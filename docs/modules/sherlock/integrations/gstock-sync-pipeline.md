@@ -254,6 +254,43 @@ El orden respeta las restricciones de foreign key para evitar errores de integri
 
 ---
 
+## Integración con Process Runner
+
+### Ejecución por fases encadenadas
+
+A partir de la integración con el [sistema de procesos automáticos](../../admin/processes), la sincronización GStock se ejecuta como un proceso tracked con 8 fases encadenadas:
+
+1. El proceso se inicia creando un `ProcessRun` con status `RUNNING`
+2. Se dispara la fase 0 via `POST /api/processes/gstock-sync/run-phase`
+3. Cada fase ejecuta su lógica, almacena resultados parciales y mapas de IDs
+4. Al completar, la fase dispara automáticamente la siguiente via `fetch()` + `after()` de Next.js
+5. La última fase (KB) calcula totales y actualiza el `ProcessRun` con el resumen final
+6. Si una fase falla, se registra el error y se notifica a los administradores
+
+Cada fase tiene un timeout independiente (<60s), permitiendo que el proceso total (~8 min) se ejecute sin problemas en serverless.
+
+### Cron automático
+
+La sincronización se ejecuta automáticamente cada día a las **7:00 UTC** via Vercel Cron:
+
+- **Ruta cron**: `GET /api/cron/gstock-sync`
+- **Configuración**: `vercel.json` → `{ "path": "/api/cron/gstock-sync", "schedule": "0 7 * * *" }`
+- **Trigger type**: `CRON` (diferenciado de `MANUAL` en el historial)
+
+También puede ejecutarse manualmente desde `/admin/processes` o via el botón en Sherlock/Settings.
+
+### Monitorización
+
+Todas las ejecuciones (manuales y automáticas) quedan registradas en la tabla `ProcessRun` y son visibles en `/admin/processes/gstock-sync`, incluyendo:
+
+- Estado por fase (created, updated, errors, duración)
+- Output acumulado con totales
+- Timeline expandible con detalle de cada fase
+
+Para más detalle sobre el framework de procesos, ver [Procesos Automáticos](../../admin/processes).
+
+---
+
 ## 🔗 Referencias
 
 - [Análisis de GStock API](../analysis/gstock.md)

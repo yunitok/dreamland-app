@@ -28,11 +28,21 @@ Manage the organizational hierarchy.
 -   Create and edit departments (e.g., "Engineering", "Design", "Marketing").
 -   Assign users to departments for sentiment analysis grouping.
 
+### 4. Procesos Automáticos
+Panel centralizado para ejecutar, monitorizar y programar tareas recurrentes.
+- **Dashboard**: Vista general de todos los procesos con su último estado de ejecución.
+- **Ejecución manual**: Disparar cualquier proceso interno directamente desde la UI.
+- **Cron automático**: Procesos programados via Vercel Cron (sincronización, limpieza, alertas).
+- **Tracking**: Cada ejecución queda registrada con status, duración, output y errores.
+
+Para más detalle, ver [Procesos Automáticos](./processes).
+
 ## Technical Implementation
 
 -   **Server Actions**: modifications are performed via secure Server Actions in `src/modules/admin/actions`.
 -   **Security**: All admin actions are protected by strict `verifySession()` checks and an additional `role: 'admin' | 'super-admin'` guard.
 -   **UI Components**: Uses a dedicated layout with a sidebar for admin-specific navigation.
+-   **Process Runner**: Framework de ejecución con tracking en `src/lib/process-runner.ts`. Automatización programada via Vercel Cron.
 
 ## Usage
 

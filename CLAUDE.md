@@ -5,7 +5,7 @@
 - Si necesitas razonar internamente en otro idioma, la salida final al usuario debe ser traducida.
 
 ## Transparencia de Skills y Ejecución
-- Para cada petición que resuelvas, especialmente en "Implementation Plans", debes verificar las skills disponibles en `./.agent/skills/`.
+- Para cada petición que resuelvas, especialmente en "Implementation Plans", debes verificar las skills disponibles en `./claude/skills/`.
 - **Obligatorio:** Al final de cada respuesta, añade una sección titulada "🛠️ Skills Locales Utilizadas" donde listes qué herramientas has invocado de tu directorio local.
 - Si una tarea no puede completarse con las skills locales actuales, indícalo explícitamente.
 

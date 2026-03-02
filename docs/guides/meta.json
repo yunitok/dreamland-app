@@ -2,6 +2,7 @@
     "title": "Guías",
     "pages": [
         "deployment",
+        "cron-automation",
         "voice-commands",
         "estimation-standard",
         "ai-context",
