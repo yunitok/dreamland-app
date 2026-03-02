@@ -81,6 +81,7 @@ function buildRecipeEntry(recipe: RecipeForKB): BulkKBEntry {
     content: parts.join(" "),
     section: "Recetas",
     source: SOURCE,
+    categoryId: recipe.category.name,
   }
 }
 
@@ -99,6 +100,7 @@ function buildAllergenEntry(recipe: RecipeForKB): BulkKBEntry {
     content,
     section: "Alérgenos",
     source: SOURCE,
+    categoryId: recipe.category.name,
   }
 }
 

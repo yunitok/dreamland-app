@@ -73,19 +73,19 @@ export function mapGstockToSupplier(raw: GstockSupplier) {
   return {
     name: raw.name,
     gstockId: String(raw.id),
-    ...(raw.code && { code: raw.code }),
-    ...(raw.commercialName && { commercialName: raw.commercialName }),
+    ...(raw.reference && { code: raw.reference }),
+    ...(raw.nameRegistered && { commercialName: raw.nameRegistered }),
     ...(raw.email && { email: raw.email }),
-    ...(raw.phone && { phone: raw.phone }),
+    ...(raw.phone1 && { phone: raw.phone1 }),
     ...(raw.mobile && { mobile: raw.mobile }),
     ...(raw.contactPerson && { contactPerson: raw.contactPerson }),
     ...(raw.web && { web: raw.web }),
     ...(raw.address && { address: raw.address }),
-    ...(raw.city && { city: raw.city }),
-    ...(raw.postalCode && { postalCode: raw.postalCode }),
+    ...(raw.cityName && { city: raw.cityName }),
+    ...(raw.codePostal && { postalCode: raw.codePostal }),
     ...(raw.province && { province: raw.province }),
     ...(raw.country && { country: raw.country }),
-    ...(raw.taxId && { taxId: raw.taxId }),
+    ...(raw.CIF && { taxId: raw.CIF }),
     ...(raw.paymentTerms && { paymentTerms: raw.paymentTerms }),
     ...(raw.minOrder !== undefined && { minOrder: raw.minOrder }),
     ...(raw.discount !== undefined && { discount: raw.discount }),
@@ -97,13 +97,12 @@ export function mapGstockToSupplier(raw: GstockSupplier) {
   }
 }
 
-// ─── Ingrediente (depende de categoryMap, unitMap, supplierMap) ───
+// ─── Ingrediente (depende de categoryMap, unitMap) ───────────────
 
 export function mapGstockToIngredient(
   raw: GstockProduct,
   unitMap: GstockIdMap,
-  categoryMap: GstockIdMap,
-  supplierMap: GstockIdMap
+  categoryMap: GstockIdMap
 ) {
   // Convertir IDs numéricos a string para lookup en los mapas
   const categoryId = raw.categoryId ? categoryMap.get(String(raw.categoryId)) : undefined
@@ -112,22 +111,19 @@ export function mapGstockToIngredient(
   // FKs requeridas — sin ellas no podemos crear el ingrediente
   if (!categoryId || !unitTypeId) return null
 
-  const supplierId = raw.supplierId ? supplierMap.get(String(raw.supplierId)) : undefined
-
   return {
     name: raw.name,
     // GStock product ID (numérico) convertido a string para el campo reference
     reference: String(raw.id),
     categoryId,
     unitTypeId,
-    cost: raw.costPrice ?? 0,
+    cost: raw.measurePriceAverage ?? raw.measurePriceLastPurchase ?? 0,
     ...(raw.taxRate !== undefined && { taxRate: raw.taxRate }),
-    ...(raw.status && { status: raw.status as IngredientStatus }),
+    ...(raw.active !== undefined && { status: raw.active ? IngredientStatus.ACTIVE : IngredientStatus.INACTIVE }),
     ...(raw.currentStock !== undefined && { currentStock: raw.currentStock }),
     ...(raw.minStock !== undefined && { minStock: raw.minStock }),
     ...(raw.maxStock !== undefined && { maxStock: raw.maxStock }),
     ...(raw.description && { description: raw.description }),
-    ...(supplierId && { supplierId }),
   }
 }
 
@@ -157,8 +153,7 @@ export function mapGstockToRecipe(
     status: RecipeStatus.ACTIVE,
     ...(familyId && { familyId }),
     ...(raw.description && { description: raw.description }),
-    ...(raw.theoreticalCost !== undefined && { theoreticalCost: raw.theoreticalCost }),
-    ...(raw.realCost !== undefined && { realCost: raw.realCost }),
+    ...(raw.cost !== undefined && { theoreticalCost: raw.cost }),
     ...(allergens.length && { allergens }),
   }
 }
@@ -175,7 +170,7 @@ export interface RecipeIngredientData {
 export function mapGstockRecipeIngredients(
   raw: GstockRecipe,
   ingredientMap: GstockIdMap,
-  unitMap: GstockIdMap
+  productUnitMap: GstockIdMap
 ): RecipeIngredientData[] {
   const lines = raw.ingredients ?? []
   const result: RecipeIngredientData[] = []
@@ -184,13 +179,14 @@ export function mapGstockRecipeIngredients(
     const line = lines[i]
     if (!line.productId) continue
 
-    // IDs numéricos convertidos a string para lookup en los mapas
-    const ingredientId = ingredientMap.get(String(line.productId))
-    const unitId = line.measureUnitId ? unitMap.get(String(line.measureUnitId)) : undefined
+    const productIdStr = String(line.productId)
+    const ingredientId = ingredientMap.get(productIdStr)
+    // La unidad se hereda del producto (measureUnitId), no viene por línea
+    const unitId = productUnitMap.get(productIdStr)
 
     if (!ingredientId || !unitId) continue
 
-    result.push({ ingredientId, quantity: line.quantity ?? 1, unitId, order: i })
+    result.push({ ingredientId, quantity: line.quantityMeasure ?? 1, unitId, order: i })
   }
 
   return result

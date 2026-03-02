@@ -63,7 +63,7 @@ function onProgress(options: SyncOptions, phase: string, detail: string) {
 // ─── Fase 1: Unidades de medida ──────────────────────────────────
 // Upsert por gstockId — robusto ante renombres y cambios de casing en GStock.
 
-async function syncMeasureUnits(opts: SyncOptions): Promise<[SyncPhaseResult, GstockIdMap]> {
+export async function syncMeasureUnits(opts: SyncOptions): Promise<[SyncPhaseResult, GstockIdMap]> {
   const state = startPhase("Unidades de medida", "v1/product/purchases/units/measure", "MeasureUnit")
   const idMap: GstockIdMap = new Map()
 
@@ -108,7 +108,7 @@ async function syncMeasureUnits(opts: SyncOptions): Promise<[SyncPhaseResult, Gs
 
 // ─── Fase 2: Categorías de productos ────────────────────────────
 
-async function syncCategories(opts: SyncOptions): Promise<[SyncPhaseResult, GstockIdMap]> {
+export async function syncCategories(opts: SyncOptions): Promise<[SyncPhaseResult, GstockIdMap]> {
   const state = startPhase("Categorías de productos", "v1/product/purchases/categories", "Category")
   const idMap: GstockIdMap = new Map()
 
@@ -118,7 +118,10 @@ async function syncCategories(opts: SyncOptions): Promise<[SyncPhaseResult, Gsto
     if (opts.dryRun) { state.skipped++; idMap.set(String(raw.id), String(raw.id)); continue }
     try {
       const mapped = mapGstockToCategory(raw, idMap)
-      const existing = await prisma.category.findUnique({ where: { gstockId: String(raw.id) }, select: { id: true } })
+      // Buscar por gstockId; si no existe, fallback por nombre (para vincular categorías creadas manualmente)
+      const existing =
+        await prisma.category.findUnique({ where: { gstockId: String(raw.id) }, select: { id: true } }) ??
+        await prisma.category.findFirst({ where: { name: raw.name, gstockId: null }, select: { id: true } })
       if (existing) {
         await prisma.category.update({ where: { id: existing.id }, data: mapped })
         state.updated++
@@ -139,7 +142,7 @@ async function syncCategories(opts: SyncOptions): Promise<[SyncPhaseResult, Gsto
 
 // ─── Fase 3: Categorías de recetas ──────────────────────────────
 
-async function syncRecipeCategories(opts: SyncOptions): Promise<[SyncPhaseResult, GstockIdMap]> {
+export async function syncRecipeCategories(opts: SyncOptions): Promise<[SyncPhaseResult, GstockIdMap]> {
   const state = startPhase("Categorías de recetas", "v1/recipes/categories", "RecipeCategory")
   const idMap: GstockIdMap = new Map()
 
@@ -168,7 +171,7 @@ async function syncRecipeCategories(opts: SyncOptions): Promise<[SyncPhaseResult
 
 // ─── Fase 4: Familias de recetas ─────────────────────────────────
 
-async function syncRecipeFamilies(opts: SyncOptions): Promise<[SyncPhaseResult, GstockIdMap]> {
+export async function syncRecipeFamilies(opts: SyncOptions): Promise<[SyncPhaseResult, GstockIdMap]> {
   const state = startPhase("Familias de recetas", "v1/recipes/families", "RecipeFamily")
   const idMap: GstockIdMap = new Map()
 
@@ -197,7 +200,7 @@ async function syncRecipeFamilies(opts: SyncOptions): Promise<[SyncPhaseResult, 
 
 // ─── Fase 5: Proveedores ─────────────────────────────────────────
 
-async function syncSuppliers(opts: SyncOptions): Promise<[SyncPhaseResult, GstockIdMap]> {
+export async function syncSuppliers(opts: SyncOptions): Promise<[SyncPhaseResult, GstockIdMap]> {
   const state = startPhase("Proveedores", "v1/suppliers", "Supplier")
   const idMap: GstockIdMap = new Map()
 
@@ -226,14 +229,19 @@ async function syncSuppliers(opts: SyncOptions): Promise<[SyncPhaseResult, Gstoc
         ...(raw.subcategoryId && { subcategoryName: subcatMap.get(String(raw.subcategoryId)) }),
       }
       const mapped = mapGstockToSupplier(enriched)
-      const result = await prisma.supplier.upsert({
-        where: { gstockId: String(raw.id) },
-        update: mapped,
-        create: mapped,
-        select: { id: true },
-      })
-      idMap.set(String(raw.id), result.id)
-      state.updated++
+      // Buscar por gstockId; si no existe, fallback por nombre (para vincular proveedores creados manualmente)
+      const existing =
+        await prisma.supplier.findUnique({ where: { gstockId: String(raw.id) }, select: { id: true } }) ??
+        await prisma.supplier.findFirst({ where: { name: raw.name, gstockId: null }, select: { id: true } })
+      if (existing) {
+        await prisma.supplier.update({ where: { id: existing.id }, data: mapped })
+        idMap.set(String(raw.id), existing.id)
+        state.updated++
+      } else {
+        const created = await prisma.supplier.create({ data: mapped })
+        idMap.set(String(raw.id), created.id)
+        state.created++
+      }
     } catch (e) {
       state.errors.push(`Supplier ${raw.name}: ${e instanceof Error ? e.message : String(e)}`)
     }
@@ -245,16 +253,17 @@ async function syncSuppliers(opts: SyncOptions): Promise<[SyncPhaseResult, Gstoc
 
 // ─── Fase 6: Ingredientes ────────────────────────────────────────
 
-async function syncIngredients(
+export async function syncIngredients(
   unitMap: GstockIdMap,
   categoryMap: GstockIdMap,
-  supplierMap: GstockIdMap,
   opts: SyncOptions
-): Promise<[SyncPhaseResult, GstockIdMap, Map<string, string>]> {
+): Promise<[SyncPhaseResult, GstockIdMap, Map<string, string>, GstockIdMap]> {
   const state = startPhase("Ingredientes", "v1/product/purchases", "Ingredient")
   const idMap: GstockIdMap = new Map()
   // gstockProductId (como string) → ingredientName (para inferencia de alérgenos en fase 7)
   const nameMap = new Map<string, string>()
+  // gstockProductId → prismaUnitId (la unidad se hereda del producto, no viene por línea de receta)
+  const productUnitMap: GstockIdMap = new Map()
 
   const { data } = await fetchGstock<GstockProduct>("v1/product/purchases")
 
@@ -269,8 +278,15 @@ async function syncIngredients(
   for (const raw of data) {
     const gstockId = String(raw.id)
     nameMap.set(gstockId, raw.name)
+
+    // Construir mapa productId → prismaUnitId para uso en fase 7 (recipe ingredients)
+    if (raw.measureUnitId) {
+      const prismaUnitId = unitMap.get(String(raw.measureUnitId))
+      if (prismaUnitId) productUnitMap.set(gstockId, prismaUnitId)
+    }
+
     try {
-      const mapped = mapGstockToIngredient(raw, unitMap, categoryMap, supplierMap)
+      const mapped = mapGstockToIngredient(raw, unitMap, categoryMap)
       if (!mapped) { state.skipped++; continue }
       if (opts.dryRun) { state.skipped++; idMap.set(gstockId, gstockId); continue }
 
@@ -290,16 +306,16 @@ async function syncIngredients(
   }
 
   onProgress(opts, state.phase, `${state.created} creados, ${state.updated} actualizados, ${state.skipped} omitidos`)
-  return [closePhase(state), idMap, nameMap]
+  return [closePhase(state), idMap, nameMap, productUnitMap]
 }
 
 // ─── Fase 7: Recetas + ingredientes ──────────────────────────────
 
-async function syncRecipes(
+export async function syncRecipes(
   recipeCategoryMap: GstockIdMap,
   familyMap: GstockIdMap,
   ingredientMap: GstockIdMap,
-  unitMap: GstockIdMap,
+  productUnitMap: GstockIdMap,
   ingredientNameMap: Map<string, string>,
   opts: SyncOptions
 ): Promise<SyncPhaseResult> {
@@ -344,7 +360,7 @@ async function syncRecipes(
 
       // Recrear ingredientes de la receta (delete + create)
       await prisma.recipeIngredient.deleteMany({ where: { recipeId } })
-      const ingredientLines = mapGstockRecipeIngredients(raw, ingredientMap, unitMap)
+      const ingredientLines = mapGstockRecipeIngredients(raw, ingredientMap, productUnitMap)
       if (ingredientLines.length) {
         await prisma.recipeIngredient.createMany({
           data: ingredientLines.map(line => ({ ...line, recipeId })),
@@ -361,7 +377,7 @@ async function syncRecipes(
 
 // ─── Fase 8: Knowledge Base ──────────────────────────────────────
 
-async function syncKnowledgeBase(opts: SyncOptions): Promise<[SyncPhaseResult, number]> {
+export async function syncKnowledgeBase(opts: SyncOptions): Promise<[SyncPhaseResult, number]> {
   const state = startPhase("Knowledge Base", "(local)", "KnowledgeBase + Pinecone")
 
   onProgress(opts, state.phase, "Cargando recetas sincronizadas...")
@@ -416,15 +432,15 @@ export async function syncGstockToSherlock(options: SyncOptions = {}): Promise<S
     phases.push(p4)
     errors.push(...p4.errors)
 
-    const [p5, supplierMap] = await syncSuppliers(options)
+    const [p5] = await syncSuppliers(options)
     phases.push(p5)
     errors.push(...p5.errors)
 
-    const [p6, ingredientMap, ingredientNameMap] = await syncIngredients(unitMap, categoryMap, supplierMap, options)
+    const [p6, ingredientMap, ingredientNameMap, productUnitMap] = await syncIngredients(unitMap, categoryMap, options)
     phases.push(p6)
     errors.push(...p6.errors)
 
-    const p7 = await syncRecipes(recipeCategoryMap, familyMap, ingredientMap, unitMap, ingredientNameMap, options)
+    const p7 = await syncRecipes(recipeCategoryMap, familyMap, ingredientMap, productUnitMap, ingredientNameMap, options)
     phases.push(p7)
     errors.push(...p7.errors)
 
@@ -441,4 +457,19 @@ export async function syncGstockToSherlock(options: SyncOptions = {}): Promise<S
   }
 
   return { phases, kbEntries, durationMs: Date.now() - startedAt, errors }
+}
+
+/**
+ * Ejecuta SOLO la fase de Knowledge Base (sin sync completo de GStock).
+ * Útil para regenerar las KB entries desde las recetas ya sincronizadas en DB.
+ */
+export async function syncKnowledgeBaseOnly(): Promise<Record<string, unknown>> {
+  const [result, count] = await syncKnowledgeBase({})
+  return {
+    phase: result.phase,
+    created: result.created,
+    kbEntries: count,
+    durationMs: result.durationMs,
+    errors: result.errors,
+  }
 }

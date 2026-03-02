@@ -1,5 +1,6 @@
 "use server"
 
+import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { requirePermission, requireAuth } from "@/lib/actions/rbac"
 import { syncGstockToSherlock } from "../domain/gstock-sync/sync-orchestrator"
@@ -7,7 +8,9 @@ import type { SyncReport } from "../domain/gstock-sync/types"
 
 export async function runGstockSync(options?: { skipKB?: boolean }): Promise<SyncReport> {
   await requirePermission("sherlock", "manage")
-  return syncGstockToSherlock({ skipKB: options?.skipKB })
+  const report = await syncGstockToSherlock({ skipKB: options?.skipKB })
+  revalidatePath("/sherlock/settings")
+  return report
 }
 
 export interface ResetGstockResult {
@@ -58,6 +61,8 @@ export async function resetGstockData(): Promise<ResetGstockResult> {
   const recipeFamilies = await prisma.recipeFamily.deleteMany({ where: { gstockId: { not: null } } })
   const suppliers = await prisma.supplier.deleteMany({ where: { gstockId: { not: null } } })
   const measureUnits = await prisma.measureUnit.deleteMany({ where: { gstockId: { not: null } } })
+
+  revalidatePath("/sherlock/settings")
 
   return {
     kbEntries: kbEntries.count,

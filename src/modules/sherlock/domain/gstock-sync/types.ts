@@ -40,19 +40,29 @@ export interface GstockRecipeFamily {
 export interface GstockSupplier {
   id: GstockId
   name: string
-  code?: string
-  commercialName?: string
+  reference?: string
+  nameRegistered?: string
   email?: string
-  phone?: string
+  phone1?: string
+  phone2?: string
   mobile?: string
+  fax?: string
   contactPerson?: string
   web?: string
   address?: string
-  city?: string
-  postalCode?: string
+  addressNumber?: string
+  addressAdditional?: string
+  addressFloor?: string
+  addressLetter?: string
+  cityName?: string
+  codePostal?: string
+  cityCode?: string
+  provinceCode?: string
   province?: string
+  countryCode?: string
   country?: string
-  taxId?: string
+  languageCode?: string
+  CIF?: string
   paymentTerms?: string
   minOrder?: number
   discount?: number
@@ -72,11 +82,16 @@ export interface GstockProduct {
   name: string
   reference?: string
   categoryId?: GstockId
-  supplierId?: GstockId
   measureUnitId?: GstockId
-  costPrice?: number
+  familyId?: GstockId
+  typeId?: GstockId
+  subtypeId?: GstockId
+  displayUnitId?: GstockId
+  equivalenceBetweenMeasureAndDisplay?: number
+  measurePriceLastPurchase?: number
+  measurePriceAverage?: number
   taxRate?: number
-  status?: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED'
+  active?: boolean
   currentStock?: number
   minStock?: number
   maxStock?: number
@@ -86,8 +101,8 @@ export interface GstockProduct {
 export interface GstockRecipeIngredientLine {
   productId?: GstockId
   recipeId?: GstockId
-  quantity?: number
-  measureUnitId?: GstockId
+  quantityMeasure?: number
+  quantityShrinkage?: number
 }
 
 export interface GstockRecipe {
@@ -95,8 +110,7 @@ export interface GstockRecipe {
   name: string
   categoryId?: GstockId
   familyId?: GstockId
-  theoreticalCost?: number
-  realCost?: number
+  cost?: number
   description?: string
   allergens?: string[] // raw allergen codes from GStock API (mapped to AllergenType in sync layer)
   ingredients?: GstockRecipeIngredientLine[]

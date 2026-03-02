@@ -1,9 +1,20 @@
+export interface GstockEndpointParam {
+  name: string
+  label: string
+  type: "text" | "number" | "date"
+  placeholder?: string
+  optional?: boolean
+}
+
 export interface GstockEndpoint {
   path: string
   label: string
   description: string
   method: "GET" | "POST"
   sherlockMapping?: string
+  requiredParams?: GstockEndpointParam[]
+  /** JSON template editable en el sandbox para endpoints POST */
+  bodyTemplate?: string
 }
 
 export interface GstockEndpointGroup {
@@ -11,6 +22,15 @@ export interface GstockEndpointGroup {
   color: string
   endpoints: GstockEndpoint[]
 }
+
+// Parámetros comunes reutilizables
+const CENTER_PARAM: GstockEndpointParam = { name: "centerId", label: "Centro (ID)", type: "number", placeholder: "Ej: 1", optional: true }
+const START_DATE_PARAM: GstockEndpointParam = { name: "startDate", label: "Desde", type: "date" }
+const END_DATE_PARAM: GstockEndpointParam = { name: "endDate", label: "Hasta", type: "date", optional: true }
+const FROM_DATE_PARAM: GstockEndpointParam = { name: "fromDate", label: "Desde", type: "date" }
+const TO_DATE_PARAM: GstockEndpointParam = { name: "toDate", label: "Hasta", type: "date" }
+const PAGE_NUMBER_PARAM: GstockEndpointParam = { name: "pageNumber", label: "Página", type: "number", placeholder: "Ej: 1" }
+const PAGE_SIZE_PARAM: GstockEndpointParam = { name: "pageSize", label: "Registros/página", type: "number", placeholder: "Ej: 50" }
 
 export const GSTOCK_ENDPOINT_GROUPS: GstockEndpointGroup[] = [
   {
@@ -110,30 +130,42 @@ export const GSTOCK_ENDPOINT_GROUPS: GstockEndpointGroup[] = [
         label: "Pedidos de Compra",
         description: "Órdenes de compra a proveedores.",
         method: "GET",
+        requiredParams: [CENTER_PARAM, START_DATE_PARAM, END_DATE_PARAM],
       },
       {
         path: "v1/delivery/purchases",
         label: "Albaranes de Compra",
         description: "Albaranes de entrega de compras.",
         method: "GET",
+        requiredParams: [CENTER_PARAM, START_DATE_PARAM, END_DATE_PARAM],
       },
       {
         path: "v1/delivery/purchases/accounting",
         label: "Contabilidad Albaranes",
         description: "Datos contables de albaranes de compra.",
         method: "GET",
+        requiredParams: [CENTER_PARAM, START_DATE_PARAM, END_DATE_PARAM],
       },
       {
         path: "v1/invoices/purchases",
         label: "Facturas de Compra",
         description: "Facturas de compra recibidas.",
         method: "GET",
+        requiredParams: [FROM_DATE_PARAM, TO_DATE_PARAM],
+      },
+      {
+        path: "v1/invoices/purchases/accounting",
+        label: "Facturas Compra (Contab.)",
+        description: "Datos contables de facturas de compra.",
+        method: "GET",
+        requiredParams: [FROM_DATE_PARAM, TO_DATE_PARAM],
       },
       {
         path: "v1/transfers",
         label: "Transferencias",
         description: "Transferencias entre almacenes.",
         method: "GET",
+        requiredParams: [START_DATE_PARAM, END_DATE_PARAM],
       },
       {
         path: "v1/inventories",
@@ -141,6 +173,7 @@ export const GSTOCK_ENDPOINT_GROUPS: GstockEndpointGroup[] = [
         description: "Registros de inventario.",
         method: "GET",
         sherlockMapping: "InventoryRecord",
+        requiredParams: [START_DATE_PARAM, END_DATE_PARAM],
       },
     ],
   },
@@ -149,16 +182,9 @@ export const GSTOCK_ENDPOINT_GROUPS: GstockEndpointGroup[] = [
     color: "text-emerald-500",
     endpoints: [
       {
-        path: "v1/recipes",
-        label: "Recetas",
-        description: "Listado de recetas con ingredientes, subrecetas y costes.",
-        method: "GET",
-        sherlockMapping: "Recipe + RecipeIngredient",
-      },
-      {
         path: "v2/recipes",
-        label: "Recetas v2",
-        description: "Recetas en formato v2 con datos ampliados.",
+        label: "Recetas",
+        description: "Listado de recetas con ingredientes, subrecetas, costes y alérgenos.",
         method: "GET",
         sherlockMapping: "Recipe + RecipeIngredient",
       },
@@ -193,47 +219,33 @@ export const GSTOCK_ENDPOINT_GROUPS: GstockEndpointGroup[] = [
     color: "text-amber-500",
     endpoints: [
       {
-        path: "v1/pos/categories",
-        label: "Categorías POS",
-        description: "Categorías de punto de venta para organizar productos en TPV.",
-        method: "GET",
-      },
-      {
         path: "v1/plus",
         label: "PLUs",
         description: "Códigos PLU de punto de venta.",
         method: "GET",
+        requiredParams: [PAGE_NUMBER_PARAM, PAGE_SIZE_PARAM],
       },
       {
         path: "v1/pos/loader/sales/json/realtime",
         label: "Ventas Tiempo Real",
-        description: "Datos de ventas en tiempo real desde el TPV.",
+        description: "Envío de datos de ventas en tiempo real desde el TPV.",
         method: "POST",
+        bodyTemplate: JSON.stringify({
+          centerId: 1,
+          date: "2025-01-15",
+          sales: [
+            {
+              pluId: 0,
+              pluName: "Ejemplo",
+              quantity: 1,
+              totalAmount: 10.00,
+              currencyCode: "EUR",
+            },
+          ],
+        }, null, 2),
       },
-      {
-        path: "v1/pos/loader/sales/json",
-        label: "Carga de Ventas",
-        description: "Carga de datos de ventas en formato JSON.",
-        method: "POST",
-      },
-      {
-        path: "v1/invoices/sales/accounting",
-        label: "Facturas de Venta",
-        description: "Datos contables de facturas de venta.",
-        method: "GET",
-      },
-      {
-        path: "v1/articles/sales",
-        label: "Artículos de Venta",
-        description: "Listado de artículos de venta.",
-        method: "GET",
-      },
-      {
-        path: "v1/articles/sales/resulting-units",
-        label: "Unidades Resultantes",
-        description: "Unidades resultantes de artículos de venta.",
-        method: "GET",
-      },
+      // v1/invoices/sales/accounting, v1/articles/sales, v1/articles/sales/resulting-units
+      // eliminados — HTTP 403 Permission denied (sin acceso con las credenciales actuales)
     ],
   },
   {
@@ -245,54 +257,135 @@ export const GSTOCK_ENDPOINT_GROUPS: GstockEndpointGroup[] = [
         label: "Coste Real",
         description: "Informe de coste real de productos consumidos.",
         method: "GET",
+        requiredParams: [CENTER_PARAM],
       },
       {
         path: "v1/costReals/items",
         label: "Coste Real (Items)",
         description: "Detalle de items de coste real.",
         method: "GET",
+        requiredParams: [CENTER_PARAM],
+      },
+      {
+        path: "v1/costReals/categories",
+        label: "Coste Real (Categorías)",
+        description: "Coste real desglosado por categorías de producto.",
+        method: "GET",
+        requiredParams: [CENTER_PARAM],
+      },
+      {
+        path: "v1/costReals/families",
+        label: "Coste Real (Familias)",
+        description: "Coste real desglosado por familias de producto.",
+        method: "GET",
+        requiredParams: [CENTER_PARAM],
+      },
+      {
+        path: "v1/costReals/types",
+        label: "Coste Real (Tipos)",
+        description: "Coste real desglosado por tipos de producto.",
+        method: "GET",
+        requiredParams: [CENTER_PARAM],
+      },
+      {
+        path: "v1/costReals/subtypes",
+        label: "Coste Real (Subtipos)",
+        description: "Coste real desglosado por subtipos de producto.",
+        method: "GET",
+        requiredParams: [CENTER_PARAM],
+      },
+      {
+        path: "v1/costReals/subtypes/accounting",
+        label: "Coste Real Subtipos (Contab.)",
+        description: "Datos contables de coste real por subtipos.",
+        method: "GET",
+        requiredParams: [CENTER_PARAM],
+      },
+      {
+        path: "v1/costReals/category/accounting",
+        label: "Coste Real Categoría (Contab.)",
+        description: "Datos contables de coste real por categoría.",
+        method: "GET",
+        requiredParams: [CENTER_PARAM],
       },
       {
         path: "v1/costTheoreticals",
         label: "Coste Teórico",
         description: "Coste esperado según recetas y ventas. Comparar con coste real para detectar mermas.",
         method: "GET",
+        requiredParams: [CENTER_PARAM],
+      },
+      {
+        path: "v1/costTheoreticals/carte/items",
+        label: "Coste Teórico (Carta)",
+        description: "Detalle de coste teórico por artículos de carta.",
+        method: "GET",
+        requiredParams: [CENTER_PARAM],
+      },
+      {
+        path: "v1/costTheoreticals/packs/items",
+        label: "Coste Teórico (Packs)",
+        description: "Detalle de coste teórico por packs/menús.",
+        method: "GET",
+        requiredParams: [CENTER_PARAM],
       },
       {
         path: "v1/stockVariations",
         label: "Variación de Stock",
         description: "Cambios en inventario e identificación de mermas.",
         method: "GET",
+        requiredParams: [CENTER_PARAM],
       },
       {
         path: "v1/stockVariations/items",
         label: "Variación de Stock (Items)",
         description: "Detalle de items en variación de stock.",
         method: "GET",
+        requiredParams: [CENTER_PARAM],
       },
       {
         path: "v1/stockTheoreticals",
         label: "Stock Teórico",
         description: "Inventario esperado según compras y ventas.",
         method: "GET",
+        requiredParams: [
+          { name: "date", label: "Fecha", type: "date" },
+          CENTER_PARAM,
+        ],
       },
       {
         path: "v1/priceVariation/products",
         label: "Variación Precios (Productos)",
         description: "Variación de precios de productos de compra.",
         method: "GET",
+        requiredParams: [CENTER_PARAM],
       },
       {
         path: "v1/priceVariation/recipes",
         label: "Variación Precios (Recetas)",
         description: "Variación de precios de recetas.",
         method: "GET",
+        requiredParams: [CENTER_PARAM],
+      },
+      {
+        path: "v1/priceVariation/formats",
+        label: "Variación Precios (Formatos)",
+        description: "Variación de precios por formatos de producto.",
+        method: "GET",
+        requiredParams: [CENTER_PARAM],
       },
       {
         path: "v1/report/sales",
         label: "Reporte de Ventas",
         description: "Reportes detallados de ventas.",
         method: "GET",
+        requiredParams: [
+          { name: "reportType", label: "Tipo de Reporte", type: "text", placeholder: "Ej: summary" },
+          { name: "currencyCode", label: "Moneda", type: "text", placeholder: "Ej: EUR" },
+          CENTER_PARAM,
+          START_DATE_PARAM,
+          END_DATE_PARAM,
+        ],
       },
     ],
   },
@@ -311,12 +404,70 @@ export const GSTOCK_ENDPOINT_GROUPS: GstockEndpointGroup[] = [
         label: "Mermas de Productos",
         description: "Registro de mermas por producto.",
         method: "GET",
+        requiredParams: [START_DATE_PARAM, END_DATE_PARAM],
       },
       {
         path: "v1/shrinkages/recipes",
         label: "Mermas de Recetas",
         description: "Registro de mermas por receta.",
         method: "GET",
+        requiredParams: [START_DATE_PARAM, END_DATE_PARAM],
+      },
+      {
+        path: "v1/shrinkages/product",
+        label: "Registrar Merma (Producto)",
+        description: "Registrar una merma de producto de compra.",
+        method: "POST",
+        bodyTemplate: JSON.stringify({
+          date: "2025-01-15",
+          centerId: 1,
+          causeId: 1,
+          productId: 0,
+          quantity: 1,
+          observations: "",
+        }, null, 2),
+      },
+      {
+        path: "v1/shrinkages/recipe",
+        label: "Registrar Merma (Receta)",
+        description: "Registrar una merma de receta.",
+        method: "POST",
+        bodyTemplate: JSON.stringify({
+          date: "2025-01-15",
+          centerId: 1,
+          causeId: 1,
+          recipeId: 0,
+          quantity: 1,
+          observations: "",
+        }, null, 2),
+      },
+      {
+        path: "v1/shrinkages/format",
+        label: "Registrar Merma (Formato)",
+        description: "Registrar una merma por formato de producto.",
+        method: "POST",
+        bodyTemplate: JSON.stringify({
+          date: "2025-01-15",
+          centerId: 1,
+          causeId: 1,
+          formatId: 0,
+          quantity: 1,
+          observations: "",
+        }, null, 2),
+      },
+      {
+        path: "v1/shrinkages/subrecipe",
+        label: "Registrar Merma (Subreceta)",
+        description: "Registrar una merma de subreceta.",
+        method: "POST",
+        bodyTemplate: JSON.stringify({
+          date: "2025-01-15",
+          centerId: 1,
+          causeId: 1,
+          subrecipeId: 0,
+          quantity: 1,
+          observations: "",
+        }, null, 2),
       },
     ],
   },
@@ -341,6 +492,13 @@ export const GSTOCK_ENDPOINT_GROUPS: GstockEndpointGroup[] = [
         label: "Métodos de Pago",
         description: "Métodos de pago configurados.",
         method: "GET",
+      },
+      {
+        path: "v1/imports",
+        label: "Importaciones",
+        description: "Historial de importaciones de datos.",
+        method: "GET",
+        requiredParams: [START_DATE_PARAM, END_DATE_PARAM],
       },
     ],
   },

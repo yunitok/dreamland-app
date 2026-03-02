@@ -24,7 +24,9 @@ import {
   CardTitle,
 } from "@/modules/shared/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/modules/shared/ui/tabs"
-import { GSTOCK_ENDPOINT_GROUPS, type GstockEndpoint } from "@/lib/gstock"
+import { GSTOCK_ENDPOINT_GROUPS, type GstockEndpoint, type GstockEndpointParam } from "@/lib/gstock"
+import { Input } from "@/modules/shared/ui/input"
+import { Label } from "@/modules/shared/ui/label"
 import { JsonViewer } from "./json-viewer"
 
 interface ApiResult {
@@ -44,14 +46,43 @@ export function GstockSandbox() {
   const [result, setResult] = useState<ApiResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [params, setParams] = useState<Record<string, string>>({})
+  const [bodyJson, setBodyJson] = useState<string>("")
 
-  const executeRequest = useCallback(async (endpoint: GstockEndpoint) => {
+  const executeRequest = useCallback(async (endpoint: GstockEndpoint, queryParams: Record<string, string>, body?: string) => {
     setLoading(true)
     setError(null)
     setResult(null)
 
     try {
-      const response = await fetch(`/api/sherlock/gstock?endpoint=${encodeURIComponent(endpoint.path)}`)
+      let response: Response
+
+      if (endpoint.method === "POST") {
+        // POST: el endpoint y body van en el body del fetch
+        let parsedBody: Record<string, unknown> = {}
+        if (body?.trim()) {
+          try {
+            parsedBody = JSON.parse(body)
+          } catch {
+            setError("JSON del body inválido")
+            setLoading(false)
+            return
+          }
+        }
+        response = await fetch("/api/sherlock/gstock", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ endpoint: endpoint.path, ...parsedBody }),
+        })
+      } else {
+        // GET: endpoint y params van como query string
+        const searchParams = new URLSearchParams({ endpoint: endpoint.path })
+        for (const [key, value] of Object.entries(queryParams)) {
+          if (value) searchParams.set(key, value)
+        }
+        response = await fetch(`/api/sherlock/gstock?${searchParams.toString()}`)
+      }
+
       const json = await response.json()
 
       if (!response.ok) {
@@ -81,11 +112,20 @@ export function GstockSandbox() {
 
   const handleSelect = (endpoint: GstockEndpoint) => {
     setSelectedEndpoint(endpoint)
+    setParams({})
+    setBodyJson(endpoint.bodyTemplate ?? "")
   }
 
+  const handleParamChange = (name: string, value: string) => {
+    setParams(prev => ({ ...prev, [name]: value }))
+  }
+
+  const allParamsFilled = !selectedEndpoint?.requiredParams?.length ||
+    selectedEndpoint.requiredParams.filter(p => !p.optional).every(p => params[p.name]?.trim())
+
   const handleExecute = () => {
-    if (selectedEndpoint) {
-      executeRequest(selectedEndpoint)
+    if (selectedEndpoint && allParamsFilled) {
+      executeRequest(selectedEndpoint, params, bodyJson || undefined)
     }
   }
 
@@ -147,7 +187,7 @@ export function GstockSandbox() {
             <div className="flex items-center gap-3">
               <div className="flex-1 flex items-center gap-2 min-w-0">
                 <Badge variant="secondary" className="shrink-0 font-mono text-xs">
-                  GET
+                  {selectedEndpoint?.method || "GET"}
                 </Badge>
                 <code className="text-sm text-muted-foreground truncate">
                   interface.g-stock.net/external/api/
@@ -159,7 +199,7 @@ export function GstockSandbox() {
               <Button
                 size="sm"
                 onClick={handleExecute}
-                disabled={!selectedEndpoint || loading}
+                disabled={!selectedEndpoint || loading || !allParamsFilled}
                 className="shrink-0 gap-1.5"
               >
                 {loading ? (
@@ -170,6 +210,49 @@ export function GstockSandbox() {
                 {t("execute")}
               </Button>
             </div>
+
+            {/* Parámetros del endpoint */}
+            {selectedEndpoint?.requiredParams && selectedEndpoint.requiredParams.length > 0 && (
+              <div className="mt-3 pt-3 border-t">
+                <p className="text-xs text-muted-foreground mb-2 font-medium">Parámetros</p>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {selectedEndpoint.requiredParams.map((param) => (
+                    <div key={param.name} className="space-y-1">
+                      <Label htmlFor={`param-${param.name}`} className="text-xs">
+                        {param.label}
+                        {param.optional && (
+                          <span className="text-muted-foreground/60 ml-1 font-normal">(opcional)</span>
+                        )}
+                      </Label>
+                      <Input
+                        id={`param-${param.name}`}
+                        type={param.type === "date" ? "date" : param.type === "number" ? "number" : "text"}
+                        placeholder={param.placeholder}
+                        value={params[param.name] || ""}
+                        onChange={(e) => handleParamChange(param.name, e.target.value)}
+                        className="h-8 text-xs"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Body JSON para POST */}
+            {selectedEndpoint?.method === "POST" && (
+              <div className="mt-3 pt-3 border-t">
+                <Label className="text-xs font-medium text-muted-foreground mb-2 block">
+                  Request Body (JSON)
+                </Label>
+                <textarea
+                  value={bodyJson}
+                  onChange={(e) => setBodyJson(e.target.value)}
+                  placeholder='{ "key": "value" }'
+                  className="w-full h-32 rounded-md border bg-muted/30 p-3 font-mono text-xs resize-y focus:outline-none focus:ring-1 focus:ring-primary"
+                  spellCheck={false}
+                />
+              </div>
+            )}
 
             {/* Status bar */}
             {(result || error) && (

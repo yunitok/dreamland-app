@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { RefreshCw, Database, CheckCircle, AlertTriangle, Clock, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/modules/shared/ui/button"
@@ -66,6 +67,7 @@ function SyncResultBadge({ report }: { report: SyncReport }) {
 }
 
 export function GstockSyncCard({ lastSync, totalEntries, isSuperAdmin }: GstockSyncCardProps) {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
   const [includeKB, setIncludeKB] = useState(true)
@@ -94,6 +96,7 @@ export function GstockSyncCard({ lastSync, totalEntries, isSuperAdmin }: GstockS
       })
     } finally {
       setIsLoading(false)
+      router.refresh()
     }
   }
 
@@ -112,6 +115,7 @@ export function GstockSyncCard({ lastSync, totalEntries, isSuperAdmin }: GstockS
       })
     } finally {
       setIsResetting(false)
+      router.refresh()
     }
   }
 
