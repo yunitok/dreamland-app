@@ -1,8 +1,11 @@
 {
+  "_docs_crons_disabled_hobby_limit": "Plan Hobby: máx 2 crons. Al migrar a Pro, mover los de _pending a crons.",
   "crons": [
-    { "path": "/api/cron/cleanup-notifications", "schedule": "0 2 * * *" },
-    { "path": "/api/cron/cleanup-ai-logs", "schedule": "0 3 * * 1" },
     { "path": "/api/cron/gstock-sync", "schedule": "0 7 * * *" },
     { "path": "/api/cron/weather-check", "schedule": "0 8 * * *" }
+  ],
+  "_pending_crons_pro_plan": [
+    { "path": "/api/cron/cleanup-notifications", "schedule": "0 2 * * *" },
+    { "path": "/api/cron/cleanup-ai-logs", "schedule": "0 3 * * 1" }
   ]
 }
