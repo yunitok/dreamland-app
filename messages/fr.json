@@ -299,7 +299,52 @@
     "roleDescOwner": "Contrôle total : gérer les membres, les paramètres et supprimer le projet",
     "roleDescManager": "Gérer les tâches et les membres, sans pouvoir supprimer le projet",
     "roleDescEditor": "Créer et modifier les tâches et le contenu, sans gérer les membres",
-    "roleDescViewer": "Lecture seule : voir les tâches et données sans rien modifier"
+    "roleDescViewer": "Lecture seule : voir les tâches et données sans rien modifier",
+    "processesTitle": "Processus Automatiques",
+    "processesDescription": "Surveiller et gérer les processus automatiques du système.",
+    "processes": {
+      "title": "Processus Automatiques",
+      "description": "Panneau de contrôle des processus automatiques",
+      "execute": "Exécuter",
+      "executing": "Exécution en cours…",
+      "running": "En cours",
+      "lastRun": "Dernière exécution",
+      "noRuns": "Aucune exécution",
+      "schedule": "Planification",
+      "duration": "Durée",
+      "engine": "Moteur",
+      "success": "Succès",
+      "failed": "Échoué",
+      "pending": "En attente",
+      "cancelled": "Annulé",
+      "manual": "Manuel",
+      "cron": "Cron",
+      "webhook": "Webhook",
+      "system": "Système",
+      "triggerDialog": {
+        "title": "Exécuter le processus",
+        "description": "Configurer les options avant l'exécution",
+        "cancel": "Annuler",
+        "execute": "Exécuter"
+      },
+      "detail": {
+        "back": "Retour aux processus",
+        "history": "Historique des exécutions",
+        "noHistory": "Aucune exécution enregistrée",
+        "successCount": "Réussies",
+        "failedCount": "Échouées",
+        "output": "Résultat",
+        "error": "Erreur",
+        "phases": "Phases"
+      },
+      "categories": {
+        "sync": "Synchronisation",
+        "cleanup": "Nettoyage",
+        "audit": "Audit",
+        "alert": "Alertes",
+        "import": "Importation"
+      }
+    }
   },
   "footer": {
     "strategicPM": "Strategic PM",

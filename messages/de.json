@@ -299,7 +299,52 @@
     "roleDescOwner": "Volle Kontrolle: Mitglieder, Einstellungen verwalten und Projekt löschen",
     "roleDescManager": "Aufgaben und Mitglieder verwalten, Projekt nicht löschen",
     "roleDescEditor": "Aufgaben und Inhalte erstellen und bearbeiten, ohne Mitglieder zu verwalten",
-    "roleDescViewer": "Nur Lesen: Aufgaben und Daten ansehen ohne Änderungen"
+    "roleDescViewer": "Nur Lesen: Aufgaben und Daten ansehen ohne Änderungen",
+    "processesTitle": "Automatische Prozesse",
+    "processesDescription": "Automatische Systemprozesse überwachen und verwalten.",
+    "processes": {
+      "title": "Automatische Prozesse",
+      "description": "Steuerungspanel für automatische Prozesse",
+      "execute": "Ausführen",
+      "executing": "Wird ausgeführt…",
+      "running": "Läuft",
+      "lastRun": "Letzte Ausführung",
+      "noRuns": "Keine Ausführungen",
+      "schedule": "Zeitplan",
+      "duration": "Dauer",
+      "engine": "Engine",
+      "success": "Erfolgreich",
+      "failed": "Fehlgeschlagen",
+      "pending": "Ausstehend",
+      "cancelled": "Abgebrochen",
+      "manual": "Manuell",
+      "cron": "Cron",
+      "webhook": "Webhook",
+      "system": "System",
+      "triggerDialog": {
+        "title": "Prozess ausführen",
+        "description": "Optionen vor der Ausführung konfigurieren",
+        "cancel": "Abbrechen",
+        "execute": "Ausführen"
+      },
+      "detail": {
+        "back": "Zurück zu Prozessen",
+        "history": "Ausführungsverlauf",
+        "noHistory": "Keine Ausführungen registriert",
+        "successCount": "Erfolgreich",
+        "failedCount": "Fehlgeschlagen",
+        "output": "Ergebnis",
+        "error": "Fehler",
+        "phases": "Phasen"
+      },
+      "categories": {
+        "sync": "Synchronisation",
+        "cleanup": "Bereinigung",
+        "audit": "Audit",
+        "alert": "Warnungen",
+        "import": "Import"
+      }
+    }
   },
   "footer": {
     "strategicPM": "Strategic PM",

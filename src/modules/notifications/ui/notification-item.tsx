@@ -14,6 +14,7 @@ import {
   CheckSquare,
   MessageSquare,
   UserPlus,
+  Cog,
   Bell,
   X,
 } from "lucide-react"
@@ -29,6 +30,7 @@ const TYPE_ICONS: Record<NotificationType, React.ElementType> = {
   TASK_ASSIGNED: CheckSquare,
   TASK_COMMENTED: MessageSquare,
   PROJECT_MEMBER_ADDED: UserPlus,
+  PROCESS_FAILED: Cog,
 }
 
 const TYPE_COLORS: Record<NotificationType, string> = {
@@ -42,6 +44,7 @@ const TYPE_COLORS: Record<NotificationType, string> = {
   TASK_ASSIGNED: "text-green-500",
   TASK_COMMENTED: "text-cyan-500",
   PROJECT_MEMBER_ADDED: "text-indigo-500",
+  PROCESS_FAILED: "text-red-600",
 }
 
 interface NotificationItemProps {
@@ -84,10 +87,10 @@ export function NotificationItem({
         <Icon className="h-4 w-4" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className={cn("text-sm leading-snug truncate", !isRead ? "font-semibold" : "font-normal")}>
+        <p className={cn("text-sm leading-snug", !isRead ? "font-semibold" : "font-normal")}>
           {title}
         </p>
-        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{body}</p>
+        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-3">{body}</p>
         <p className="text-[10px] text-muted-foreground mt-1">
           {formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: es })}
         </p>

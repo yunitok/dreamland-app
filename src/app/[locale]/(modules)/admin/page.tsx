@@ -1,7 +1,7 @@
 import { Header } from "@/components/layout/header"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/modules/shared/ui/card"
 import { Link } from "@/i18n/navigation"
-import { Users, Database, ShieldCheck } from "lucide-react"
+import { Users, Database, ShieldCheck, Activity } from "lucide-react"
 import { getTranslations, setRequestLocale } from "next-intl/server"
 import { requirePermission } from "@/lib/actions/rbac"
 
@@ -35,6 +35,12 @@ export default async function AdminDashboard({
       description: "Initialize or reset database data",
       href: "/admin/seed",
       icon: Database
+    },
+    {
+      title: t("processesTitle"),
+      description: t("processesDescription"),
+      href: "/admin/processes",
+      icon: Activity
     }
   ]
 

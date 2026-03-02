@@ -1025,6 +1025,7 @@ enum NotificationType {
   TASK_ASSIGNED
   TASK_COMMENTED
   PROJECT_MEMBER_ADDED
+  PROCESS_FAILED
 }
 
 model Notification {
@@ -1137,4 +1138,40 @@ enum WeatherAlertSource {
   MANUAL
   AEMET
   OPENWEATHERMAP
+}
+
+// ─── Procesos Automáticos ───────────────────────────────────
+
+enum ProcessRunStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum ProcessTriggerType {
+  MANUAL
+  CRON
+  WEBHOOK
+  SYSTEM
+}
+
+model ProcessRun {
+  id          String             @id @default(cuid())
+  processSlug String
+  status      ProcessRunStatus   @default(PENDING)
+  triggerType ProcessTriggerType @default(MANUAL)
+  triggeredBy String?
+  startedAt   DateTime           @default(now())
+  finishedAt  DateTime?
+  durationMs  Int?
+  output      Json?
+  error       String?
+  phases      Json?
+  metadata    Json?
+
+  @@index([processSlug, startedAt(sort: Desc)])
+  @@index([status])
+  @@map("process_runs")
 }

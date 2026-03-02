@@ -5,7 +5,6 @@ import { Bell, Trash2 } from "lucide-react"
 import { Button } from "@/modules/shared/ui/button"
 import { Badge } from "@/modules/shared/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/modules/shared/ui/popover"
-import { ScrollArea } from "@/modules/shared/ui/scroll-area"
 import { Separator } from "@/modules/shared/ui/separator"
 import {
   Tooltip,
@@ -114,7 +113,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
             <span className="sr-only">{t("title")}</span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-0" align="end">
+        <PopoverContent className="w-105 p-0" align="end">
           <div className="flex items-center justify-between px-4 py-3">
             <h3 className="text-sm font-semibold">{t("title")}</h3>
             <div className="flex items-center gap-2">
@@ -150,7 +149,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
               <p className="text-sm text-muted-foreground">{t("noNotifications")}</p>
             </div>
           ) : (
-            <ScrollArea className="max-h-105">
+            <div className="max-h-[min(60vh,400px)] overflow-y-auto">
               <div className="divide-y divide-border">
                 {notifications.map((n) => (
                   <NotificationItem
@@ -161,7 +160,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                   />
                 ))}
               </div>
-            </ScrollArea>
+            </div>
           )}
         </PopoverContent>
       </Popover>

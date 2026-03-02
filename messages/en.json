@@ -299,7 +299,52 @@
     "roleDescOwner": "Full control: manage members, settings, and delete the project",
     "roleDescManager": "Manage tasks and members, but cannot delete the project",
     "roleDescEditor": "Create and edit tasks and content, without managing members",
-    "roleDescViewer": "Read-only: view tasks and data without modifying anything"
+    "roleDescViewer": "Read-only: view tasks and data without modifying anything",
+    "processesTitle": "Automated Processes",
+    "processesDescription": "Monitor and manage automated system processes.",
+    "processes": {
+      "title": "Automated Processes",
+      "description": "Automated processes control panel",
+      "execute": "Execute",
+      "executing": "Executing…",
+      "running": "Running",
+      "lastRun": "Last run",
+      "noRuns": "No runs yet",
+      "schedule": "Schedule",
+      "duration": "Duration",
+      "engine": "Engine",
+      "success": "Success",
+      "failed": "Failed",
+      "pending": "Pending",
+      "cancelled": "Cancelled",
+      "manual": "Manual",
+      "cron": "Cron",
+      "webhook": "Webhook",
+      "system": "System",
+      "triggerDialog": {
+        "title": "Execute process",
+        "description": "Configure options before executing",
+        "cancel": "Cancel",
+        "execute": "Execute"
+      },
+      "detail": {
+        "back": "Back to processes",
+        "history": "Execution history",
+        "noHistory": "No executions recorded",
+        "successCount": "Successful",
+        "failedCount": "Failed",
+        "output": "Output",
+        "error": "Error",
+        "phases": "Phases"
+      },
+      "categories": {
+        "sync": "Sync",
+        "cleanup": "Cleanup",
+        "audit": "Audit",
+        "alert": "Alerts",
+        "import": "Import"
+      }
+    }
   },
   "footer": {
     "strategicPM": "Strategic PM",

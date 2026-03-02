@@ -299,7 +299,52 @@
     "roleDescOwner": "Controllo totale: gestisci membri, impostazioni ed elimina il progetto",
     "roleDescManager": "Gestisci attività e membri, senza poter eliminare il progetto",
     "roleDescEditor": "Crea e modifica attività e contenuti, senza gestire i membri",
-    "roleDescViewer": "Solo lettura: visualizza attività e dati senza modificare nulla"
+    "roleDescViewer": "Solo lettura: visualizza attività e dati senza modificare nulla",
+    "processesTitle": "Processi Automatici",
+    "processesDescription": "Monitora e gestisci i processi automatici del sistema.",
+    "processes": {
+      "title": "Processi Automatici",
+      "description": "Pannello di controllo dei processi automatici",
+      "execute": "Eseguire",
+      "executing": "Esecuzione in corso…",
+      "running": "In esecuzione",
+      "lastRun": "Ultima esecuzione",
+      "noRuns": "Nessuna esecuzione",
+      "schedule": "Pianificazione",
+      "duration": "Durata",
+      "engine": "Motore",
+      "success": "Successo",
+      "failed": "Fallito",
+      "pending": "In attesa",
+      "cancelled": "Annullato",
+      "manual": "Manuale",
+      "cron": "Cron",
+      "webhook": "Webhook",
+      "system": "Sistema",
+      "triggerDialog": {
+        "title": "Eseguire processo",
+        "description": "Configura le opzioni prima dell'esecuzione",
+        "cancel": "Annulla",
+        "execute": "Eseguire"
+      },
+      "detail": {
+        "back": "Torna ai processi",
+        "history": "Storico esecuzioni",
+        "noHistory": "Nessuna esecuzione registrata",
+        "successCount": "Riuscite",
+        "failedCount": "Fallite",
+        "output": "Risultato",
+        "error": "Errore",
+        "phases": "Fasi"
+      },
+      "categories": {
+        "sync": "Sincronizzazione",
+        "cleanup": "Pulizia",
+        "audit": "Audit",
+        "alert": "Avvisi",
+        "import": "Importazione"
+      }
+    }
   },
   "footer": {
     "strategicPM": "Strategic PM",

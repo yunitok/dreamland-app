@@ -299,7 +299,52 @@
     "roleDescOwner": "Control total: gestiona miembros, configuración y elimina el proyecto",
     "roleDescManager": "Gestiona tareas y miembros, sin poder eliminar el proyecto",
     "roleDescEditor": "Crea y edita tareas y contenido, sin gestionar miembros",
-    "roleDescViewer": "Solo lectura: ve tareas y datos sin poder modificar nada"
+    "roleDescViewer": "Solo lectura: ve tareas y datos sin poder modificar nada",
+    "processesTitle": "Procesos Automáticos",
+    "processesDescription": "Monitoriza y gestiona los procesos automáticos del sistema.",
+    "processes": {
+      "title": "Procesos Automáticos",
+      "description": "Panel de control de procesos automáticos",
+      "execute": "Ejecutar",
+      "executing": "Ejecutando…",
+      "running": "En ejecución",
+      "lastRun": "Última ejecución",
+      "noRuns": "Sin ejecuciones",
+      "schedule": "Programación",
+      "duration": "Duración",
+      "engine": "Motor",
+      "success": "Exitosa",
+      "failed": "Fallida",
+      "pending": "Pendiente",
+      "cancelled": "Cancelada",
+      "manual": "Manual",
+      "cron": "Cron",
+      "webhook": "Webhook",
+      "system": "Sistema",
+      "triggerDialog": {
+        "title": "Ejecutar proceso",
+        "description": "Configura las opciones antes de ejecutar",
+        "cancel": "Cancelar",
+        "execute": "Ejecutar"
+      },
+      "detail": {
+        "back": "Volver a procesos",
+        "history": "Historial de ejecuciones",
+        "noHistory": "No hay ejecuciones registradas",
+        "successCount": "Exitosas",
+        "failedCount": "Fallidas",
+        "output": "Resultado",
+        "error": "Error",
+        "phases": "Fases"
+      },
+      "categories": {
+        "sync": "Sincronización",
+        "cleanup": "Limpieza",
+        "audit": "Auditoría",
+        "alert": "Alertas",
+        "import": "Importación"
+      }
+    }
   },
   "footer": {
     "strategicPM": "PM Estratégico",
