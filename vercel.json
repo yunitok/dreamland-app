@@ -1,6 +1,0 @@
-{
-  "crons": [
-    { "path": "/api/cron/gstock-sync", "schedule": "0 7 * * *" },
-    { "path": "/api/cron/weather-check", "schedule": "0 8 * * *" }
-  ]
-}
