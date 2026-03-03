@@ -194,6 +194,7 @@ export async function POST(request: NextRequest) {
               options,
               maps: mergedMaps,
             }),
+            signal: AbortSignal.timeout(30000),
           })
         } catch (err) {
           console.error(`[gstock-sync] Error chaining phase ${nextPhase}:`, err)

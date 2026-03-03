@@ -139,6 +139,21 @@ export async function triggerProcess(
 
   // GStock sync: auto-encadenamiento por fases (cada fase < 60s, total ~8 min)
   if (slug === "gstock-sync") {
+    // Protección contra ejecución duplicada
+    const activeRun = await prisma.processRun.findFirst({
+      where: {
+        processSlug: "gstock-sync",
+        status: ProcessRunStatus.RUNNING,
+      },
+    })
+
+    if (activeRun) {
+      return {
+        success: false,
+        error: `Ya hay una sincronización en curso (run: ${activeRun.id})`,
+      }
+    }
+
     const run = await prisma.processRun.create({
       data: {
         processSlug: slug,
@@ -157,7 +172,18 @@ export async function triggerProcess(
         "Authorization": `Bearer ${process.env.CRON_SECRET}`,
       },
       body: JSON.stringify({ runId: run.id, phase: 0, options: options ?? {}, maps: {} }),
-    }).catch(err => console.error("[gstock-sync] Error starting chain:", err))
+    }).catch(async (err) => {
+      console.error("[gstock-sync] Error starting chain:", err)
+      await prisma.processRun.update({
+        where: { id: run.id },
+        data: {
+          status: ProcessRunStatus.FAILED,
+          finishedAt: new Date(),
+          durationMs: Date.now() - run.startedAt.getTime(),
+          error: `Error iniciando cadena de fases: ${err instanceof Error ? err.message : String(err)}`,
+        },
+      })
+    })
 
     return {
       success: true,
