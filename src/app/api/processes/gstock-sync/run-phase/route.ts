@@ -82,14 +82,16 @@ async function executePhase(
       return { result, newMaps }
     }
     case "suppliers": {
-      const [result] = await syncSuppliers(options)
+      const [result, supplierMap] = await syncSuppliers(options)
+      newMaps.supplierMap = serializeIdMap(supplierMap)
       return { result, newMaps }
     }
     case "ingredients": {
       const unitMap = deserializeIdMap(maps.unitMap)
       const categoryMap = deserializeIdMap(maps.categoryMap)
+      const supplierMap = deserializeIdMap(maps.supplierMap)
       const [result, ingredientMap, ingredientNameMap, productUnitMap] =
-        await syncIngredients(unitMap, categoryMap, options)
+        await syncIngredients(unitMap, categoryMap, supplierMap, options)
       newMaps.ingredientMap = serializeIdMap(ingredientMap)
       newMaps.ingredientNameMap = Object.fromEntries(ingredientNameMap)
       newMaps.productUnitMap = serializeIdMap(productUnitMap)

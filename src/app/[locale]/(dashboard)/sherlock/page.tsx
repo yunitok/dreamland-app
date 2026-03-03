@@ -12,6 +12,8 @@ import {
   History,
   Plug,
   ShieldCheck,
+  BookOpen,
+  Bot,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/modules/shared/ui/card";
 import { Header } from "@/components/layout/header";
@@ -22,6 +24,22 @@ export default async function SherlockDashboard() {
   const t = await getTranslations("sherlock");
 
   const modules = [
+    {
+      title: "Base de Conocimiento",
+      description: "Gestión del contenido RAG para recetas, ingredientes y alérgenos.",
+      href: "/sherlock/knowledge-base",
+      icon: BookOpen,
+      color: "text-orange-500",
+      bg: "bg-orange-500/10",
+    },
+    {
+      title: "Chat IA Sherlock",
+      description: "Asistente inteligente de cocina basado en la base de conocimiento.",
+      href: "/sherlock/chat",
+      icon: Bot,
+      color: "text-pink-500",
+      bg: "bg-pink-500/10",
+    },
     {
       title: "Ingredientes & Productos",
       description: "Gestión de fichas técnicas, alérgenos y precios.",

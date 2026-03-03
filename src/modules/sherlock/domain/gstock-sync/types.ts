@@ -98,6 +98,42 @@ export interface GstockProduct {
   description?: string
 }
 
+// ─── Tipos para enriquecimiento de ingredientes (formatos, albaranes, stock) ──
+
+export interface GstockFormat {
+  id: GstockId
+  productPurchaseId: GstockId
+  name: string
+  [key: string]: unknown
+}
+
+export interface GstockDeliveryItem {
+  formatId: GstockId
+  name: string
+  quantity: number
+  price: number
+  tax: number
+  [key: string]: unknown
+}
+
+export interface GstockDelivery {
+  id: GstockId
+  supplierId: GstockId
+  date: string
+  items: GstockDeliveryItem[]
+  [key: string]: unknown
+}
+
+export interface GstockStockTheoretical {
+  centerId: GstockId
+  productId: GstockId
+  total: number
+  inventoryDate?: string
+  [key: string]: unknown
+}
+
+// ─── Recetas ─────────────────────────────────────────────────
+
 export interface GstockRecipeIngredientLine {
   productId?: GstockId
   recipeId?: GstockId
@@ -111,10 +147,31 @@ export interface GstockRecipe {
   categoryId?: GstockId
   familyId?: GstockId
   cost?: number
+  /** Campo real de la API — anteriormente mapeado como "description" por error */
+  shortDescription?: string
+  /** @deprecated La API v2 devuelve "shortDescription", no "description". Mantenido por retrocompatibilidad */
   description?: string
   allergens?: string[] // raw allergen codes from GStock API (mapped to AllergenType in sync layer)
   ingredients?: GstockRecipeIngredientLine[]
   subrecipes?: GstockRecipeIngredientLine[]
+  // ─── Campos adicionales de la API v2 (no todos se mapean a Prisma) ───
+  subrecipe?: boolean
+  version?: number
+  recipeParentId?: GstockId | null
+  reference?: string
+  startDate?: string
+  endDate?: string | null
+  subrecipeUnitId?: GstockId
+  quantityUnitSubrecipe?: number
+  percentageCost?: number
+  suggestedPrice?: number
+  active?: boolean
+  urlInfo?: string
+  image?: string
+  creationDate?: string
+  modificationDate?: string
+  expirationDays?: number | null
+  [key: string]: unknown
 }
 
 // Result type for each sync phase

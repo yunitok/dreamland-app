@@ -1,48 +1,40 @@
 import { Suspense } from "react"
 import { Header } from "@/components/layout/header"
 import { Skeleton } from "@/modules/shared/ui/skeleton"
-import { getTranslations, setRequestLocale } from "next-intl/server"
+import { setRequestLocale } from "next-intl/server"
 import { requirePermission } from "@/lib/actions/rbac"
-import { getKnowledgeBaseEntries } from "@/modules/atc/actions/knowledge-base"
-import { getQueryCategories } from "@/modules/atc/actions/queries"
+import { getKBEntries } from "@/modules/rag/actions/knowledge-base"
 import { KnowledgeBaseTable } from "@/modules/rag/ui/knowledge-base-table"
 import { KnowledgeBaseDialog } from "@/modules/rag/ui/knowledge-base-dialog"
 import { KBImportPanel } from "@/modules/rag/ui/kb-import-panel"
-// Asegurar registro de dominios
 import "@/modules/rag/domain/register-domains"
 
-const DOMAIN = "atc"
+const DOMAIN = "sherlock"
 
-export default async function KnowledgeBasePage({
+export default async function SherlockKnowledgeBasePage({
   params,
 }: {
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
   setRequestLocale(locale)
-  await requirePermission("atc", "manage")
-  const t = await getTranslations("atc")
+  await requirePermission("sherlock", "manage")
 
-  const [kbResult, categoriesResult] = await Promise.all([
-    getKnowledgeBaseEntries(),
-    getQueryCategories(),
-  ])
+  const kbResult = await getKBEntries(DOMAIN)
 
   if (!kbResult.success) {
-    return <div className="p-8">{t("errorLoading")}</div>
+    return <div className="p-8">Error al cargar la base de conocimiento</div>
   }
-
-  const categories = categoriesResult.data ?? []
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <Header
         title="Base de Conocimiento"
-        description="Gestión del contenido para el asistente RAG de espacios, accesibilidad y alérgenos"
-        backHref="/atc"
+        description="Gestión del contenido RAG para recetas, ingredientes y alérgenos"
+        backHref="/sherlock"
       >
-        <KBImportPanel domain={DOMAIN} categories={categories} />
-        <KnowledgeBaseDialog domain={DOMAIN} categories={categories} />
+        <KBImportPanel domain={DOMAIN} categories={[]} />
+        <KnowledgeBaseDialog domain={DOMAIN} categories={[]} />
       </Header>
 
       <div className="flex-1 overflow-y-auto p-8 w-full space-y-8">
@@ -50,7 +42,7 @@ export default async function KnowledgeBasePage({
           <KnowledgeBaseTable
             data={kbResult.data ?? []}
             domain={DOMAIN}
-            categories={categories}
+            categories={[]}
           />
         </Suspense>
       </div>

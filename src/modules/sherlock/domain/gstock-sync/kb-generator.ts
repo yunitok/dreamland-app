@@ -1,5 +1,5 @@
 import { AllergenType, Prisma } from "@prisma/client"
-import type { BulkKBEntry } from "@/modules/atc/actions/knowledge-base-core"
+import type { BulkKBEntry } from "@/modules/rag/domain/types"
 
 // Tipo de receta con todas las relaciones necesarias para generar KB entries
 export type RecipeForKB = Prisma.RecipeGetPayload<{
@@ -66,6 +66,7 @@ function buildRecipeEntry(recipe: RecipeForKB): BulkKBEntry {
   parts.push(`${categoryPart}${familyPart}.`)
 
   if (recipe.description) parts.push(recipe.description)
+  if (recipe.protocoloDeSala) parts.push(`Protocolo de sala: ${recipe.protocoloDeSala}`)
   parts.push(`Ingredientes: ${formatIngredientList(recipe)}.`)
   if (recipe.prepTime) parts.push(`Tiempo de preparación: ${recipe.prepTime} min.`)
   if (recipe.cookTime) parts.push(`Tiempo de cocción: ${recipe.cookTime} min.`)

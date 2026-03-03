@@ -760,6 +760,7 @@ model KnowledgeBase {
   section     String?
   source      String   @default("manual")
   language    String   @default("es")
+  domains     String[] @default(["atc"])
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

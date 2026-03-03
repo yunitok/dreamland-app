@@ -12,9 +12,11 @@ import {
   mapGstockRecipeIngredients,
   extractAbbreviation,
   type GstockIdMap,
+  type IngredientEnrichment,
 } from "./mappers"
 import { generateRecipeKBEntries } from "./kb-generator"
-import { syncKBBySourceCore } from "@/modules/atc/actions/knowledge-base-core"
+import { syncKBBySourceCore } from "@/modules/rag/actions/knowledge-base-core"
+import "@/modules/rag/domain/register-domains"
 import type {
   GstockMeasureUnit,
   GstockCategory,
@@ -23,6 +25,9 @@ import type {
   GstockSupplier,
   GstockProduct,
   GstockRecipe,
+  GstockFormat,
+  GstockDelivery,
+  GstockStockTheoretical,
   SyncPhaseResult,
   SyncReport,
 } from "./types"
@@ -251,11 +256,119 @@ export async function syncSuppliers(opts: SyncOptions): Promise<[SyncPhaseResult
   return [closePhase(state), idMap]
 }
 
+// ─── Enriquecimiento: proveedor (albaranes) + stock teórico ─────
+
+/**
+ * Obtiene datos de enriquecimiento para ingredientes desde endpoints adicionales:
+ * - Formatos (v1/product/purchases/formats) → mapa formatId → productId
+ * - Albaranes (v1/delivery/purchases) → proveedor más reciente por producto
+ * - Stock teórico (v1/stockTheoreticals) → stock calculado por producto
+ */
+export async function fetchIngredientEnrichment(
+  supplierMap: GstockIdMap,
+  opts: SyncOptions
+): Promise<IngredientEnrichment> {
+  const productSupplierMap = new Map<string, string>()
+  const stockMap = new Map<string, number>()
+
+  // 1. Formatos: formatId → productId (para cruzar con albaranes)
+  onProgress(opts, "Enriquecimiento", "Cargando formatos...")
+  let formatToProduct = new Map<string, string>()
+  try {
+    const { data: formats } = await fetchGstock<GstockFormat>("v1/product/purchases/formats")
+    formatToProduct = new Map(
+      formats.map(f => [String(f.id), String(f.productPurchaseId)])
+    )
+    log(opts, `Formatos cargados: ${formatToProduct.size}`)
+  } catch (e) {
+    log(opts, `Error cargando formatos (no crítico): ${e instanceof Error ? e.message : String(e)}`)
+  }
+
+  // 2. Albaranes: proveedor más reciente por producto
+  onProgress(opts, "Enriquecimiento", "Cargando albaranes recientes...")
+  try {
+    // Obtener centros para consultar albaranes
+    const { data: centers } = await fetchGstock<{ id: string | number }>("v1/centers")
+    const today = new Date()
+    const startDate = new Date(today)
+    startDate.setMonth(startDate.getMonth() - 6) // últimos 6 meses
+    const startStr = startDate.toISOString().split("T")[0]
+    const endStr = today.toISOString().split("T")[0]
+
+    // Consultar albaranes de todos los centros en paralelo
+    const deliveryPromises = centers.map(c =>
+      fetchGstock<GstockDelivery>(
+        `v1/delivery/purchases?centerId=${c.id}&startDate=${startStr}&endDate=${endStr}`
+      ).catch(() => ({ data: [] as GstockDelivery[] }))
+    )
+    const deliveryResults = await Promise.all(deliveryPromises)
+
+    // Mapear proveedor → productos, priorizando el albarán más reciente
+    // Estructura: productId → { supplierId, date }
+    const latestSupplier = new Map<string, { supplierId: string; date: string }>()
+
+    for (const { data: deliveries } of deliveryResults) {
+      for (const delivery of deliveries) {
+        const supplierId = String(delivery.supplierId)
+        const deliveryDate = delivery.date
+
+        for (const item of delivery.items ?? []) {
+          const formatId = String(item.formatId)
+          const productId = formatToProduct.get(formatId)
+          if (!productId) continue
+
+          const existing = latestSupplier.get(productId)
+          if (!existing || deliveryDate > existing.date) {
+            latestSupplier.set(productId, { supplierId, date: deliveryDate })
+          }
+        }
+      }
+    }
+
+    for (const [productId, { supplierId }] of latestSupplier) {
+      productSupplierMap.set(productId, supplierId)
+    }
+    log(opts, `Proveedores mapeados: ${productSupplierMap.size} productos`)
+  } catch (e) {
+    log(opts, `Error cargando albaranes (no crítico): ${e instanceof Error ? e.message : String(e)}`)
+  }
+
+  // 3. Stock teórico: stock calculado por producto
+  onProgress(opts, "Enriquecimiento", "Cargando stock teórico...")
+  try {
+    const { data: centers } = await fetchGstock<{ id: string | number }>("v1/centers")
+    const today = new Date().toISOString().split("T")[0]
+
+    // Consultar stock teórico de todos los centros en paralelo
+    const stockPromises = centers.map(c =>
+      fetchGstock<GstockStockTheoretical>(
+        `v1/stockTheoreticals?date=${today}&centerId=${c.id}`
+      ).catch(() => ({ data: [] as GstockStockTheoretical[] }))
+    )
+    const stockResults = await Promise.all(stockPromises)
+
+    // Sumar stock de todos los centros por producto
+    for (const { data: stocks } of stockResults) {
+      for (const stock of stocks) {
+        const productId = String(stock.productId)
+        const current = stockMap.get(productId) ?? 0
+        stockMap.set(productId, current + (stock.total ?? 0))
+      }
+    }
+    log(opts, `Stock teórico cargado: ${stockMap.size} productos`)
+  } catch (e) {
+    log(opts, `Error cargando stock teórico (no crítico): ${e instanceof Error ? e.message : String(e)}`)
+  }
+
+  return { supplierMap, productSupplierMap, stockMap }
+}
+
 // ─── Fase 6: Ingredientes ────────────────────────────────────────
 
 export async function syncIngredients(
   unitMap: GstockIdMap,
   categoryMap: GstockIdMap,
+  supplierMap: GstockIdMap,
   opts: SyncOptions
 ): Promise<[SyncPhaseResult, GstockIdMap, Map<string, string>, GstockIdMap]> {
   const state = startPhase("Ingredientes", "v1/product/purchases", "Ingredient")
@@ -264,6 +377,9 @@ export async function syncIngredients(
   const nameMap = new Map<string, string>()
   // gstockProductId → prismaUnitId (la unidad se hereda del producto, no viene por línea de receta)
   const productUnitMap: GstockIdMap = new Map()
+
+  // Enriquecimiento: proveedor (vía albaranes) y stock teórico
+  const enrichment = await fetchIngredientEnrichment(supplierMap, opts)
 
   const { data } = await fetchGstock<GstockProduct>("v1/product/purchases")
 
@@ -286,7 +402,7 @@ export async function syncIngredients(
     }
 
     try {
-      const mapped = mapGstockToIngredient(raw, unitMap, categoryMap)
+      const mapped = mapGstockToIngredient(raw, unitMap, categoryMap, enrichment)
       if (!mapped) { state.skipped++; continue }
       if (opts.dryRun) { state.skipped++; idMap.set(gstockId, gstockId); continue }
 
@@ -397,7 +513,7 @@ export async function syncKnowledgeBase(opts: SyncOptions): Promise<[SyncPhaseRe
   onProgress(opts, state.phase, `${kbEntries.length} entries generadas, subiendo a Pinecone...`)
 
   if (!opts.dryRun && kbEntries.length) {
-    const result = await syncKBBySourceCore("gstock-recipes", kbEntries)
+    const result = await syncKBBySourceCore("gstock-recipes", kbEntries, ["atc", "sherlock"])
     state.created = result.created
   } else {
     state.skipped = kbEntries.length
@@ -432,11 +548,11 @@ export async function syncGstockToSherlock(options: SyncOptions = {}): Promise<S
     phases.push(p4)
     errors.push(...p4.errors)
 
-    const [p5] = await syncSuppliers(options)
+    const [p5, supplierMap] = await syncSuppliers(options)
     phases.push(p5)
     errors.push(...p5.errors)
 
-    const [p6, ingredientMap, ingredientNameMap, productUnitMap] = await syncIngredients(unitMap, categoryMap, options)
+    const [p6, ingredientMap, ingredientNameMap, productUnitMap] = await syncIngredients(unitMap, categoryMap, supplierMap, options)
     phases.push(p6)
     errors.push(...p6.errors)
 

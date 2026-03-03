@@ -1,7 +1,7 @@
 import { Header } from "@/components/layout/header"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/modules/shared/ui/card"
 import { Link } from "@/i18n/navigation"
-import { Users, Database, ShieldCheck, Activity } from "lucide-react"
+import { Users, Database, ShieldCheck, Activity, BookOpen } from "lucide-react"
 import { getTranslations, setRequestLocale } from "next-intl/server"
 import { requirePermission } from "@/lib/actions/rbac"
 
@@ -41,6 +41,12 @@ export default async function AdminDashboard({
       description: t("processesDescription"),
       href: "/admin/processes",
       icon: Activity
+    },
+    {
+      title: "Base de Conocimiento",
+      description: "Vista centralizada de todos los dominios RAG",
+      href: "/admin/knowledge-base",
+      icon: BookOpen
     }
   ]
 

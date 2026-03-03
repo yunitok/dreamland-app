@@ -20,7 +20,8 @@ export const toStr = (id: string | number | null | undefined): string | undefine
 
 const VALID_ALLERGENS = new Set<string>(Object.values(AllergenType))
 
-function parseAllergenCode(raw: string): AllergenType | null {
+function parseAllergenCode(raw: unknown): AllergenType | null {
+  if (typeof raw !== "string") return null
   const code = raw.trim().toUpperCase()
   return VALID_ALLERGENS.has(code) ? (code as AllergenType) : null
 }
@@ -97,12 +98,22 @@ export function mapGstockToSupplier(raw: GstockSupplier) {
   }
 }
 
-// ─── Ingrediente (depende de categoryMap, unitMap) ───────────────
+// ─── Ingrediente (depende de categoryMap, unitMap, datos enriquecidos) ────
+
+export interface IngredientEnrichment {
+  /** gstockSupplierId → prismaSupplierId */
+  supplierMap?: GstockIdMap
+  /** gstockProductId → gstockSupplierId (proveedor más reciente por albarán) */
+  productSupplierMap?: Map<string, string>
+  /** gstockProductId → stock teórico total */
+  stockMap?: Map<string, number>
+}
 
 export function mapGstockToIngredient(
   raw: GstockProduct,
   unitMap: GstockIdMap,
-  categoryMap: GstockIdMap
+  categoryMap: GstockIdMap,
+  enrichment?: IngredientEnrichment
 ) {
   // Convertir IDs numéricos a string para lookup en los mapas
   const categoryId = raw.categoryId ? categoryMap.get(String(raw.categoryId)) : undefined
@@ -110,6 +121,14 @@ export function mapGstockToIngredient(
 
   // FKs requeridas — sin ellas no podemos crear el ingrediente
   if (!categoryId || !unitTypeId) return null
+
+  // Proveedor: productId → gstockSupplierId → prismaSupplierId
+  const productId = String(raw.id)
+  const gstockSupplierId = enrichment?.productSupplierMap?.get(productId)
+  const supplierId = gstockSupplierId ? enrichment?.supplierMap?.get(gstockSupplierId) : undefined
+
+  // Stock teórico del endpoint v1/stockTheoreticals
+  const theoreticalStock = enrichment?.stockMap?.get(productId)
 
   return {
     name: raw.name,
@@ -120,10 +139,13 @@ export function mapGstockToIngredient(
     cost: raw.measurePriceAverage ?? raw.measurePriceLastPurchase ?? 0,
     ...(raw.taxRate !== undefined && { taxRate: raw.taxRate }),
     ...(raw.active !== undefined && { status: raw.active ? IngredientStatus.ACTIVE : IngredientStatus.INACTIVE }),
-    ...(raw.currentStock !== undefined && { currentStock: raw.currentStock }),
+    // Stock: preferir dato de la API directa; si no viene, usar stock teórico
+    ...(raw.currentStock != null ? { currentStock: raw.currentStock }
+      : theoreticalStock != null ? { currentStock: theoreticalStock } : {}),
     ...(raw.minStock !== undefined && { minStock: raw.minStock }),
     ...(raw.maxStock !== undefined && { maxStock: raw.maxStock }),
     ...(raw.description && { description: raw.description }),
+    ...(supplierId && { supplierId }),
   }
 }
 
@@ -144,17 +166,24 @@ export function mapGstockToRecipe(
     .map(parseAllergenCode)
     .filter((a): a is AllergenType => a !== null)
 
+  // shortDescription es el campo real de la API v2; description como fallback por retrocompatibilidad
+  const description = raw.shortDescription || raw.description
+
   return {
     name: raw.name,
     categoryId,
     // GStock recipe ID (numérico) convertido a string para externalId
     externalId: String(raw.id),
     externalSource: "gstock",
-    status: RecipeStatus.ACTIVE,
+    status: raw.active === false ? RecipeStatus.ARCHIVED : RecipeStatus.ACTIVE,
     ...(familyId && { familyId }),
-    ...(raw.description && { description: raw.description }),
+    ...(description && { description }),
     ...(raw.cost !== undefined && { theoreticalCost: raw.cost }),
     ...(allergens.length && { allergens }),
+    // image → photos[] (campo Prisma String[])
+    ...(raw.image && { photos: [raw.image] }),
+    // urlInfo → protocoloDeSala (URL a documentación del plato)
+    ...(raw.urlInfo && { protocoloDeSala: raw.urlInfo }),
   }
 }
 

@@ -20,10 +20,7 @@ const columns: ColumnDef<IngredientWithRelations>[] = [
     accessorKey: "name",
     header: "Nombre",
     cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="font-medium">{row.getValue("name")}</span>
-        <span className="text-xs text-muted-foreground">{row.original.reference || '-'}</span>
-      </div>
+      <span className="font-medium">{row.getValue("name")}</span>
     ),
   },
   {

@@ -44,6 +44,12 @@ export function buildKBText(title: string, content: string, section?: string | n
   return section ? `${title} — ${section}\n\n${content}` : `${title}\n\n${content}`
 }
 
+const DEFAULT_HYDE_PROMPT =
+  "Eres un experto en restaurantes. Dado una pregunta de cliente, " +
+  "genera una respuesta hipotética breve y factual (2-3 frases) como si " +
+  "fueras el restaurante respondiendo. No menciones el nombre del restaurante. " +
+  "Responde en español."
+
 /**
  * HyDE (Hypothetical Document Embeddings):
  * Genera una respuesta hipotética breve a la query del usuario usando un LLM.
@@ -53,18 +59,16 @@ export function buildKBText(title: string, content: string, section?: string | n
  *
  * Retorna la respuesta hipotética concatenada con la query original para
  * combinar ambas señales semánticas.
+ *
+ * @param contextPrompt - Prompt de sistema personalizado para el dominio (opcional)
  */
-export async function generateHyDEQuery(userQuery: string): Promise<string> {
+export async function generateHyDEQuery(userQuery: string, contextPrompt?: string): Promise<string> {
   const response = await openai.chat.completions.create({
     model: HYDE_MODEL,
     messages: [
       {
         role: "system",
-        content:
-          "Eres un experto en restaurantes. Dado una pregunta de cliente, " +
-          "genera una respuesta hipotética breve y factual (2-3 frases) como si " +
-          "fueras el restaurante respondiendo. No menciones el nombre del restaurante. " +
-          "Responde en español.",
+        content: contextPrompt ?? DEFAULT_HYDE_PROMPT,
       },
       { role: "user", content: userQuery },
     ],
@@ -73,6 +77,5 @@ export async function generateHyDEQuery(userQuery: string): Promise<string> {
   })
 
   const hypothetical = response.choices[0]?.message?.content?.trim() ?? ""
-  // Combinar la respuesta hipotética con la query original para capturar ambas señales
   return hypothetical ? `${hypothetical}\n\n${userQuery}` : userQuery
 }
