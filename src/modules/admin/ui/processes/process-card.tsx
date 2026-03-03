@@ -84,13 +84,13 @@ export function ProcessCard({ definition, dashboardItem, onTrigger, onCancel, is
   const outputSummary = lastRun ? formatOutputSummary(lastRun.output) : null
 
   return (
-    <Card className="group relative flex flex-col h-full hover:border-primary/30 transition-colors">
+    <Card className="group relative flex flex-col h-full hover:border-primary/30 transition-colors gap-0! py-0!">
       <Link
         href={`/admin/processes/${definition.slug}`}
         className="absolute inset-0 z-0"
         aria-label={`Ver detalle de ${definition.name}`}
       />
-      <CardHeader className="pb-3 flex-1">
+      <CardHeader className="pb-2 pt-4 flex-1">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
             <div className={`p-1.5 rounded-md bg-muted ${category.color}`}>
@@ -118,66 +118,68 @@ export function ProcessCard({ definition, dashboardItem, onTrigger, onCancel, is
 
           {/* Resumen del output */}
           {outputSummary && (
-            <p className="text-xs text-muted-foreground truncate pl-5.5">
+            <p className="text-xs text-muted-foreground line-clamp-2 pl-5.5">
               {outputSummary}
             </p>
           )}
 
           {/* Error */}
           {lastRun?.status === "FAILED" && lastRun.error && (
-            <p className="text-xs text-destructive truncate pl-5.5">
+            <p className="text-xs text-destructive line-clamp-2 pl-5.5">
               {lastRun.error}
             </p>
           )}
-
-          {/* Schedule + ejecutar/cancelar */}
-          <div className="flex items-center justify-between pt-1">
-            {definition.schedule && (
-              <Badge variant="outline" className="text-[10px] font-normal">
-                {definition.schedule}
-              </Badge>
-            )}
-            <div className="flex items-center gap-1">
-              {runningNow && activeRunId && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="relative z-10 h-7 gap-1 text-xs text-destructive hover:text-destructive"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    onCancel(activeRunId)
-                  }}
-                  disabled={isCancelling}
-                >
-                  {isCancelling ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    <Square className="h-3 w-3" />
-                  )}
-                  Cancelar
-                </Button>
-              )}
-              <Button
-                size="sm"
-                variant="ghost"
-                className="relative z-10 h-7 gap-1 text-xs"
-                onClick={(e) => {
-                  e.preventDefault()
-                  onTrigger(definition.slug)
-                }}
-                disabled={isRunning || definition.executor === "external"}
-              >
-                {isTriggering ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <Play className="h-3 w-3" />
-                )}
-                Ejecutar
-              </Button>
-            </div>
-          </div>
         </div>
       </CardHeader>
+
+      {/* Footer siempre visible: schedule + ejecutar/cancelar */}
+      <div className="flex items-center justify-between px-6 pb-3 pt-1">
+        {definition.schedule ? (
+          <Badge variant="outline" className="text-[10px] font-normal">
+            {definition.schedule}
+          </Badge>
+        ) : (
+          <span />
+        )}
+        <div className="flex items-center gap-1">
+          {runningNow && activeRunId && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="relative z-10 h-7 gap-1 text-xs text-destructive hover:text-destructive"
+              onClick={(e) => {
+                e.preventDefault()
+                onCancel(activeRunId)
+              }}
+              disabled={isCancelling}
+            >
+              {isCancelling ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Square className="h-3 w-3" />
+              )}
+              Cancelar
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            className="relative z-10 h-7 gap-1 text-xs"
+            onClick={(e) => {
+              e.preventDefault()
+              onTrigger(definition.slug)
+            }}
+            disabled={isRunning || definition.executor === "external"}
+          >
+            {isTriggering ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Play className="h-3 w-3" />
+            )}
+            Ejecutar
+          </Button>
+        </div>
+      </div>
     </Card>
   )
 }

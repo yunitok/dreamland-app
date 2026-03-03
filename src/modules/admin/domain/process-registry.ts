@@ -32,7 +32,7 @@ export const PROCESS_DEFINITIONS: ProcessDefinition[] = [
     slug: "gstock-sync",
     name: "Sincronización GStock",
     description:
-      "Sincroniza recetas, ingredientes, proveedores y alérgenos desde la API de GStock hacia Sherlock DB y el Knowledge Base RAG.",
+      "Sincroniza recetas, ingredientes, proveedores y alérgenos desde GStock hacia Sherlock DB y el Knowledge Base RAG.",
     icon: "RefreshCw",
     category: "sync",
     schedule: "Diario 7:00",
