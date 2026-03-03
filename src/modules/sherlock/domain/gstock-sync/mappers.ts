@@ -154,12 +154,16 @@ export function mapGstockToIngredient(
 export function mapGstockToRecipe(
   raw: GstockRecipe,
   categoryMap: GstockIdMap,
-  familyMap: GstockIdMap
+  familyMap: GstockIdMap,
+  fallbackCategoryId?: string
 ) {
-  const categoryId = raw.categoryId ? categoryMap.get(String(raw.categoryId)) : undefined
+  const categoryId = raw.categoryId
+    ? categoryMap.get(String(raw.categoryId))
+    : undefined
 
-  // categoryId es requerido en Recipe
-  if (!categoryId) return null
+  // categoryId es requerido en Recipe — usar fallback "Sin clasificar" si no hay match
+  const resolvedCategoryId = categoryId ?? fallbackCategoryId
+  if (!resolvedCategoryId) return null
 
   const familyId = raw.familyId ? familyMap.get(String(raw.familyId)) : undefined
   const allergens = (raw.allergens ?? [])
@@ -171,7 +175,7 @@ export function mapGstockToRecipe(
 
   return {
     name: raw.name,
-    categoryId,
+    categoryId: resolvedCategoryId,
     // GStock recipe ID (numérico) convertido a string para externalId
     externalId: String(raw.id),
     externalSource: "gstock",

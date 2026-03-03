@@ -437,11 +437,21 @@ export async function syncRecipes(
 ): Promise<SyncPhaseResult> {
   const state = startPhase("Recetas", "v2/recipes", "Recipe + RecipeIngredient")
 
+  // Categoría fallback para recetas sin categoryId en GStock
+  const FALLBACK_GSTOCK_ID = "__sin_clasificar__"
+  const fallbackCategory = await prisma.recipeCategory.upsert({
+    where: { gstockId: FALLBACK_GSTOCK_ID },
+    update: {},
+    create: { name: "Sin clasificar", gstockId: FALLBACK_GSTOCK_ID, description: "Categoría por defecto para recetas sin clasificar en GStock" },
+    select: { id: true },
+  })
+  const fallbackCategoryId = fallbackCategory.id
+
   const { data } = await fetchGstock<GstockRecipe>("v2/recipes")
 
   for (const raw of data) {
     try {
-      const mapped = mapGstockToRecipe(raw, recipeCategoryMap, familyMap)
+      const mapped = mapGstockToRecipe(raw, recipeCategoryMap, familyMap, fallbackCategoryId)
       if (!mapped) { state.skipped++; continue }
 
       // Inferir alérgenos desde nombres de ingredientes (IDs numéricos → string para lookup)
