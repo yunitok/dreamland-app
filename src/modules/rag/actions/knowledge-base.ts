@@ -9,6 +9,7 @@ import { generateEmbedding, buildKBText } from "@/lib/embeddings"
 import {
   upsertKnowledgeVector,
   upsertKnowledgeVectorMultiNS,
+  deleteKnowledgeVectors,
   deleteKnowledgeVectorsMultiNS,
   deleteVectorsBySourceMultiNS,
 } from "@/lib/pinecone"
@@ -171,10 +172,21 @@ export async function deleteKBEntry(domainId: string, id: string) {
   await requireKBPermission(domainId, "manage")
 
   const entry = await prisma.knowledgeBase.findUniqueOrThrow({ where: { id }, select: { domains: true } })
-  const namespaces = resolveNamespaces(entry.domains)
+  const ns = getKBDomain(domainId).namespace
 
-  await deleteKnowledgeVectorsMultiNS([id], namespaces)
-  await prisma.knowledgeBase.delete({ where: { id } })
+  // Borrar vector solo del namespace actual
+  await deleteKnowledgeVectors([id], ns)
+
+  if (entry.domains.length <= 1) {
+    // Entry exclusiva de este dominio: borrar registro completo
+    await prisma.knowledgeBase.delete({ where: { id } })
+  } else {
+    // Entry compartida: quitar solo este dominio del array
+    await prisma.knowledgeBase.update({
+      where: { id },
+      data: { domains: entry.domains.filter(d => d !== domainId) },
+    })
+  }
 
   revalidateDomain(domainId)
   return { success: true as const }
@@ -221,15 +233,38 @@ export async function deleteKBBySource(domainId: string, source: string) {
   await requireKBPermission(domainId, "manage")
   const domainConfig = getKBDomain(domainId)
 
+  // 1. Borrar vectores del namespace actual (siempre seguro)
   try {
     await deleteVectorsBySourceMultiNS(source, [domainConfig.namespace])
   } catch (e) {
     console.error("[KB] Error deleting vectors for source", source, e)
   }
 
-  const result = await prisma.knowledgeBase.deleteMany({ where: { source, domains: { has: domainId } } })
+  // 2. Obtener entries afectadas para evaluar si son exclusivas o compartidas
+  const entries = await prisma.knowledgeBase.findMany({
+    where: { source, domains: { has: domainId } },
+    select: { id: true, domains: true },
+  })
+
+  // 3. Separar: exclusivas (borrar) vs compartidas (quitar dominio)
+  const toDelete = entries.filter(e => e.domains.length <= 1).map(e => e.id)
+  const toUpdate = entries.filter(e => e.domains.length > 1)
+
+  // 4. Ejecutar en transacción
+  await prisma.$transaction([
+    ...(toDelete.length
+      ? [prisma.knowledgeBase.deleteMany({ where: { id: { in: toDelete } } })]
+      : []),
+    ...toUpdate.map(e =>
+      prisma.knowledgeBase.update({
+        where: { id: e.id },
+        data: { domains: e.domains.filter(d => d !== domainId) },
+      })
+    ),
+  ])
+
   revalidateDomain(domainId)
-  return { success: true as const, deleted: result.count }
+  return { success: true as const, deleted: toDelete.length, unlinked: toUpdate.length }
 }
 
 // ─── Estadísticas por dominio ────────────────────────────────────

@@ -171,7 +171,10 @@ export function KnowledgeBaseTable({ data, domain, categories, showDomainColumn 
     try {
       const result = await deleteKBBySource(domain, bulkDeleteSource)
       if (result.success) {
-        toast.success(`${result.deleted} entradas eliminadas`)
+        const parts: string[] = []
+        if (result.deleted) parts.push(`${result.deleted} eliminadas`)
+        if (result.unlinked) parts.push(`${result.unlinked} desvinculadas`)
+        toast.success(parts.join(", ") || "Sin cambios")
         setBulkDeleteSource(null)
       } else {
         toast.error("Error al eliminar")

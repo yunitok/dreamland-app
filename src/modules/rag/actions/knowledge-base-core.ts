@@ -107,17 +107,38 @@ export async function syncKBBySourceCore(
 ): Promise<{ success: true; created: number; skipped?: number }> {
   const namespaces = resolveNamespaces(domains)
 
-  // Borrar vectores existentes de esta source en todos los namespaces
+  // Borrar vectores existentes de esta source en los namespaces afectados
   try {
     await deleteVectorsBySourceMultiNS(source, namespaces)
   } catch (e) {
     console.error("[KB] Error deleting vectors for source", source, e)
   }
 
-  // Borrar registros existentes de esta source que pertenezcan a alguno de los dominios
-  await prisma.knowledgeBase.deleteMany({
+  // Obtener entries afectadas para evaluar si son exclusivas o compartidas
+  const existing = await prisma.knowledgeBase.findMany({
     where: { source, domains: { hasSome: domains } },
+    select: { id: true, domains: true },
   })
+
+  // Exclusivas: todos sus dominios están en la lista de sync → borrar completamente
+  const toDelete = existing
+    .filter(e => e.domains.every(d => domains.includes(d)))
+    .map(e => e.id)
+
+  // Compartidas: tiene dominios fuera de la lista → solo quitar los dominios del sync
+  const toUpdate = existing.filter(e => !e.domains.every(d => domains.includes(d)))
+
+  await prisma.$transaction([
+    ...(toDelete.length
+      ? [prisma.knowledgeBase.deleteMany({ where: { id: { in: toDelete } } })]
+      : []),
+    ...toUpdate.map(e =>
+      prisma.knowledgeBase.update({
+        where: { id: e.id },
+        data: { domains: e.domains.filter(d => !domains.includes(d)) },
+      })
+    ),
+  ])
 
   // Re-crear con nuevos datos
   if (!entries.length) return { success: true, created: 0 }
