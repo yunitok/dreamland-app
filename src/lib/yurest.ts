@@ -205,12 +205,66 @@ export const YUREST_ENDPOINT_GROUPS: YurestEndpointGroup[] = [
 ]
 
 export interface YurestApiResponse<T = unknown> {
-  status: 0 | 1
+  status: 0 | 1 | "success"
   message: string
-  data: T[]
+  data: T[] | T
 }
 
-export async function fetchYurest<T = unknown>(endpoint: string): Promise<YurestApiResponse<T>> {
+// ─── Tipos para receta de listado (/recipes) ─────────────────────
+
+export interface YurestRecipeListItem {
+  id: number
+  name: string
+  description: string | null
+  servings: number
+  servingPrice: number
+  times: { hours: number; minutes: number; seconds: number; timeUnix: number }
+  media: { photo: string | null; video: string | null; youtube: string | null }
+  nutritional_info: Record<string, number>
+  usage_instructions: string | null
+  storage_instructions: string | null
+  label_text: string | null
+  is_active: boolean
+}
+
+// ─── Tipos para receta de detalle (/recipes/{id}) ────────────────
+
+export interface YurestRecipeStep {
+  id: number
+  recipe_id: number
+  order: number
+  title: string
+  description: string
+  times: { hours: number | null; minutes: number | null; seconds: number | null; time_unix: number | null }
+  media: { photo: string | null; video: string | null }
+  needs_temperature: boolean
+  products: unknown[]
+}
+
+export interface YurestRecipeIngredient {
+  id: number
+  recipe_id: number
+  product_id: number
+  product_name: string
+  amount: number
+  unit: { id: number; symbol: string }
+  cost: number
+  order: number
+  description: string | null
+  label_text: string | null
+}
+
+export interface YurestRecipeDetail extends Omit<YurestRecipeListItem, "media"> {
+  media: { photo: string | null; video: string | null; youtube: string | null }
+  ingredients: YurestRecipeIngredient[]
+  steps: YurestRecipeStep[]
+  costs: { store_id: number | null; store_name: string; cost: number }[]
+  results: { id: number; recipe_id: number; product_id: number; product_name: string; amount: number; unit: { id: number; symbol: string }; shelf_life: { days: number; seconds: number } }[]
+}
+
+// ─── Funciones de fetch ──────────────────────────────────────────
+
+function getYurestConfig() {
   const baseUrl = process.env.YUREST_API_URL
   const token = process.env.YUREST_TOKEN
 
@@ -218,6 +272,11 @@ export async function fetchYurest<T = unknown>(endpoint: string): Promise<Yurest
     throw new Error("YUREST_API_URL and YUREST_TOKEN must be set in environment variables")
   }
 
+  return { baseUrl, token }
+}
+
+export async function fetchYurest<T = unknown>(endpoint: string): Promise<YurestApiResponse<T>> {
+  const { baseUrl, token } = getYurestConfig()
   const url = `${baseUrl}/${token}/${endpoint}`
 
   const response = await fetch(url, {
@@ -231,4 +290,23 @@ export async function fetchYurest<T = unknown>(endpoint: string): Promise<Yurest
   }
 
   return response.json()
+}
+
+/** Fetch detalle individual de una receta (incluye steps, ingredients, costs, results) */
+export async function fetchYurestRecipeDetail(id: number): Promise<YurestRecipeDetail> {
+  const { baseUrl, token } = getYurestConfig()
+  const url = `${baseUrl}/${token}/recipes/${id}`
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    signal: AbortSignal.timeout(15000),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Yurest API HTTP ${response.status} for recipe ${id}: ${response.statusText}`)
+  }
+
+  const json = await response.json()
+  return json.data as YurestRecipeDetail
 }
