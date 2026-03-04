@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 import { getRecipeById, getRecipeCategories, getRecipeFamilies } from "@/modules/sherlock/actions/recipes"
-import { getIngredients } from "@/modules/sherlock/actions/ingredients"
+import { getIngredientsForSelect } from "@/modules/sherlock/actions/ingredients"
 import { getMeasureUnits } from "@/modules/sherlock/actions/settings"
 import { RecipeForm } from "../../_components/recipe-form"
 import { Header } from "@/components/layout/header"
@@ -16,7 +16,7 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
         getRecipeById(id),
         getRecipeCategories(),
         getRecipeFamilies(),
-        getIngredients({}),
+        getIngredientsForSelect(),
         getMeasureUnits(),
     ])
 
@@ -32,7 +32,7 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
             />
 
             <div className="flex-1 p-6 overflow-y-auto">
-                <div className="max-w-5xl mx-auto">
+                <div className="max-w-7xl mx-auto">
                     <RecipeForm
                         initialData={recipe}
                         categories={categories}

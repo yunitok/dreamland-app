@@ -1,5 +1,5 @@
 import { getRecipeCategories, getRecipeFamilies } from "@/modules/sherlock/actions/recipes"
-import { getIngredients } from "@/modules/sherlock/actions/ingredients"
+import { getIngredientsForSelect } from "@/modules/sherlock/actions/ingredients"
 import { getMeasureUnits } from "@/modules/sherlock/actions/settings"
 import { RecipeForm } from "../_components/recipe-form"
 import { Header } from "@/components/layout/header"
@@ -8,7 +8,7 @@ export default async function NewRecipePage() {
     const [categories, families, ingredients, units] = await Promise.all([
         getRecipeCategories(),
         getRecipeFamilies(),
-        getIngredients({}),
+        getIngredientsForSelect(),
         getMeasureUnits(),
     ])
 
@@ -20,7 +20,7 @@ export default async function NewRecipePage() {
             />
 
             <div className="flex-1 p-6 overflow-y-auto">
-                <div className="max-w-5xl mx-auto">
+                <div className="max-w-7xl mx-auto">
                     <RecipeForm
                         categories={categories}
                         families={families}

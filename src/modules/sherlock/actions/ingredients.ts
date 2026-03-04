@@ -12,6 +12,23 @@ export type IngredientWithRelations = Ingredient & {
   supplier?: { name: string } | null
 }
 
+/** Proyección ligera para selectors de formularios (sin JOINs) */
+export type IngredientSelectOption = {
+  id: string
+  name: string
+  cost: number
+  yield: number | null
+}
+
+export async function getIngredientsForSelect(): Promise<IngredientSelectOption[]> {
+  await requirePermission("sherlock", "read")
+  return prisma.ingredient.findMany({
+    where: { status: "ACTIVE" },
+    select: { id: true, name: true, cost: true, yield: true },
+    orderBy: { name: "asc" },
+  })
+}
+
 export async function getIngredients({ categoryId, search }: { categoryId?: string, search?: string }) {
   await requirePermission("sherlock", "read")
   const where: any = {}
