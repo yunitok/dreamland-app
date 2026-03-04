@@ -77,6 +77,10 @@ function buildRecipeEntry(recipe: RecipeForKB): BulkKBEntry {
     : "ninguno declarado"
   parts.push(`Alérgenos: ${allergenText}.`)
 
+  if (recipe.steps.length > 0) {
+    parts.push(`Elaboración paso a paso: ${recipe.steps.join(" | ")}.`)
+  }
+
   return {
     title: `Receta: ${recipe.name}`,
     content: parts.join(" "),

@@ -327,6 +327,7 @@ model RecipeCategory {
   updatedAt   DateTime @updatedAt
   recipes     Recipe[]
 
+  @@index([name])
   @@map("recipe_categories")
 }
 
@@ -339,6 +340,7 @@ model RecipeFamily {
   updatedAt   DateTime @updatedAt
   recipes     Recipe[]
 
+  @@index([name])
   @@map("recipe_families")
 }
 
@@ -410,6 +412,8 @@ model Ingredient {
   @@index([supplierId])
   @@index([normalizedName])
   @@index([aiNormalizedGroup])
+  @@index([name])
+  @@index([status, name])
   @@map("ingredients")
 }
 
@@ -437,6 +441,7 @@ model Recipe {
   status          RecipeStatus       @default(DRAFT)
   externalId      String?            @unique
   externalSource  String?
+  yurestId        Int?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   productionBatch ProductionBatch[]
@@ -452,6 +457,8 @@ model Recipe {
   @@index([aiGenerated])
   @@index([status])
   @@index([externalId])
+  @@index([yurestId])
+  @@index([name])
   @@map("recipes")
 }
 
