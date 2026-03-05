@@ -1,16 +1,15 @@
-import { after } from "next/server"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { ProcessRunStatus, ProcessTriggerType } from "@prisma/client"
 
-export const maxDuration = 120
+export const maxDuration = 60
 
 /**
- * Inicia la sincronización GStock → Sherlock → RAG (8 fases encadenadas).
+ * Inicia la sincronización GStock → Sherlock → RAG.
  * Protegido con CRON_SECRET. Ejecutable desde Vercel Cron diariamente.
  *
- * La ruta crea un ProcessRun y dispara la primera fase. Las fases se encadenan
- * automáticamente via /api/processes/gstock-sync/run-phase.
+ * La ruta crea un ProcessRun y dispara run-phase via fire-and-forget.
+ * run-phase ejecuta las 8 fases monolíticamente (maxDuration: 300s).
  *
  * Watchdog de runs huérfanos delegado a /api/cron/watchdog (cada 15 min).
  *
@@ -42,7 +41,7 @@ export async function GET(request: Request) {
       }, { status: 409 })
     }
 
-    // ── Crear run y disparar primera fase ──
+    // ── Crear run y disparar run-phase ──
     const run = await prisma.processRun.create({
       data: {
         processSlug: "gstock-sync",
@@ -55,34 +54,26 @@ export async function GET(request: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL
       ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
 
-    console.log(`[cron/gstock-sync] Iniciando run ${run.id} — fetch a ${baseUrl}/api/processes/gstock-sync/run-phase`)
+    console.log(`[cron/gstock-sync] Iniciando run ${run.id} — fire-and-forget a run-phase`)
 
-    after(async () => {
-      try {
-        const res = await fetch(`${baseUrl}/api/processes/gstock-sync/run-phase`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${expectedSecret}`,
-          },
-          body: JSON.stringify({ runId: run.id, phase: 0, options: {}, maps: {} }),
-          signal: AbortSignal.timeout(120_000),
-        })
-        if (!res.ok) {
-          const body = await res.text().catch(() => "")
-          console.error(`[cron/gstock-sync] Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 300)}`)
-          await safeMarkFailed(run.id, run.startedAt, `Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 200)}`)
-        }
-      } catch (err) {
-        console.error("[cron/gstock-sync] Error starting chain:", err)
-        await safeMarkFailed(run.id, run.startedAt, `Error iniciando cadena: ${err instanceof Error ? err.message : String(err)}`)
-      }
+    // Fire-and-forget: run-phase es independiente (maxDuration: 300s).
+    // Solo capturamos errores de conexión. El watchdog cubre runs huérfanos.
+    fetch(`${baseUrl}/api/processes/gstock-sync/run-phase`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${expectedSecret}`,
+      },
+      body: JSON.stringify({ runId: run.id, phase: 0, options: {}, maps: {} }),
+    }).catch(async (err) => {
+      console.error("[cron/gstock-sync] Error connecting to run-phase:", err)
+      await safeMarkFailed(run.id, run.startedAt, `Error conectando: ${err instanceof Error ? err.message : String(err)}`)
     })
 
     return NextResponse.json({
       success: true,
       runId: run.id,
-      message: "Sincronización GStock iniciada (8 fases encadenadas)",
+      message: "Sincronización GStock iniciada",
     })
   } catch (error) {
     console.error("[cron/gstock-sync] Error:", error)

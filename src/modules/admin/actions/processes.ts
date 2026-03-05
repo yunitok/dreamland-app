@@ -6,7 +6,6 @@ import { withProcessTracking } from "@/lib/process-runner"
 import { getProcessDefinition, PROCESS_DEFINITIONS } from "@/modules/admin/domain/process-registry"
 import { ProcessRunStatus, ProcessTriggerType, Prisma } from "@prisma/client"
 import { getSession } from "@/lib/auth"
-import { after } from "next/server"
 
 // ─── Helpers ─────────────────────────────────────────────────
 
@@ -166,27 +165,21 @@ export async function triggerProcess(
       },
     })
 
+    // Fire-and-forget: run-phase es una función serverless independiente que
+    // gestiona su propio ciclo de vida (SUCCESS/FAILED/timeout).
+    // Solo capturamos errores de conexión inmediatos (DNS, refused).
+    // El watchdog (/api/cron/watchdog) cubre runs huérfanos.
     const baseUrl = getAppBaseUrl()
-    after(async () => {
-      try {
-        const res = await fetch(`${baseUrl}/api/processes/gstock-sync/run-phase`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.CRON_SECRET}`,
-          },
-          body: JSON.stringify({ runId: run.id, phase: 0, options: options ?? {}, maps: {} }),
-          signal: AbortSignal.timeout(120_000),
-        })
-        if (!res.ok) {
-          const body = await res.text().catch(() => "")
-          console.error(`[gstock-sync] Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 300)}`)
-          await safeMarkRunFailed(run.id, run.startedAt, `Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 200)}`)
-        }
-      } catch (err) {
-        console.error("[gstock-sync] Error starting chain:", err)
-        await safeMarkRunFailed(run.id, run.startedAt, `Error iniciando cadena: ${err instanceof Error ? err.message : String(err)}`)
-      }
+    fetch(`${baseUrl}/api/processes/gstock-sync/run-phase`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.CRON_SECRET}`,
+      },
+      body: JSON.stringify({ runId: run.id, phase: 0, options: options ?? {}, maps: {} }),
+    }).catch(async (err) => {
+      console.error("[gstock-sync] Error connecting to run-phase:", err)
+      await safeMarkRunFailed(run.id, run.startedAt, `Error conectando: ${err instanceof Error ? err.message : String(err)}`)
     })
 
     return {

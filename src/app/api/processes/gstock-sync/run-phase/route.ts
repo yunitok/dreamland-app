@@ -7,7 +7,7 @@ import type { SyncOptions } from "@/modules/sherlock/domain/gstock-sync/sync-orc
 import type { SyncPhaseResult } from "@/modules/sherlock/domain/gstock-sync/types"
 import type { GstockIdMap } from "@/modules/sherlock/domain/gstock-sync/mappers"
 
-export const maxDuration = 120
+export const maxDuration = 300
 
 // ─── Configuración de fases ──────────────────────────────────
 
