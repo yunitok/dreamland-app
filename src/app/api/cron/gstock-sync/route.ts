@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { ProcessRunStatus, ProcessTriggerType } from "@prisma/client"
 
-export const maxDuration = 60
+export const maxDuration = 120
 
 /**
  * Inicia la sincronización GStock → Sherlock → RAG (8 fases encadenadas).

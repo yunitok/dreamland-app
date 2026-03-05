@@ -139,7 +139,7 @@ export async function triggerProcess(
     }
   }
 
-  // GStock sync: auto-encadenamiento por fases (cada fase < 60s, total ~8 min)
+  // GStock sync: todas las fases en una sola invocación de run-phase (~30s total)
   if (slug === "gstock-sync") {
     // Protección contra ejecución duplicada
     const activeRun = await prisma.processRun.findFirst({
