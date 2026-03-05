@@ -20,10 +20,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/modules/shared/ui/dropdown-menu"
-import { Mail, MailOpen, MoreHorizontal, Search, Eye, Trash2, CalendarClock } from "lucide-react"
-import { markEmailRead, deleteEmail } from "@/modules/atc/actions/backoffice"
+import { Mail, MailOpen, MoreHorizontal, Search, Eye, Trash2, CalendarClock, Sparkles } from "lucide-react"
+import { markEmailRead, markEmailUnread, deleteEmail } from "@/modules/atc/actions/backoffice"
 import { toast } from "sonner"
-import { EmailDetailDialog } from "./email-detail-dialog"
+import { EmailThreadView } from "./email-thread-view"
 
 type CategoryInfo = {
   id: string
@@ -51,6 +51,7 @@ export type EmailRow = {
   assignedTo: string | null
   categoryId: string | null
   actionRequired: boolean
+  hasDraft: boolean
   receivedAt: Date
   category: CategoryInfo | null
 }
@@ -59,6 +60,9 @@ interface EmailInboxTabProps {
   emails: EmailRow[]
   categories: CategoryInfo[]
   canDelete?: boolean
+  currentUserId?: string
+  onCompose?: (mode: "reply" | "reply_all" | "forward", emailId: string) => void
+  onEditDraft?: (draftId: string, emailId: string) => void
 }
 
 const priorityLabels: Record<number, string> = {
@@ -77,14 +81,14 @@ const priorityColors: Record<number, string> = {
   1: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
 }
 
-export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabProps) {
+export function EmailInboxTab({ emails, categories, canDelete, currentUserId, onCompose, onEditDraft }: EmailInboxTabProps) {
   const [localEmails, setLocalEmails] = useState(emails)
   useEffect(() => { setLocalEmails(emails) }, [emails])
   const [showRead, setShowRead]       = useState(false)
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [priorityFilter, setPriorityFilter] = useState<string>("all")
   const [search, setSearch]           = useState("")
-  const [selectedEmail, setSelectedEmail] = useState<EmailRow | null>(null)
+  const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null)
   const [, startTransition] = useTransition()
 
   // Categorías padre e hijos para la barra jerárquica
@@ -137,6 +141,18 @@ export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabPr
       if (result.success) {
         setLocalEmails(prev => prev.map(e => e.id === id ? { ...e, isRead: true } : e))
         toast.success("Email marcado como leído")
+      } else {
+        toast.error("Error al marcar el email")
+      }
+    })
+  }
+
+  function handleMarkUnread(id: string) {
+    startTransition(async () => {
+      const result = await markEmailUnread(id)
+      if (result.success) {
+        setLocalEmails(prev => prev.map(e => e.id === id ? { ...e, isRead: false } : e))
+        toast.success("Email marcado como no leído")
       } else {
         toast.error("Error al marcar el email")
       }
@@ -303,7 +319,7 @@ export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabPr
           className="gap-2"
         >
           <Eye className="h-4 w-4" />
-          {showRead ? "Ocultando leídos" : "Mostrar leídos"}
+          {showRead ? "Mostrando leídos" : "Mostrar leídos"}
         </Button>
 
         {unreadCount > 0 && (
@@ -325,29 +341,30 @@ export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabPr
           {filtered.map(email => (
             <Card
               key={email.id}
-              className={`transition-opacity cursor-pointer hover:shadow-md ${email.isRead ? "opacity-60" : ""}`}
-              onClick={() => setSelectedEmail(email)}
+              className={`transition-opacity cursor-pointer hover:shadow-md overflow-hidden ${email.isRead ? "opacity-60" : ""}`}
+              onClick={() => setSelectedEmailId(email.id)}
             >
               <CardHeader className="pb-2">
-                <div className="flex items-start justify-between gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-1.5 sm:gap-3 sm:items-start">
+                  {/* Título + remitente */}
                   <div className="flex items-center gap-2 min-w-0">
                     {email.isRead
                       ? <MailOpen className="h-4 w-4 text-muted-foreground shrink-0" />
                       : <Mail className="h-4 w-4 text-primary shrink-0" />
                     }
                     <div className="min-w-0">
-                      <CardTitle className="text-sm font-medium truncate">{email.subject}</CardTitle>
+                      <CardTitle className="text-sm font-medium truncate" title={email.subject}>{email.subject}</CardTitle>
                       <CardDescription className="text-xs truncate">
                         {email.fromName ? `${email.fromName} <${email.fromEmail}>` : email.fromEmail}
                       </CardDescription>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0" onClick={e => e.stopPropagation()}>
-                    {/* Badge categoría */}
+                  {/* Badges + menú */}
+                  <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap" onClick={e => e.stopPropagation()}>
                     {email.category && (
                       <span
-                        className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                        className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap"
                         style={{
                           backgroundColor: email.category.color + "22",
                           color: email.category.color,
@@ -357,19 +374,22 @@ export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabPr
                         {email.category.name}
                       </span>
                     )}
-                    {/* Badge informativo (no requiere acción) */}
+                    {email.hasDraft && (
+                      <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 whitespace-nowrap">
+                        <Sparkles className="h-3 w-3" />
+                        Borrador
+                      </span>
+                    )}
                     {!email.actionRequired && (
-                      <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 whitespace-nowrap">
                         Informativo
                       </span>
                     )}
-                    {/* Badge prioridad */}
                     {email.aiPriority != null && (
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${priorityColors[email.aiPriority] ?? ""}`}>
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${priorityColors[email.aiPriority] ?? ""}`}>
                         P{email.aiPriority} {priorityLabels[email.aiPriority]}
                       </span>
                     )}
-                    {/* Badge fecha objetivo */}
                     {email.targetDate && (() => {
                       const target = new Date(email.targetDate)
                       const now = new Date()
@@ -381,7 +401,7 @@ export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabPr
                           ? "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200"
                           : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300"
                       return (
-                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${colorClass}`}>
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${colorClass}`}>
                           <CalendarClock className="h-3 w-3" />
                           {target.toLocaleDateString("es-ES", { day: "2-digit", month: "short" })}
                         </span>
@@ -394,12 +414,17 @@ export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabPr
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setSelectedEmail(email)}>
+                        <DropdownMenuItem onClick={() => setSelectedEmailId(email.id)}>
                           Ver detalle
                         </DropdownMenuItem>
                         {!email.isRead && (
                           <DropdownMenuItem onClick={() => handleMarkRead(email.id)}>
                             Marcar como leído
+                          </DropdownMenuItem>
+                        )}
+                        {email.isRead && (
+                          <DropdownMenuItem onClick={() => handleMarkUnread(email.id)}>
+                            Marcar como no leído
                           </DropdownMenuItem>
                         )}
                         {canDelete && (
@@ -421,7 +446,7 @@ export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabPr
                 {email.aiSummary ? (
                   <p className="text-xs text-muted-foreground italic mb-1">{email.aiSummary}</p>
                 ) : null}
-                <p className="text-sm text-muted-foreground line-clamp-2">{email.body}</p>
+                <p className="text-sm text-muted-foreground line-clamp-2 wrap-break-word overflow-hidden">{email.body}</p>
                 <div className="flex items-center justify-between mt-2">
                   <span className="text-xs text-muted-foreground">
                     {new Date(email.receivedAt).toLocaleDateString("es-ES", {
@@ -441,11 +466,14 @@ export function EmailInboxTab({ emails, categories, canDelete }: EmailInboxTabPr
         </div>
       )}
 
-      {/* Dialog de detalle */}
-      <EmailDetailDialog
-        email={selectedEmail}
-        onClose={() => setSelectedEmail(null)}
-        onMarkRead={handleMarkRead}
+      {/* Thread view lateral */}
+      <EmailThreadView
+        emailId={selectedEmailId}
+        onClose={() => setSelectedEmailId(null)}
+        onCompose={onCompose}
+        onEditDraft={onEditDraft}
+        currentUserId={currentUserId}
+        onEmailRead={(id) => setLocalEmails(prev => prev.map(e => e.id === id ? { ...e, isRead: true } : e))}
       />
     </div>
   )

@@ -1,6 +1,9 @@
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { createNotificationsForPermission } from "@/lib/notification-service"
+import { generateEmailDraft } from "@/modules/atc/domain/draft-generator"
+
+export const maxDuration = 300
 
 interface EmailIngestPayload {
   messageId:          string
@@ -17,6 +20,7 @@ interface EmailIngestPayload {
   aiSummary?:         string
   targetDate?:        string  // YYYY-MM-DD — fecha objetivo extraída del email
   actionRequired?:    boolean // false si es follow-up/cierre de hilo ya gestionado
+  hasAttachments?:    boolean // true si el email original tiene adjuntos
 }
 
 export async function POST(req: Request) {
@@ -99,6 +103,7 @@ export async function POST(req: Request) {
           aiSummary:         email.aiSummary,
           targetDate:        email.targetDate ? new Date(email.targetDate) : undefined,
           actionRequired:    email.actionRequired ?? true,
+          hasAttachments:    email.hasAttachments ?? false,
           categoryId,
           receivedAt:        email.receivedAt ? new Date(email.receivedAt) : new Date(),
         },
@@ -141,6 +146,23 @@ export async function POST(req: Request) {
         } catch (notifError) {
           console.error("[email/ingest] Error sending cross-department notifications:", notifError)
         }
+      }
+      // Auto-generate AI draft for emails that require action
+      if (email.actionRequired !== false) {
+        const emailInboxId = created.id
+        after(async () => {
+          try {
+            const result = await generateEmailDraft(emailInboxId)
+            console.log("[email/ingest] Draft generated:", emailInboxId, result)
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err)
+            if (message.includes("Ya existe")) {
+              console.log("[email/ingest] Draft skipped (dedup):", emailInboxId)
+            } else {
+              console.error("[email/ingest] Draft generation failed:", emailInboxId, message)
+            }
+          }
+        })
       }
     } catch (e) {
       console.error("[email/ingest] Error processing email:", email.messageId, e)

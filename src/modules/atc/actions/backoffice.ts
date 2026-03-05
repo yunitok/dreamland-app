@@ -117,6 +117,18 @@ export async function markEmailRead(id: string) {
   }
 }
 
+export async function markEmailUnread(id: string) {
+  await requirePermission("atc", "manage")
+  try {
+    await prisma.emailInbox.update({ where: { id }, data: { isRead: false } })
+    revalidatePath("/atc/backoffice")
+    return { success: true }
+  } catch (error) {
+    console.error("Error marking email as unread:", error)
+    return { success: false, error: "Error al marcar el email como no leído" }
+  }
+}
+
 export async function assignEmail(id: string, userId: string | null) {
   await requirePermission("atc", "manage")
   try {
