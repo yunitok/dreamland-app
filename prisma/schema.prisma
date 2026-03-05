@@ -889,7 +889,10 @@ model RestaurantLocation {
   latitude          Float
   longitude         Float
   isActive          Boolean  @default(true)
+  cmSlug            String?  @unique                // Slug CoverManager (ej: "restaurante-voltereta")
   createdAt         DateTime @default(now())
+
+  coverSnapshots    CoverSnapshot[]
 
   @@index([city])
   @@index([isActive])
@@ -1182,4 +1185,49 @@ model ProcessRun {
   @@index([processSlug, startedAt(sort: Desc)])
   @@index([status])
   @@map("process_runs")
+}
+
+// ─── Sherlock: Analytics de Comensales ──────────────────────────
+
+model CoverSnapshot {
+  id                   String   @id @default(cuid())
+  restaurantLocationId String
+  date                 DateTime @db.Date
+  totalCovers          Int      @default(0)        // Comensales totales del día
+  totalReservations    Int      @default(0)        // Número de reservas
+  avgPartySize         Float    @default(0)        // Media comensales por reserva
+  maxPartySize         Int      @default(0)        // Máximo en una sola reserva
+  coversByStatus       Json?                        // { "confirmed": 45, "cancelled": 5 }
+  coversByHour         Json?                        // { "13:00": 22, "21:00": 35 }
+  lunchCovers          Int?                         // Comensales servicio comida
+  dinnerCovers         Int?                         // Comensales servicio cena
+  walkInCovers         Int?                         // Walk-ins (sin reserva)
+  syncedAt             DateTime @default(now())
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  restaurantLocation   RestaurantLocation @relation(fields: [restaurantLocationId], references: [id])
+
+  @@unique([restaurantLocationId, date])
+  @@index([date])
+  @@index([restaurantLocationId, date])
+  @@map("cover_snapshots")
+}
+
+model CoverSyncLog {
+  id                   String    @id @default(cuid())
+  restaurantLocationId String?
+  status               String    @default("RUNNING") // RUNNING | SUCCESS | FAILED
+  dateRangeStart       DateTime
+  dateRangeEnd         DateTime
+  snapshotsCreated     Int       @default(0)
+  snapshotsUpdated     Int       @default(0)
+  errors               Json?
+  durationMs           Int?
+  startedAt            DateTime  @default(now())
+  finishedAt           DateTime?
+
+  @@index([status])
+  @@index([startedAt(sort: Desc)])
+  @@map("cover_sync_logs")
 }

@@ -578,6 +578,16 @@
   "sherlock": {
     "title": "Sherlock IA",
     "description": "Gestion complète de la cuisine, des coûts et système d'audit intelligent.",
+    "analytics": {
+      "title": "Analytics des Convives",
+      "description": "Tendances, comparaisons et modèles d'occupation par établissement.",
+      "filters": {
+        "allLocations": "Tous les établissements",
+        "day": "Jour",
+        "week": "Semaine",
+        "month": "Mois"
+      }
+    },
     "ingredients": {
       "title": "Ingrédients",
       "description": "Gestion des fiches techniques, des prix et des allergènes.",

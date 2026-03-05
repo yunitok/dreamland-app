@@ -55,3 +55,4 @@ ai-debug.log
 # repomix
 repomix-context-*.txt
 repomix-output.txt
+scripts/output/

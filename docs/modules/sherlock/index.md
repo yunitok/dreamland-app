@@ -54,6 +54,7 @@ Sherlock es el **módulo de gestión integral de restaurantes** para Dreamland A
 - **[Yurest Integration](./integrations/yurest.md)**: Endpoints, autenticación, mapeo de campos
 - **[Gstock Integration](./integrations/gstock.md)**: OAuth2, webhooks, sincronización (diseño)
 - **[GStock Sync Pipeline](./integrations/gstock-sync-pipeline.md)**: Implementación real del pipeline de 8 fases, idempotencia, RAG y reset de datos
+- **[CoverManager Analytics](./analytics-de-comensales.md)**: Sincronización de comensales, snapshots diarios, dashboard ejecutivo con KPIs y gráficos
 - **[n8n Workflows](./integrations/n8n-workflows.md)**: Automatizaciones de importación/exportación
 
 ### 4. Hoja de Ruta
@@ -185,6 +186,7 @@ Ver [Schema Documentation](./schema/prisma-schema.md) para detalles completos.
 - [x] Script CLI (`scripts/sync-gstock-recipes.ts`)
 - [x] UI de sincronización en Sherlock › Settings (con reset SUPER_ADMIN)
 - [x] Auditoría de calidad de datos GStock (`sherlock/data-quality`)
+- [x] **[Analytics de Comensales](./analytics-de-comensales.md)**: Dashboard ejecutivo con KPIs, gráficos de tendencia, comparativa multi-local, distribución semanal y split comida/cena. Sincronización de 3 años desde CoverManager (6.012 snapshots, 8 restaurantes)
 
 ### 📋 Planificado
 - [ ] Integración Yurest (importación de ventas/TPV)
@@ -209,7 +211,7 @@ Ver [Schema Documentation](./schema/prisma-schema.md) para detalles completos.
 
 **Módulo Owner**: Miguel  
 **Status**: Fase 2 completada (Diseño)  
-**Última actualización**: 2026-02-15
+**Última actualización**: 2026-03-05
 
 ---
 

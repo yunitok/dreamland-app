@@ -578,6 +578,16 @@
   "sherlock": {
     "title": "Sherlock IA",
     "description": "Gestione completa della cucina, dei costi e sistema di audit intelligente.",
+    "analytics": {
+      "title": "Analytics dei Commensali",
+      "description": "Tendenze, confronti e modelli di occupazione per locale.",
+      "filters": {
+        "allLocations": "Tutti i locali",
+        "day": "Giorno",
+        "week": "Settimana",
+        "month": "Mese"
+      }
+    },
     "ingredients": {
       "title": "Ingredienti",
       "description": "Gestione di schede tecniche, prezzi e allergeni.",

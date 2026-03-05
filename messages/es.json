@@ -567,6 +567,16 @@
   "sherlock": {
     "title": "Sherlock AI",
     "description": "Sistema integral de gestión de cocina, costes y auditoría inteligente.",
+    "analytics": {
+      "title": "Analytics de Comensales",
+      "description": "Tendencias, comparativas y patrones de ocupación por local.",
+      "filters": {
+        "allLocations": "Todos los locales",
+        "day": "Día",
+        "week": "Semana",
+        "month": "Mes"
+      }
+    },
     "ingredients": {
       "title": "Ingredientes",
       "description": "Gestión de fichas técnicas, precios y alérgenos.",

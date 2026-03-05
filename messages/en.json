@@ -566,6 +566,16 @@
   "sherlock": {
     "title": "Sherlock AI",
     "description": "Comprehensive kitchen management, costs, and intelligent audit system.",
+    "analytics": {
+      "title": "Diner Analytics",
+      "description": "Trends, comparisons, and occupancy patterns by location.",
+      "filters": {
+        "allLocations": "All locations",
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+      }
+    },
     "ingredients": {
       "title": "Ingredients",
       "description": "Management of technical sheets, prices, and allergens.",

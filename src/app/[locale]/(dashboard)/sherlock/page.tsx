@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   BookOpen,
   Bot,
+  BarChart3,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/modules/shared/ui/card";
 import { Header } from "@/components/layout/header";
@@ -39,6 +40,14 @@ export default async function SherlockDashboard() {
       icon: Bot,
       color: "text-pink-500",
       bg: "bg-pink-500/10",
+    },
+    {
+      title: "Analytics de Comensales",
+      description: "Tendencias, comparativas y patrones de ocupación por local.",
+      href: "/sherlock/analytics",
+      icon: BarChart3,
+      color: "text-indigo-500",
+      bg: "bg-indigo-500/10",
     },
     {
       title: "Ingredientes & Productos",
