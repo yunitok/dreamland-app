@@ -13,9 +13,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/modules/shared/ui/alert-dialog"
-import { Settings, Trash2 } from "lucide-react"
+import { Settings, Trash2, FileText } from "lucide-react"
 import { EmailInboxTab, type EmailRow } from "./email-inbox-tab"
+import { EmailComposer, type ComposerMode } from "./email-composer"
 import { deleteAllEmails } from "@/modules/atc/actions/backoffice"
+import { getDraftForEmail } from "@/modules/atc/actions/email-drafts"
 import { toast } from "sonner"
 import Link from "next/link"
 
@@ -29,15 +31,19 @@ type CategoryInfo = {
 }
 
 interface BackofficeViewProps {
-  emails:     EmailRow[]
-  categories: CategoryInfo[]
-  canDelete?: boolean
+  emails:        EmailRow[]
+  categories:    CategoryInfo[]
+  canDelete?:    boolean
+  currentUserId?: string
 }
 
-export function BackofficeView({ emails, categories, canDelete }: BackofficeViewProps) {
+export function BackofficeView({ emails, categories, canDelete, currentUserId }: BackofficeViewProps) {
   const router = useRouter()
   const [showDeleteAll, setShowDeleteAll] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [composerMode, setComposerMode] = useState<ComposerMode>(null)
+  const [composerEmailId, setComposerEmailId] = useState<string | null>(null)
+  const [draftContext, setDraftContext] = useState<{ draftId: string; draftBodyHtml: string } | null>(null)
 
   const handleDeleteAll = () => {
     startTransition(async () => {
@@ -68,6 +74,12 @@ export function BackofficeView({ emails, categories, canDelete }: BackofficeView
           </Button>
         )}
         <Button variant="outline" size="sm" asChild className="gap-2">
+          <Link href="/atc/backoffice/templates">
+            <FileText className="h-4 w-4" />
+            Plantillas
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild className="gap-2">
           <Link href="/atc/backoffice/categories">
             <Settings className="h-4 w-4" />
             Categorías
@@ -75,7 +87,47 @@ export function BackofficeView({ emails, categories, canDelete }: BackofficeView
         </Button>
       </div>
 
-      <EmailInboxTab emails={emails} categories={categories} canDelete={canDelete} />
+      <EmailInboxTab
+        emails={emails}
+        categories={categories}
+        canDelete={canDelete}
+        currentUserId={currentUserId}
+        onCompose={(mode, emailId) => {
+          setDraftContext(null)
+          setComposerMode(mode)
+          setComposerEmailId(emailId)
+        }}
+        onEditDraft={async (draftId, emailId) => {
+          const result = await getDraftForEmail(emailId)
+          if (result.success && result.data) {
+            setDraftContext({ draftId: result.data.id, draftBodyHtml: result.data.bodyHtml })
+            setComposerEmailId(emailId)
+            setComposerMode("edit_draft")
+          } else {
+            toast.error("No se encontró el borrador")
+          }
+        }}
+      />
+
+      {/* Compositor de emails */}
+      <EmailComposer
+        mode={composerMode}
+        context={(() => {
+          if (!composerEmailId) return null
+          const email = emails.find((e) => e.id === composerEmailId)
+          if (!email) return null
+          return {
+            emailInboxId: email.id,
+            fromEmail: email.fromEmail,
+            fromName: email.fromName,
+            subject: email.subject,
+            body: email.body,
+            ...(draftContext ?? {}),
+          }
+        })()}
+        onClose={() => { setComposerMode(null); setComposerEmailId(null); setDraftContext(null) }}
+        onSent={() => router.refresh()}
+      />
 
       {/* AlertDialog para borrado masivo */}
       <AlertDialog open={showDeleteAll} onOpenChange={setShowDeleteAll}>

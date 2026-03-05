@@ -17,7 +17,7 @@ export default async function AtcBackofficePage({
 
   const [session, inboxResult, categoriesResult] = await Promise.all([
     getSession(),
-    getEmailInbox(),
+    getEmailInbox({ showRead: true }),
     getEmailCategories(),
   ])
   const isSuperAdmin = session?.user.role === "SUPER_ADMIN"
@@ -36,6 +36,7 @@ export default async function AtcBackofficePage({
             emails={inboxResult.data ?? []}
             categories={categoriesResult.data ?? []}
             canDelete={isSuperAdmin}
+            currentUserId={session?.user.id}
           />
         </Suspense>
       </div>

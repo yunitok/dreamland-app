@@ -31,6 +31,7 @@ const TYPE_ICONS: Record<NotificationType, React.ElementType> = {
   TASK_COMMENTED: MessageSquare,
   PROJECT_MEMBER_ADDED: UserPlus,
   PROCESS_FAILED: Cog,
+  EMAIL_REPLY_RECEIVED: Mail,
 }
 
 const TYPE_COLORS: Record<NotificationType, string> = {
@@ -45,6 +46,7 @@ const TYPE_COLORS: Record<NotificationType, string> = {
   TASK_COMMENTED: "text-cyan-500",
   PROJECT_MEMBER_ADDED: "text-indigo-500",
   PROCESS_FAILED: "text-red-600",
+  EMAIL_REPLY_RECEIVED: "text-green-500",
 }
 
 interface NotificationItemProps {

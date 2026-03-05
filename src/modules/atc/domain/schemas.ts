@@ -97,6 +97,31 @@ export const resolveWeatherAlertSchema = z.object({
   resolvedBy:   z.string().optional(),
 })
 
+export const emailReplySchema = z.object({
+  emailInboxId:  z.string().cuid(),
+  replyType:     z.enum(["REPLY", "REPLY_ALL", "FORWARD"]),
+  toEmails:      z.array(z.string().email("Email inválido")).min(1, "Al menos un destinatario"),
+  ccEmails:      z.array(z.string().email("Email inválido")).default([]),
+  subject:       z.string().min(1, "El asunto es obligatorio"),
+  bodyHtml:      z.string().min(1, "El contenido es obligatorio"),
+  bodyText:      z.string().optional(),
+  attachmentIds: z.array(z.string().cuid()).default([]),
+})
+
+export const emailNoteSchema = z.object({
+  emailInboxId: z.string().cuid(),
+  content:      z.string().min(1, "La nota no puede estar vacía").max(2000),
+})
+
+export const emailTemplateSchema = z.object({
+  name:       z.string().min(2, "El nombre es obligatorio").max(100),
+  subject:    z.string().min(1, "El asunto es obligatorio").max(200),
+  bodyHtml:   z.string().min(1, "El contenido es obligatorio"),
+  categoryId: z.string().optional().or(z.literal("")).transform(v => v || undefined),
+  isActive:   z.boolean().default(true),
+  sortOrder:  z.number().int().min(0).default(0),
+})
+
 export type ReservationFormValues          = z.infer<typeof reservationSchema>
 export type WaitingListFormValues          = z.infer<typeof waitingListSchema>
 export type QueryFormValues                = z.infer<typeof querySchema>
@@ -107,3 +132,6 @@ export type KnowledgeBaseFormValues        = z.infer<typeof knowledgeBaseSchema>
 export type EmailCategoryFormValues        = z.infer<typeof emailCategorySchema>
 export type WeatherAlertFormValues         = z.infer<typeof weatherAlertSchema>
 export type ResolveWeatherAlertFormValues  = z.infer<typeof resolveWeatherAlertSchema>
+export type EmailReplyFormValues           = z.infer<typeof emailReplySchema>
+export type EmailNoteFormValues            = z.infer<typeof emailNoteSchema>
+export type EmailTemplateFormValues        = z.infer<typeof emailTemplateSchema>

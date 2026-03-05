@@ -199,6 +199,9 @@ model User {
   role               Role             @relation(fields: [roleId], references: [id])
   projectMemberships ProjectMember[]
   notifications      Notification[]
+  emailReplies       EmailReply[]     @relation("EmailReplies")
+  emailNotes         EmailNote[]      @relation("EmailNotes")
+  emailTemplates     EmailTemplate[]  @relation("EmailTemplates")
 }
 
 model Role {
@@ -933,6 +936,7 @@ model EmailCategory {
   parent      EmailCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    EmailCategory[] @relation("CategoryHierarchy")
   emails      EmailInbox[]
+  templates   EmailTemplate[]
 
   @@index([parentId])
   @@index([isActive])
@@ -959,7 +963,13 @@ model EmailInbox {
   receivedAt         DateTime       @default(now())
   createdAt          DateTime       @default(now())
 
+  hasAttachments     Boolean        @default(false)
+  hasDraft           Boolean        @default(false)
+
   category           EmailCategory? @relation(fields: [categoryId], references: [id])
+  replies            EmailReply[]
+  notes              EmailNote[]
+  attachments        EmailAttachment[]
 
   @@index([isRead])
   @@index([aiPriority])
@@ -970,6 +980,90 @@ model EmailInbox {
   @@index([threadId])
   @@index([actionRequired])
   @@map("email_inbox")
+}
+
+model EmailReply {
+  id             String         @id @default(cuid())
+  emailInboxId   String
+  threadId       String?
+  gmailMessageId String?        @unique
+  replyType      EmailReplyType
+  toEmails       String[]
+  ccEmails       String[]       @default([])
+  subject        String
+  bodyHtml       String
+  bodyText       String?
+  sentAt         DateTime?
+  sentBy         String?
+  errorMessage   String?
+  isDraft        Boolean        @default(false)
+  draftSource    DraftSource?
+  draftScore     Float?
+  createdAt      DateTime       @default(now())
+
+  emailInbox     EmailInbox     @relation(fields: [emailInboxId], references: [id], onDelete: Cascade)
+  sentByUser     User?          @relation("EmailReplies", fields: [sentBy], references: [id])
+  attachments    EmailAttachment[]
+
+  @@index([emailInboxId])
+  @@index([threadId])
+  @@index([sentBy])
+  @@index([sentAt])
+  @@index([isDraft])
+  @@index([isDraft, emailInboxId])
+  @@map("email_replies")
+}
+
+model EmailNote {
+  id           String   @id @default(cuid())
+  emailInboxId String
+  content      String
+  createdBy    String
+  createdAt    DateTime @default(now())
+
+  emailInbox   EmailInbox @relation(fields: [emailInboxId], references: [id], onDelete: Cascade)
+  author       User       @relation("EmailNotes", fields: [createdBy], references: [id])
+
+  @@index([emailInboxId])
+  @@map("email_notes")
+}
+
+model EmailAttachment {
+  id           String   @id @default(cuid())
+  emailInboxId String?
+  emailReplyId String?
+  fileName     String
+  mimeType     String
+  size         Int
+  storagePath  String
+  createdAt    DateTime @default(now())
+
+  emailInbox   EmailInbox? @relation(fields: [emailInboxId], references: [id], onDelete: Cascade)
+  emailReply   EmailReply? @relation(fields: [emailReplyId], references: [id], onDelete: Cascade)
+
+  @@index([emailInboxId])
+  @@index([emailReplyId])
+  @@map("email_attachments")
+}
+
+model EmailTemplate {
+  id         String    @id @default(cuid())
+  name       String
+  subject    String
+  bodyHtml   String
+  categoryId String?
+  isActive   Boolean   @default(true)
+  sortOrder  Int       @default(0)
+  createdBy  String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  category   EmailCategory? @relation(fields: [categoryId], references: [id])
+  author     User           @relation("EmailTemplates", fields: [createdBy], references: [id])
+
+  @@index([isActive])
+  @@index([categoryId])
+  @@map("email_templates")
 }
 
 model Invoice {
@@ -1032,6 +1126,7 @@ enum NotificationType {
   EMAIL_ASSIGNED
   EMAIL_HIGH_PRIORITY
   EMAIL_CROSS_DEPARTMENT
+  EMAIL_REPLY_RECEIVED
   QUERY_ESCALATED
   TASK_ASSIGNED
   TASK_COMMENTED
@@ -1074,6 +1169,18 @@ enum AllergenType {
   DIOXIDO_AZUFRE
   ALTRAMUCES
   MOLUSCOS
+}
+
+enum EmailReplyType {
+  REPLY
+  REPLY_ALL
+  FORWARD
+}
+
+enum DraftSource {
+  AI
+  TEMPLATE
+  MANUAL
 }
 
 enum ReservationStatus {
@@ -1230,4 +1337,17 @@ model CoverSyncLog {
   @@index([status])
   @@index([startedAt(sort: Desc)])
   @@map("cover_sync_logs")
+}
+
+model AiToneProfile {
+  id        String   @id @default(cuid())
+  name      String   @default("default")
+  toneGuide String   @db.Text
+  examples  Json     @default("[]")
+  isActive  Boolean  @default(true)
+  version   Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("ai_tone_profiles")
 }
