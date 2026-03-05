@@ -17,16 +17,20 @@ export default async function middleware(request: NextRequest) {
   
   // Public paths that don't require authentication
   const publicPaths = ['/login', '/change-password'];
-  
+  const publicPrefixes = ['/walk-in'];
+
   // Check if current path is public (with or without locale prefix)
   const isPublicPath = publicPaths.some(path => {
     // Check without locale (shouldn't happen with 'always' but good safety)
     if (pathname === path || pathname === `${path}/`) return true;
-    
+
     // Check with locale prefix
-    return routing.locales.some(locale => 
+    return routing.locales.some(locale =>
       pathname === `/${locale}${path}` || pathname === `/${locale}${path}/`
     );
+  }) || publicPrefixes.some(prefix => {
+    if (pathname.startsWith(prefix)) return true;
+    return routing.locales.some(locale => pathname.startsWith(`/${locale}${prefix}`));
   });
   
   // Get session
