@@ -6,6 +6,7 @@ import { withProcessTracking } from "@/lib/process-runner"
 import { getProcessDefinition, PROCESS_DEFINITIONS } from "@/modules/admin/domain/process-registry"
 import { ProcessRunStatus, ProcessTriggerType, Prisma } from "@prisma/client"
 import { getSession } from "@/lib/auth"
+import { after } from "next/server"
 
 // ─── Helpers ─────────────────────────────────────────────────
 
@@ -166,23 +167,26 @@ export async function triggerProcess(
     })
 
     const baseUrl = getAppBaseUrl()
-    fetch(`${baseUrl}/api/processes/gstock-sync/run-phase`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.CRON_SECRET}`,
-      },
-      body: JSON.stringify({ runId: run.id, phase: 0, options: options ?? {}, maps: {} }),
-      signal: AbortSignal.timeout(120_000),
-    }).then(async (res) => {
-      if (!res.ok) {
-        const body = await res.text().catch(() => "")
-        console.error(`[gstock-sync] Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 300)}`)
-        await safeMarkRunFailed(run.id, run.startedAt, `Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 200)}`)
+    after(async () => {
+      try {
+        const res = await fetch(`${baseUrl}/api/processes/gstock-sync/run-phase`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${process.env.CRON_SECRET}`,
+          },
+          body: JSON.stringify({ runId: run.id, phase: 0, options: options ?? {}, maps: {} }),
+          signal: AbortSignal.timeout(120_000),
+        })
+        if (!res.ok) {
+          const body = await res.text().catch(() => "")
+          console.error(`[gstock-sync] Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 300)}`)
+          await safeMarkRunFailed(run.id, run.startedAt, `Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 200)}`)
+        }
+      } catch (err) {
+        console.error("[gstock-sync] Error starting chain:", err)
+        await safeMarkRunFailed(run.id, run.startedAt, `Error iniciando cadena: ${err instanceof Error ? err.message : String(err)}`)
       }
-    }).catch(async (err) => {
-      console.error("[gstock-sync] Error starting chain:", err)
-      await safeMarkRunFailed(run.id, run.startedAt, `Error iniciando cadena: ${err instanceof Error ? err.message : String(err)}`)
     })
 
     return {

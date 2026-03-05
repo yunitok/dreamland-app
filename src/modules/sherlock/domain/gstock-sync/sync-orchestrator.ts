@@ -284,80 +284,90 @@ export async function fetchIngredientEnrichment(
     log(opts, `Error cargando formatos (no crítico): ${e instanceof Error ? e.message : String(e)}`)
   }
 
-  // 2. Albaranes: proveedor más reciente por producto
-  onProgress(opts, "Enriquecimiento", "Cargando albaranes recientes...")
+  // 2. Centros (cacheado — se usa para albaranes y stock)
+  let centers: { id: string | number }[] = []
   try {
-    // Obtener centros para consultar albaranes
-    const { data: centers } = await fetchGstock<{ id: string | number }>("v1/centers")
-    const today = new Date()
-    const startDate = new Date(today)
-    startDate.setMonth(startDate.getMonth() - 6) // últimos 6 meses
-    const startStr = startDate.toISOString().split("T")[0]
-    const endStr = today.toISOString().split("T")[0]
+    const result = await fetchGstock<{ id: string | number }>("v1/centers")
+    centers = result.data
+    log(opts, `Centros cargados: ${centers.length}`)
+  } catch (e) {
+    log(opts, `Error cargando centros (no crítico): ${e instanceof Error ? e.message : String(e)}`)
+  }
 
-    // Consultar albaranes de todos los centros en paralelo
-    const deliveryPromises = centers.map(c =>
-      fetchGstock<GstockDelivery>(
-        `v1/delivery/purchases?centerId=${c.id}&startDate=${startStr}&endDate=${endStr}`
-      ).catch(() => ({ data: [] as GstockDelivery[] }))
-    )
-    const deliveryResults = await Promise.all(deliveryPromises)
+  // 3. Albaranes: proveedor más reciente por producto
+  onProgress(opts, "Enriquecimiento", "Cargando albaranes recientes...")
+  if (centers.length > 0) {
+    try {
+      const today = new Date()
+      const startDate = new Date(today)
+      startDate.setMonth(startDate.getMonth() - 6) // últimos 6 meses
+      const startStr = startDate.toISOString().split("T")[0]
+      const endStr = today.toISOString().split("T")[0]
 
-    // Mapear proveedor → productos, priorizando el albarán más reciente
-    // Estructura: productId → { supplierId, date }
-    const latestSupplier = new Map<string, { supplierId: string; date: string }>()
+      // Consultar albaranes de todos los centros en paralelo
+      const deliveryPromises = centers.map(c =>
+        fetchGstock<GstockDelivery>(
+          `v1/delivery/purchases?centerId=${c.id}&startDate=${startStr}&endDate=${endStr}`
+        ).catch(() => ({ data: [] as GstockDelivery[] }))
+      )
+      const deliveryResults = await Promise.all(deliveryPromises)
 
-    for (const { data: deliveries } of deliveryResults) {
-      for (const delivery of deliveries) {
-        const supplierId = String(delivery.supplierId)
-        const deliveryDate = delivery.date
+      // Mapear proveedor → productos, priorizando el albarán más reciente
+      const latestSupplier = new Map<string, { supplierId: string; date: string }>()
 
-        for (const item of delivery.items ?? []) {
-          const formatId = String(item.formatId)
-          const productId = formatToProduct.get(formatId)
-          if (!productId) continue
+      for (const { data: deliveries } of deliveryResults) {
+        for (const delivery of deliveries) {
+          const supplierId = String(delivery.supplierId)
+          const deliveryDate = delivery.date
 
-          const existing = latestSupplier.get(productId)
-          if (!existing || deliveryDate > existing.date) {
-            latestSupplier.set(productId, { supplierId, date: deliveryDate })
+          for (const item of delivery.items ?? []) {
+            const formatId = String(item.formatId)
+            const productId = formatToProduct.get(formatId)
+            if (!productId) continue
+
+            const existing = latestSupplier.get(productId)
+            if (!existing || deliveryDate > existing.date) {
+              latestSupplier.set(productId, { supplierId, date: deliveryDate })
+            }
           }
         }
       }
-    }
 
-    for (const [productId, { supplierId }] of latestSupplier) {
-      productSupplierMap.set(productId, supplierId)
+      for (const [productId, { supplierId }] of latestSupplier) {
+        productSupplierMap.set(productId, supplierId)
+      }
+      log(opts, `Proveedores mapeados: ${productSupplierMap.size} productos`)
+    } catch (e) {
+      log(opts, `Error cargando albaranes (no crítico): ${e instanceof Error ? e.message : String(e)}`)
     }
-    log(opts, `Proveedores mapeados: ${productSupplierMap.size} productos`)
-  } catch (e) {
-    log(opts, `Error cargando albaranes (no crítico): ${e instanceof Error ? e.message : String(e)}`)
   }
 
-  // 3. Stock teórico: stock calculado por producto
+  // 4. Stock teórico: stock calculado por producto
   onProgress(opts, "Enriquecimiento", "Cargando stock teórico...")
-  try {
-    const { data: centers } = await fetchGstock<{ id: string | number }>("v1/centers")
-    const today = new Date().toISOString().split("T")[0]
+  if (centers.length > 0) {
+    try {
+      const today = new Date().toISOString().split("T")[0]
 
-    // Consultar stock teórico de todos los centros en paralelo
-    const stockPromises = centers.map(c =>
-      fetchGstock<GstockStockTheoretical>(
-        `v1/stockTheoreticals?date=${today}&centerId=${c.id}`
-      ).catch(() => ({ data: [] as GstockStockTheoretical[] }))
-    )
-    const stockResults = await Promise.all(stockPromises)
+      // Consultar stock teórico de todos los centros en paralelo
+      const stockPromises = centers.map(c =>
+        fetchGstock<GstockStockTheoretical>(
+          `v1/stockTheoreticals?date=${today}&centerId=${c.id}`
+        ).catch(() => ({ data: [] as GstockStockTheoretical[] }))
+      )
+      const stockResults = await Promise.all(stockPromises)
 
-    // Sumar stock de todos los centros por producto
-    for (const { data: stocks } of stockResults) {
-      for (const stock of stocks) {
-        const productId = String(stock.productId)
-        const current = stockMap.get(productId) ?? 0
-        stockMap.set(productId, current + (stock.total ?? 0))
+      // Sumar stock de todos los centros por producto
+      for (const { data: stocks } of stockResults) {
+        for (const stock of stocks) {
+          const productId = String(stock.productId)
+          const current = stockMap.get(productId) ?? 0
+          stockMap.set(productId, current + (stock.total ?? 0))
+        }
       }
+      log(opts, `Stock teórico cargado: ${stockMap.size} productos`)
+    } catch (e) {
+      log(opts, `Error cargando stock teórico (no crítico): ${e instanceof Error ? e.message : String(e)}`)
     }
-    log(opts, `Stock teórico cargado: ${stockMap.size} productos`)
-  } catch (e) {
-    log(opts, `Error cargando stock teórico (no crítico): ${e instanceof Error ? e.message : String(e)}`)
   }
 
   return { supplierMap, productSupplierMap, stockMap }
@@ -391,6 +401,10 @@ export async function syncIngredients(
   })
   const existingByRef = new Map(existing.map(e => [e.reference!, e.id]))
 
+  // Preparar operaciones en memoria antes de ejecutar DB
+  const updates: { id: string; data: ReturnType<typeof mapGstockToIngredient>; gstockId: string }[] = []
+  const creates: { data: NonNullable<ReturnType<typeof mapGstockToIngredient>>; gstockId: string; name: string }[] = []
+
   for (const raw of data) {
     const gstockId = String(raw.id)
     nameMap.set(gstockId, raw.name)
@@ -408,16 +422,46 @@ export async function syncIngredients(
 
       const existingId = existingByRef.get(gstockId)
       if (existingId) {
-        await prisma.ingredient.update({ where: { id: existingId }, data: mapped })
-        state.updated++
+        updates.push({ id: existingId, data: mapped, gstockId })
         idMap.set(gstockId, existingId)
       } else {
-        const created = await prisma.ingredient.create({ data: mapped })
-        state.created++
-        idMap.set(gstockId, created.id)
+        creates.push({ data: mapped, gstockId, name: raw.name })
       }
     } catch (e) {
       state.errors.push(`Ingredient ${raw.name}: ${e instanceof Error ? e.message : String(e)}`)
+    }
+  }
+
+  // Ejecutar updates en batches de 50 via $transaction
+  const BATCH_SIZE = 50
+  for (let i = 0; i < updates.length; i += BATCH_SIZE) {
+    const batch = updates.slice(i, i + BATCH_SIZE)
+    try {
+      await prisma.$transaction(
+        batch.map(({ id, data }) => prisma.ingredient.update({ where: { id }, data: data! }))
+      )
+      state.updated += batch.length
+    } catch (e) {
+      // Fallback: ejecutar individualmente para identificar el registro problemático
+      for (const { id, data, gstockId } of batch) {
+        try {
+          await prisma.ingredient.update({ where: { id }, data: data! })
+          state.updated++
+        } catch (e2) {
+          state.errors.push(`Ingredient update ${gstockId}: ${e2 instanceof Error ? e2.message : String(e2)}`)
+        }
+      }
+    }
+  }
+
+  // Ejecutar creates individualmente (necesitamos capturar el ID generado)
+  for (const { data, gstockId, name } of creates) {
+    try {
+      const created = await prisma.ingredient.create({ data })
+      state.created++
+      idMap.set(gstockId, created.id)
+    } catch (e) {
+      state.errors.push(`Ingredient ${name}: ${e instanceof Error ? e.message : String(e)}`)
     }
   }
 
@@ -449,6 +493,14 @@ export async function syncRecipes(
 
   const { data } = await fetchGstock<GstockRecipe>("v2/recipes")
 
+  // Pre-cargar recetas existentes por externalId en batch (evita N findUnique)
+  const externalIds = data.map(r => String(r.id)).filter(Boolean)
+  const existingRecipes = await prisma.recipe.findMany({
+    where: { externalId: { in: externalIds } },
+    select: { id: true, externalId: true },
+  })
+  const existingByExternalId = new Map(existingRecipes.map(r => [r.externalId!, r.id]))
+
   for (const raw of data) {
     try {
       const mapped = mapGstockToRecipe(raw, recipeCategoryMap, familyMap, fallbackCategoryId)
@@ -467,31 +519,29 @@ export async function syncRecipes(
 
       if (opts.dryRun) { state.skipped++; continue }
 
-      // externalId ya es string gracias al mapper (String(raw.id))
-      const existing = await prisma.recipe.findUnique({
-        where: { externalId: mapped.externalId },
-        select: { id: true },
-      })
+      const existingId = existingByExternalId.get(mapped.externalId)
 
       let recipeId: string
-      if (existing) {
-        await prisma.recipe.update({ where: { id: existing.id }, data: recipeData })
+      if (existingId) {
+        await prisma.recipe.update({ where: { id: existingId }, data: recipeData })
         state.updated++
-        recipeId = existing.id
+        recipeId = existingId
       } else {
         const created = await prisma.recipe.create({ data: recipeData })
         state.created++
         recipeId = created.id
       }
 
-      // Recrear ingredientes de la receta (delete + create)
-      await prisma.recipeIngredient.deleteMany({ where: { recipeId } })
+      // Recrear ingredientes de la receta (delete + create en una transacción)
       const ingredientLines = mapGstockRecipeIngredients(raw, ingredientMap, productUnitMap)
-      if (ingredientLines.length) {
-        await prisma.recipeIngredient.createMany({
-          data: ingredientLines.map(line => ({ ...line, recipeId })),
-        })
-      }
+      await prisma.$transaction([
+        prisma.recipeIngredient.deleteMany({ where: { recipeId } }),
+        ...(ingredientLines.length
+          ? [prisma.recipeIngredient.createMany({
+              data: ingredientLines.map(line => ({ ...line, recipeId })),
+            })]
+          : []),
+      ])
     } catch (e) {
       state.errors.push(`Recipe ${raw.name}: ${e instanceof Error ? e.message : String(e)}`)
     }

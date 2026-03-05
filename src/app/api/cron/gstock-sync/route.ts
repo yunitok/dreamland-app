@@ -1,3 +1,4 @@
+import { after } from "next/server"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { ProcessRunStatus, ProcessTriggerType } from "@prisma/client"
@@ -56,23 +57,26 @@ export async function GET(request: Request) {
 
     console.log(`[cron/gstock-sync] Iniciando run ${run.id} — fetch a ${baseUrl}/api/processes/gstock-sync/run-phase`)
 
-    fetch(`${baseUrl}/api/processes/gstock-sync/run-phase`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${expectedSecret}`,
-      },
-      body: JSON.stringify({ runId: run.id, phase: 0, options: {}, maps: {} }),
-      signal: AbortSignal.timeout(120_000),
-    }).then(async (res) => {
-      if (!res.ok) {
-        const body = await res.text().catch(() => "")
-        console.error(`[cron/gstock-sync] Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 300)}`)
-        await safeMarkFailed(run.id, run.startedAt, `Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 200)}`)
+    after(async () => {
+      try {
+        const res = await fetch(`${baseUrl}/api/processes/gstock-sync/run-phase`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${expectedSecret}`,
+          },
+          body: JSON.stringify({ runId: run.id, phase: 0, options: {}, maps: {} }),
+          signal: AbortSignal.timeout(120_000),
+        })
+        if (!res.ok) {
+          const body = await res.text().catch(() => "")
+          console.error(`[cron/gstock-sync] Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 300)}`)
+          await safeMarkFailed(run.id, run.startedAt, `Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 200)}`)
+        }
+      } catch (err) {
+        console.error("[cron/gstock-sync] Error starting chain:", err)
+        await safeMarkFailed(run.id, run.startedAt, `Error iniciando cadena: ${err instanceof Error ? err.message : String(err)}`)
       }
-    }).catch(async (err) => {
-      console.error("[cron/gstock-sync] Error starting chain:", err)
-      await safeMarkFailed(run.id, run.startedAt, `Error iniciando cadena: ${err instanceof Error ? err.message : String(err)}`)
     })
 
     return NextResponse.json({

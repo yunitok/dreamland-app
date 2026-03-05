@@ -36,7 +36,7 @@ export const PROCESS_DEFINITIONS: ProcessDefinition[] = [
     icon: "RefreshCw",
     category: "sync",
     schedule: "Diario 7:00",
-    estimatedDuration: "~8 min",
+    estimatedDuration: "~30s",
     executor: "internal",
     options: [
       { name: "dryRun", label: "Dry run (sin escritura)", type: "boolean", defaultValue: false },

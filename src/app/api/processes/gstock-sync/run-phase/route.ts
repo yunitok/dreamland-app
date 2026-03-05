@@ -1,3 +1,4 @@
+import { after } from "next/server"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { ProcessRunStatus, Prisma } from "@prisma/client"
@@ -181,32 +182,35 @@ export async function POST(request: NextRequest) {
     }
 
     if (nextPhase < PHASE_NAMES.length) {
-      // Encadenar siguiente fase via fetch fire-and-forget (sin after())
+      // Encadenar siguiente fase via after() — garantiza que Vercel mantiene el runtime vivo
       const baseUrl = getBaseUrl()
       console.log(`[gstock-sync] Encadenando fase ${nextPhase}: ${PHASE_NAMES[nextPhase]}`)
 
-      fetch(`${baseUrl}/api/processes/gstock-sync/run-phase`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.CRON_SECRET}`,
-        },
-        body: JSON.stringify({
-          runId,
-          phase: nextPhase,
-          options,
-          maps: mergedMaps,
-        }),
-        signal: AbortSignal.timeout(5 * 60 * 1000),
-      }).then(async (res) => {
-        if (!res.ok) {
-          const body = await res.text().catch(() => "")
-          console.error(`[gstock-sync] Fase ${nextPhase} respondió HTTP ${res.status}: ${body.slice(0, 300)}`)
-          await safeFinalize(runId, "FAILED", `Fase ${nextPhase} respondió HTTP ${res.status}`)
+      after(async () => {
+        try {
+          const res = await fetch(`${baseUrl}/api/processes/gstock-sync/run-phase`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${process.env.CRON_SECRET}`,
+            },
+            body: JSON.stringify({
+              runId,
+              phase: nextPhase,
+              options,
+              maps: mergedMaps,
+            }),
+            signal: AbortSignal.timeout(5 * 60 * 1000),
+          })
+          if (!res.ok) {
+            const body = await res.text().catch(() => "")
+            console.error(`[gstock-sync] Fase ${nextPhase} respondió HTTP ${res.status}: ${body.slice(0, 300)}`)
+            await safeFinalize(runId, "FAILED", `Fase ${nextPhase} respondió HTTP ${res.status}`)
+          }
+        } catch (err) {
+          console.error(`[gstock-sync] Error chaining phase ${nextPhase}:`, err)
+          await safeFinalize(runId, "FAILED", `Error encadenando fase ${nextPhase}: ${err instanceof Error ? err.message : String(err)}`)
         }
-      }).catch(async (err) => {
-        console.error(`[gstock-sync] Error chaining phase ${nextPhase}:`, err)
-        await safeFinalize(runId, "FAILED", `Error encadenando fase ${nextPhase}: ${err instanceof Error ? err.message : String(err)}`)
       })
     } else {
       // Última fase: finalizar el run
