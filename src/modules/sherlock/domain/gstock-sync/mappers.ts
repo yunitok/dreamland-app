@@ -184,6 +184,12 @@ export function mapGstockToRecipe(
     ...(description && { description }),
     ...(raw.cost !== undefined && { theoreticalCost: raw.cost }),
     ...(allergens.length && { allergens }),
+    // elaborations → steps (pasos de elaboración desde GStock V2)
+    ...(raw.elaborations?.length && {
+      steps: raw.elaborations
+        .sort((a, b) => a.position - b.position)
+        .map(e => `${e.position}. ${e.description}`),
+    }),
     // image → photos[] (campo Prisma String[])
     ...(raw.image && { photos: [raw.image] }),
     // urlInfo → protocoloDeSala (URL a documentación del plato)

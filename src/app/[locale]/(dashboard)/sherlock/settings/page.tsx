@@ -12,17 +12,20 @@ import { CreateSupplierDialog } from "./_components/create-supplier-dialog";
 import { GstockSyncCard } from "./_components/gstock-sync-card";
 import { Header } from "@/components/layout/header";
 import { getSession } from "@/lib/auth";
+import { getRestaurantLocations } from "@/modules/sherlock/actions/cover-analytics";
+import { QrGeneratorDialog } from "@/modules/walk-in/ui/qr-generator-dialog";
 
 export default async function SherlockSettingsPage() {
   const t = await getTranslations("sherlock.settings");
 
   // Fetch data in parallel
-  const [units, categories, suppliers, syncInfo, session] = await Promise.all([
+  const [units, categories, suppliers, syncInfo, session, locations] = await Promise.all([
     getMeasureUnits(),
     getCategories(),
     getSuppliers(),
     getGstockSyncInfo(),
     getSession(),
+    getRestaurantLocations(),
   ]);
 
   return (
@@ -42,6 +45,19 @@ export default async function SherlockSettingsPage() {
             totalEntries={syncInfo.totalEntries}
             isSuperAdmin={session?.user?.role === "SUPER_ADMIN"}
           />
+
+          {/* Walk-in QR Generator */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="space-y-1">
+                <CardTitle>Walk-in QR</CardTitle>
+                <CardDescription>Genera códigos QR para que los clientes consulten disponibilidad en tiempo real.</CardDescription>
+              </div>
+              <QrGeneratorDialog
+                restaurants={locations.filter((l): l is typeof l & { cmSlug: string } => l.cmSlug !== null)}
+              />
+            </CardHeader>
+          </Card>
 
           <Tabs defaultValue="units" className="w-full">
             <TabsList className="grid w-full grid-cols-3 max-w-[600px]">

@@ -494,12 +494,13 @@ export async function syncRecipes(
   const { data } = await fetchGstock<GstockRecipe>("v2/recipes")
 
   // Pre-cargar recetas existentes por externalId en batch (evita N findUnique)
+  // Incluimos steps para saber si ya tienen pasos de Yurest que no debemos sobreescribir
   const externalIds = data.map(r => String(r.id)).filter(Boolean)
   const existingRecipes = await prisma.recipe.findMany({
     where: { externalId: { in: externalIds } },
-    select: { id: true, externalId: true },
+    select: { id: true, externalId: true, steps: true },
   })
-  const existingByExternalId = new Map(existingRecipes.map(r => [r.externalId!, r.id]))
+  const existingByExternalId = new Map(existingRecipes.map(r => [r.externalId!, { id: r.id, hasSteps: r.steps.length > 0 }]))
 
   for (const raw of data) {
     try {
@@ -519,13 +520,19 @@ export async function syncRecipes(
 
       if (opts.dryRun) { state.skipped++; continue }
 
-      const existingId = existingByExternalId.get(mapped.externalId)
+      const existing = existingByExternalId.get(mapped.externalId)
 
       let recipeId: string
-      if (existingId) {
-        await prisma.recipe.update({ where: { id: existingId }, data: recipeData })
+      if (existing) {
+        // No sobreescribir steps de Yurest si GStock no trae elaboraciones
+        const updateData = { ...recipeData }
+        const gstockBringsSteps = Array.isArray(updateData.steps) && updateData.steps.length > 0
+        if (!gstockBringsSteps && existing.hasSteps) {
+          delete updateData.steps
+        }
+        await prisma.recipe.update({ where: { id: existing.id }, data: updateData })
         state.updated++
-        recipeId = existingId
+        recipeId = existing.id
       } else {
         const created = await prisma.recipe.create({ data: recipeData })
         state.created++

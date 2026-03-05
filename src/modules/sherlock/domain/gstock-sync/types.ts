@@ -132,6 +132,14 @@ export interface GstockStockTheoretical {
   [key: string]: unknown
 }
 
+// ─── Elaboraciones (pasos de preparación) ────────────────────
+
+export interface GstockElaboration {
+  id: string
+  position: number
+  description: string
+}
+
 // ─── Recetas ─────────────────────────────────────────────────
 
 export interface GstockRecipeIngredientLine {
@@ -152,6 +160,7 @@ export interface GstockRecipe {
   /** @deprecated La API v2 devuelve "shortDescription", no "description". Mantenido por retrocompatibilidad */
   description?: string
   allergens?: string[] // raw allergen codes from GStock API (mapped to AllergenType in sync layer)
+  elaborations?: GstockElaboration[]
   ingredients?: GstockRecipeIngredientLine[]
   subrecipes?: GstockRecipeIngredientLine[]
   // ─── Campos adicionales de la API v2 (no todos se mapean a Prisma) ───
