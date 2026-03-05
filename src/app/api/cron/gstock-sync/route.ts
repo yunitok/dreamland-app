@@ -2,12 +2,16 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { ProcessRunStatus, ProcessTriggerType } from "@prisma/client"
 
+export const maxDuration = 60
+
 /**
  * Inicia la sincronización GStock → Sherlock → RAG (8 fases encadenadas).
  * Protegido con CRON_SECRET. Ejecutable desde Vercel Cron diariamente.
  *
  * La ruta crea un ProcessRun y dispara la primera fase. Las fases se encadenan
  * automáticamente via /api/processes/gstock-sync/run-phase.
+ *
+ * Watchdog de runs huérfanos delegado a /api/cron/watchdog (cada 15 min).
  *
  * GET /api/cron/gstock-sync
  * Headers: Authorization: Bearer <CRON_SECRET>
@@ -21,29 +25,6 @@ export async function GET(request: Request) {
   }
 
   try {
-    // ── Watchdog: limpiar runs huérfanos (>30 min en RUNNING) ──
-    const STALE_THRESHOLD_MS = 30 * 60 * 1000
-    const staleRuns = await prisma.processRun.findMany({
-      where: {
-        processSlug: "gstock-sync",
-        status: ProcessRunStatus.RUNNING,
-        startedAt: { lt: new Date(Date.now() - STALE_THRESHOLD_MS) },
-      },
-    })
-
-    for (const stale of staleRuns) {
-      await prisma.processRun.update({
-        where: { id: stale.id },
-        data: {
-          status: ProcessRunStatus.FAILED,
-          finishedAt: new Date(),
-          durationMs: Date.now() - stale.startedAt.getTime(),
-          error: `Watchdog: proceso atascado sin completar tras ${Math.round((Date.now() - stale.startedAt.getTime()) / 60000)} min. Marcado como FAILED automáticamente.`,
-        },
-      })
-      console.log(`[cron/gstock-sync] Watchdog: run ${stale.id} marcado como FAILED (${Math.round((Date.now() - stale.startedAt.getTime()) / 60000)} min atascado)`)
-    }
-
     // ── Protección contra ejecución duplicada ──
     const activeRun = await prisma.processRun.findFirst({
       where: {
@@ -73,6 +54,8 @@ export async function GET(request: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL
       ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
 
+    console.log(`[cron/gstock-sync] Iniciando run ${run.id} — fetch a ${baseUrl}/api/processes/gstock-sync/run-phase`)
+
     fetch(`${baseUrl}/api/processes/gstock-sync/run-phase`, {
       method: "POST",
       headers: {
@@ -80,26 +63,46 @@ export async function GET(request: Request) {
         "Authorization": `Bearer ${expectedSecret}`,
       },
       body: JSON.stringify({ runId: run.id, phase: 0, options: {}, maps: {} }),
+      signal: AbortSignal.timeout(120_000),
+    }).then(async (res) => {
+      if (!res.ok) {
+        const body = await res.text().catch(() => "")
+        console.error(`[cron/gstock-sync] Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 300)}`)
+        await safeMarkFailed(run.id, run.startedAt, `Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 200)}`)
+      }
     }).catch(async (err) => {
       console.error("[cron/gstock-sync] Error starting chain:", err)
-      await prisma.processRun.update({
-        where: { id: run.id },
-        data: {
-          status: ProcessRunStatus.FAILED,
-          finishedAt: new Date(),
-          durationMs: Date.now() - run.startedAt.getTime(),
-          error: `Error iniciando cadena de fases: ${err instanceof Error ? err.message : String(err)}`,
-        },
-      })
+      await safeMarkFailed(run.id, run.startedAt, `Error iniciando cadena: ${err instanceof Error ? err.message : String(err)}`)
     })
 
     return NextResponse.json({
       success: true,
       runId: run.id,
-      message: `Sincronización GStock iniciada (8 fases encadenadas)${staleRuns.length > 0 ? `. Watchdog limpió ${staleRuns.length} run(s) huérfano(s).` : ""}`,
+      message: "Sincronización GStock iniciada (8 fases encadenadas)",
     })
   } catch (error) {
     console.error("[cron/gstock-sync] Error:", error)
     return NextResponse.json({ error: "Error starting GStock sync" }, { status: 500 })
+  }
+}
+
+/**
+ * Intenta marcar un run como FAILED de forma segura.
+ * Si la DB también falla (cascada), solo loguea sin crashear.
+ */
+async function safeMarkFailed(runId: string, startedAt: Date, error: string) {
+  try {
+    await prisma.processRun.update({
+      where: { id: runId },
+      data: {
+        status: ProcessRunStatus.FAILED,
+        finishedAt: new Date(),
+        durationMs: Date.now() - startedAt.getTime(),
+        error: error.slice(0, 500),
+      },
+    })
+    console.log(`[cron/gstock-sync] Run ${runId} marcado como FAILED`)
+  } catch (dbErr) {
+    console.error(`[cron/gstock-sync] DOBLE FALLO: no se pudo marcar run ${runId} como FAILED:`, dbErr)
   }
 }

@@ -71,11 +71,13 @@ interface ProcessCardProps {
   dashboardItem: ProcessDashboardItem
   onTrigger: (slug: string) => void
   onCancel: (runId: string) => void
+  onForceFail: (runId: string) => void
   isTriggering: boolean
   isCancelling: boolean
+  isForceFailing: boolean
 }
 
-export function ProcessCard({ definition, dashboardItem, onTrigger, onCancel, isTriggering, isCancelling }: ProcessCardProps) {
+export function ProcessCard({ definition, dashboardItem, onTrigger, onCancel, onForceFail, isTriggering, isCancelling, isForceFailing }: ProcessCardProps) {
   const Icon = ICON_MAP[definition.icon] ?? RefreshCw
   const category = PROCESS_CATEGORIES[definition.category]
   const { lastRun, runningNow, activeRunId } = dashboardItem
@@ -143,23 +145,42 @@ export function ProcessCard({ definition, dashboardItem, onTrigger, onCancel, is
         )}
         <div className="flex items-center gap-1">
           {runningNow && activeRunId && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="relative z-10 h-7 gap-1 text-xs text-destructive hover:text-destructive"
-              onClick={(e) => {
-                e.preventDefault()
-                onCancel(activeRunId)
-              }}
-              disabled={isCancelling}
-            >
-              {isCancelling ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Square className="h-3 w-3" />
-              )}
-              Cancelar
-            </Button>
+            <>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="relative z-10 h-7 gap-1 text-xs text-destructive hover:text-destructive"
+                onClick={(e) => {
+                  e.preventDefault()
+                  onForceFail(activeRunId)
+                }}
+                disabled={isForceFailing}
+              >
+                {isForceFailing ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <XCircle className="h-3 w-3" />
+                )}
+                Forzar fallo
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="relative z-10 h-7 gap-1 text-xs text-muted-foreground hover:text-muted-foreground"
+                onClick={(e) => {
+                  e.preventDefault()
+                  onCancel(activeRunId)
+                }}
+                disabled={isCancelling}
+              >
+                {isCancelling ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Square className="h-3 w-3" />
+                )}
+                Cancelar
+              </Button>
+            </>
           )}
           <Button
             size="sm"

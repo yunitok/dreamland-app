@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server"
-import { after } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { ProcessRunStatus, Prisma } from "@prisma/client"
 import { revalidatePath } from "next/cache"
@@ -7,6 +6,8 @@ import { createNotificationsForPermission } from "@/lib/notification-service"
 import type { SyncOptions } from "@/modules/sherlock/domain/gstock-sync/sync-orchestrator"
 import type { SyncPhaseResult } from "@/modules/sherlock/domain/gstock-sync/types"
 import type { GstockIdMap } from "@/modules/sherlock/domain/gstock-sync/mappers"
+
+export const maxDuration = 120
 
 // ─── Configuración de fases ──────────────────────────────────
 
@@ -144,8 +145,8 @@ export async function POST(request: NextRequest) {
     select: { status: true, phases: true },
   })
 
-  if (!run || run.status === ProcessRunStatus.CANCELLED) {
-    return NextResponse.json({ error: "Run cancelled or not found" }, { status: 409 })
+  if (!run || run.status === ProcessRunStatus.CANCELLED || run.status === ProcessRunStatus.FAILED) {
+    return NextResponse.json({ error: "Run cancelled, failed or not found" }, { status: 409 })
   }
 
   const phaseName = PHASE_NAMES[phase]
@@ -153,6 +154,8 @@ export async function POST(request: NextRequest) {
     dryRun: options?.dryRun ?? false,
     skipKB: options?.skipKb ?? false,
   }
+
+  console.log(`[gstock-sync] Ejecutando fase ${phase}/${PHASE_NAMES.length - 1}: ${phaseName}`)
 
   try {
     const { result, newMaps } = await executePhase(phaseName, syncOptions, maps)
@@ -178,28 +181,32 @@ export async function POST(request: NextRequest) {
     }
 
     if (nextPhase < PHASE_NAMES.length) {
-      // Encadenar siguiente fase vía after()
+      // Encadenar siguiente fase via fetch fire-and-forget (sin after())
       const baseUrl = getBaseUrl()
-      after(async () => {
-        try {
-          await fetch(`${baseUrl}/api/processes/gstock-sync/run-phase`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${process.env.CRON_SECRET}`,
-            },
-            body: JSON.stringify({
-              runId,
-              phase: nextPhase,
-              options,
-              maps: mergedMaps,
-            }),
-            signal: AbortSignal.timeout(5 * 60 * 1000), // 5 min — incluye ejecución completa de la fase
-          })
-        } catch (err) {
-          console.error(`[gstock-sync] Error chaining phase ${nextPhase}:`, err)
-          await finalizeRun(runId, "FAILED", `Error encadenando fase ${nextPhase}`)
+      console.log(`[gstock-sync] Encadenando fase ${nextPhase}: ${PHASE_NAMES[nextPhase]}`)
+
+      fetch(`${baseUrl}/api/processes/gstock-sync/run-phase`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.CRON_SECRET}`,
+        },
+        body: JSON.stringify({
+          runId,
+          phase: nextPhase,
+          options,
+          maps: mergedMaps,
+        }),
+        signal: AbortSignal.timeout(5 * 60 * 1000),
+      }).then(async (res) => {
+        if (!res.ok) {
+          const body = await res.text().catch(() => "")
+          console.error(`[gstock-sync] Fase ${nextPhase} respondió HTTP ${res.status}: ${body.slice(0, 300)}`)
+          await safeFinalize(runId, "FAILED", `Fase ${nextPhase} respondió HTTP ${res.status}`)
         }
+      }).catch(async (err) => {
+        console.error(`[gstock-sync] Error chaining phase ${nextPhase}:`, err)
+        await safeFinalize(runId, "FAILED", `Error encadenando fase ${nextPhase}: ${err instanceof Error ? err.message : String(err)}`)
       })
     } else {
       // Última fase: finalizar el run
@@ -208,6 +215,8 @@ export async function POST(request: NextRequest) {
       const totalErrors = allPhases.flatMap((p) => p.errors)
       const totalCreated = allPhases.reduce((sum, p) => sum + p.created, 0)
       const totalUpdated = allPhases.reduce((sum, p) => sum + p.updated, 0)
+
+      console.log(`[gstock-sync] Todas las fases completadas: ${totalCreated} creados, ${totalUpdated} actualizados, ${totalErrors.length} errores`)
 
       await prisma.processRun.update({
         where: { id: runId },
@@ -240,7 +249,7 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error(`[gstock-sync] Phase ${phaseName} failed:`, err)
-    await finalizeRun(runId, "FAILED", `Fase "${phaseName}": ${message}`)
+    await safeFinalize(runId, "FAILED", `Fase "${phaseName}": ${message}`)
     return NextResponse.json({ success: false, error: message }, { status: 500 })
   }
 }
@@ -248,35 +257,43 @@ export async function POST(request: NextRequest) {
 // ─── Helpers ─────────────────────────────────────────────────
 
 function getBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
-  return "http://localhost:3000"
+  const url = process.env.NEXT_PUBLIC_APP_URL
+    ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
+  console.log(`[gstock-sync] Using base URL: ${url}`)
+  return url
 }
 
-async function finalizeRun(runId: string, status: "SUCCESS" | "FAILED", error?: string) {
-  const run = await prisma.processRun.findUnique({
-    where: { id: runId },
-    select: { phases: true, startedAt: true },
-  })
-  if (!run) return
+/**
+ * Finaliza un run de forma segura. Si la DB falla, solo loguea.
+ */
+async function safeFinalize(runId: string, status: "SUCCESS" | "FAILED", error?: string) {
+  try {
+    const run = await prisma.processRun.findUnique({
+      where: { id: runId },
+      select: { phases: true, startedAt: true },
+    })
+    if (!run) return
 
-  const phases = (run.phases as SyncPhaseResult[] | null) ?? []
-  const totalDuration = phases.reduce((sum, p) => sum + p.durationMs, 0)
+    const phases = (run.phases as SyncPhaseResult[] | null) ?? []
+    const totalDuration = phases.reduce((sum, p) => sum + p.durationMs, 0)
 
-  await prisma.processRun.update({
-    where: { id: runId },
-    data: {
-      status: status === "FAILED" ? ProcessRunStatus.FAILED : ProcessRunStatus.SUCCESS,
-      finishedAt: new Date(),
-      durationMs: totalDuration,
-      error: error ?? null,
-    },
-  })
+    await prisma.processRun.update({
+      where: { id: runId },
+      data: {
+        status: status === "FAILED" ? ProcessRunStatus.FAILED : ProcessRunStatus.SUCCESS,
+        finishedAt: new Date(),
+        durationMs: totalDuration,
+        error: error?.slice(0, 500) ?? null,
+      },
+    })
 
-  revalidatePath("/admin/processes")
+    revalidatePath("/admin/processes")
 
-  if (status === "FAILED") {
-    await notifyAdminsOnFailure(runId, error ? [error] : [])
+    if (status === "FAILED") {
+      await notifyAdminsOnFailure(runId, error ? [error] : [])
+    }
+  } catch (dbErr) {
+    console.error(`[gstock-sync] DOBLE FALLO al finalizar run ${runId}:`, dbErr)
   }
 }
 

@@ -10,9 +10,10 @@ import { getSession } from "@/lib/auth"
 // ─── Helpers ─────────────────────────────────────────────────
 
 function getAppBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
-  return "http://localhost:3000"
+  const url = process.env.NEXT_PUBLIC_APP_URL
+    ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
+  console.log(`[processes] Using base URL: ${url}`)
+  return url
 }
 
 // ─── Tipos ────────────────────────────────────────────────────
@@ -172,17 +173,16 @@ export async function triggerProcess(
         "Authorization": `Bearer ${process.env.CRON_SECRET}`,
       },
       body: JSON.stringify({ runId: run.id, phase: 0, options: options ?? {}, maps: {} }),
+      signal: AbortSignal.timeout(120_000),
+    }).then(async (res) => {
+      if (!res.ok) {
+        const body = await res.text().catch(() => "")
+        console.error(`[gstock-sync] Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 300)}`)
+        await safeMarkRunFailed(run.id, run.startedAt, `Fase 0 respondió HTTP ${res.status}: ${body.slice(0, 200)}`)
+      }
     }).catch(async (err) => {
       console.error("[gstock-sync] Error starting chain:", err)
-      await prisma.processRun.update({
-        where: { id: run.id },
-        data: {
-          status: ProcessRunStatus.FAILED,
-          finishedAt: new Date(),
-          durationMs: Date.now() - run.startedAt.getTime(),
-          error: `Error iniciando cadena de fases: ${err instanceof Error ? err.message : String(err)}`,
-        },
-      })
+      await safeMarkRunFailed(run.id, run.startedAt, `Error iniciando cadena: ${err instanceof Error ? err.message : String(err)}`)
     })
 
     return {
@@ -304,6 +304,60 @@ export async function cancelProcessRun(
   })
 
   return { success: true }
+}
+
+// ─── Forzar fallo de un run atascado ─────────────────────────
+
+export async function forceFailProcessRun(
+  runId: string,
+  reason?: string
+): Promise<{ success: boolean; error?: string }> {
+  await requirePermission("admin", "manage")
+
+  const run = await prisma.processRun.findUnique({
+    where: { id: runId },
+    select: { id: true, status: true, startedAt: true, phases: true },
+  })
+
+  if (!run) {
+    return { success: false, error: "Run no encontrado" }
+  }
+
+  if (run.status !== ProcessRunStatus.RUNNING && run.status !== ProcessRunStatus.PENDING) {
+    return { success: false, error: `No se puede forzar fallo en estado ${run.status}` }
+  }
+
+  const phases = (run.phases as unknown[] | null) ?? []
+
+  await prisma.processRun.update({
+    where: { id: runId },
+    data: {
+      status: ProcessRunStatus.FAILED,
+      finishedAt: new Date(),
+      durationMs: Date.now() - run.startedAt.getTime(),
+      error: (reason ?? `Forzado manualmente. ${phases.length}/8 fases completadas.`).slice(0, 500),
+    },
+  })
+
+  return { success: true }
+}
+
+// ─── Helper: marcar run como FAILED de forma segura ──────────
+
+async function safeMarkRunFailed(runId: string, startedAt: Date, error: string) {
+  try {
+    await prisma.processRun.update({
+      where: { id: runId },
+      data: {
+        status: ProcessRunStatus.FAILED,
+        finishedAt: new Date(),
+        durationMs: Date.now() - startedAt.getTime(),
+        error: error.slice(0, 500),
+      },
+    })
+  } catch (dbErr) {
+    console.error(`[processes] DOBLE FALLO: no se pudo marcar run ${runId} como FAILED:`, dbErr)
+  }
 }
 
 // ─── Ejecutor interno ─────────────────────────────────────────

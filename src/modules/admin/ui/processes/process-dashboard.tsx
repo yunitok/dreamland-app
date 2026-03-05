@@ -5,7 +5,7 @@ import { ProcessCard } from "./process-card"
 import { Button } from "@/modules/shared/ui/button"
 import { PROCESS_DEFINITIONS, PROCESS_CATEGORIES } from "@/modules/admin/domain/process-registry"
 import type { ProcessDashboardItem } from "@/modules/admin/actions/processes"
-import { triggerProcess, cancelProcessRun } from "@/modules/admin/actions/processes"
+import { triggerProcess, cancelProcessRun, forceFailProcessRun } from "@/modules/admin/actions/processes"
 import { RefreshCw } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -21,6 +21,7 @@ export function ProcessDashboard({ initialData }: ProcessDashboardProps) {
   const [isPending, startTransition] = useTransition()
   const [triggeringSlug, setTriggeringSlug] = useState<string | null>(null)
   const [cancellingRunId, setCancellingRunId] = useState<string | null>(null)
+  const [forceFailingRunId, setForceFailingRunId] = useState<string | null>(null)
   const [dialogProcess, setDialogProcess] = useState<ProcessDefinition | null>(null)
 
   const handleTrigger = useCallback((slug: string) => {
@@ -83,6 +84,21 @@ export function ProcessDashboard({ initialData }: ProcessDashboardProps) {
     }
   }, [router])
 
+  const handleForceFail = useCallback(async (runId: string) => {
+    setForceFailingRunId(runId)
+    try {
+      const result = await forceFailProcessRun(runId)
+      if (result.success) {
+        toast.success("Run marcado como fallido")
+      } else {
+        toast.error("Error al forzar fallo", { description: result.error })
+      }
+      startTransition(() => router.refresh())
+    } finally {
+      setForceFailingRunId(null)
+    }
+  }, [router])
+
   // Polling automático mientras haya procesos en ejecución
   const hasRunning = initialData.some((d) => d.runningNow)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -141,8 +157,10 @@ export function ProcessDashboard({ initialData }: ProcessDashboardProps) {
                 }
                 onTrigger={handleTrigger}
                 onCancel={handleCancel}
+                onForceFail={handleForceFail}
                 isTriggering={triggeringSlug === proc.slug}
                 isCancelling={cancellingRunId === (dataMap.get(proc.slug)?.activeRunId ?? null)}
+                isForceFailing={forceFailingRunId === (dataMap.get(proc.slug)?.activeRunId ?? null)}
               />
             ))}
           </div>

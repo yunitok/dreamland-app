@@ -3,6 +3,7 @@
     { "path": "/api/cron/cleanup-notifications", "schedule": "0 2 * * *" },
     { "path": "/api/cron/cleanup-ai-logs", "schedule": "0 3 * * 1" },
     { "path": "/api/cron/gstock-sync", "schedule": "0 7 * * *" },
-    { "path": "/api/cron/weather-check", "schedule": "0 8 * * *" }
+    { "path": "/api/cron/weather-check", "schedule": "0 8 * * *" },
+    { "path": "/api/cron/watchdog", "schedule": "*/15 * * * *" }
   ]
 }
