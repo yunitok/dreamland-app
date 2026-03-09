@@ -454,6 +454,7 @@ model Recipe {
   category        RecipeCategory     @relation(fields: [categoryId], references: [id])
   family          RecipeFamily?      @relation(fields: [familyId], references: [id])
   voiceAudits     VoiceAudit[]
+  agoraProducts   AgoraProduct[]
 
   @@index([categoryId])
   @@index([familyId])
@@ -895,7 +896,9 @@ model RestaurantLocation {
   cmSlug            String?  @unique                // Slug CoverManager (ej: "restaurante-voltereta")
   createdAt         DateTime @default(now())
 
+  agoraPosId        Int?     @unique              // ID del punto de venta en Ágora
   coverSnapshots    CoverSnapshot[]
+  agoraSalesSnapshots AgoraSalesSnapshot[]
 
   @@index([city])
   @@index([isActive])
@@ -1350,4 +1353,89 @@ model AiToneProfile {
   updatedAt DateTime @updatedAt
 
   @@map("ai_tone_profiles")
+}
+
+// ─── Ágora TPV ─────────────────────────────────────────────────
+
+model AgoraSalesSnapshot {
+  id                   String   @id @default(cuid())
+  restaurantLocationId String
+  businessDay          DateTime @db.Date
+
+  // Métricas de facturación
+  totalInvoices        Int      @default(0)
+  totalGrossAmount     Float    @default(0)
+  totalNetAmount       Float    @default(0)
+  totalAmount          Float    @default(0)
+  totalGuests          Int      @default(0)
+  avgTicket            Float    @default(0)
+  avgSpendPerGuest     Float    @default(0)
+
+  // Desgloses JSON
+  salesByFamily        Json?
+  salesByPaymentMethod Json?
+  salesByHour          Json?
+  topProducts          Json?
+  taxBreakdown         Json?
+
+  // Cierre de caja
+  cashExpected         Float?
+  cashReal             Float?
+  cashDifference       Float?
+
+  syncedAt             DateTime @default(now())
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  restaurantLocation   RestaurantLocation @relation(fields: [restaurantLocationId], references: [id])
+
+  @@unique([restaurantLocationId, businessDay])
+  @@index([businessDay])
+  @@index([restaurantLocationId, businessDay])
+  @@map("agora_sales_snapshots")
+}
+
+model AgoraProduct {
+  id         String   @id @default(cuid())
+  agoraId    Int      @unique
+  name       String
+  familyId   Int?
+  familyName String?
+  vatRate    Float?
+  mainPrice  Float?
+  costPrice  Float?
+  barcode    String?
+  isActive   Boolean  @default(true)
+
+  recipeId   String?
+  recipe     Recipe?  @relation(fields: [recipeId], references: [id])
+
+  syncedAt   DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([name])
+  @@index([familyName])
+  @@index([recipeId])
+  @@map("agora_products")
+}
+
+model AgoraSyncLog {
+  id               String    @id @default(cuid())
+  syncType         String
+  status           String    @default("RUNNING")
+  dateRangeStart   DateTime?
+  dateRangeEnd     DateTime?
+  snapshotsCreated Int       @default(0)
+  snapshotsUpdated Int       @default(0)
+  productsCreated  Int       @default(0)
+  productsUpdated  Int       @default(0)
+  errors           Json?
+  durationMs       Int?
+  startedAt        DateTime  @default(now())
+  finishedAt       DateTime?
+
+  @@index([status])
+  @@index([startedAt(sort: Desc)])
+  @@map("agora_sync_logs")
 }
