@@ -41,7 +41,8 @@ import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { getTask, updateTask, updateTaskProgress, addDependency, removeDependency } from '@/modules/projects/actions/tasks'
-import { createComment, deleteComment } from '@/modules/projects/actions/task-comments'
+import { createComment, updateComment, deleteComment } from '@/modules/projects/actions/task-comments'
+import { MentionTextarea } from './mention-textarea'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import {
@@ -90,6 +91,8 @@ export function TaskDetailSheet({
   const [editedDescription, setEditedDescription] = useState('')
   const [newComment, setNewComment] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
+  const [editingCommentContent, setEditingCommentContent] = useState('')
   const [isAddingDependency, setIsAddingDependency] = useState(false)
   const [localProgress, setLocalProgress] = useState<number>(0)
   const progressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -235,6 +238,24 @@ export function TaskDetailSheet({
     }
   }
 
+  const handleEditComment = async (commentId: string) => {
+    if (!editingCommentContent.trim() || !task) return
+    try {
+      const updated = await updateComment(commentId, editingCommentContent, currentUserId)
+      setTask({
+        ...task,
+        comments: task.comments.map((c: any) =>
+          c.id === commentId ? { ...c, content: updated.content } : c
+        ),
+      })
+      setEditingCommentId(null)
+      toast.success(t('commentUpdated'))
+    } catch (error) {
+      console.error('Failed to edit comment:', error)
+      toast.error(t('errorUpdatingComment'))
+    }
+  }
+
   const handleAddDependency = async (predecessorId: string) => {
     if (!task) return
     try {
@@ -263,6 +284,18 @@ export function TaskDetailSheet({
       month: 'short',
       day: 'numeric',
       year: 'numeric'
+    })
+  }
+
+  const renderCommentContent = (content: string) => {
+    // Solo resaltar @username al inicio o tras espacio (no en emails como user@domain.com)
+    const regex = /((?:^|\s)@\w+)/gm
+    const parts = content.split(regex)
+    return parts.map((part, i) => {
+      const m = part.match(/^(\s?)(@\w+)$/)
+      return m
+        ? <span key={i}>{m[1]}<span className="text-primary font-medium">{m[2]}</span></span>
+        : <span key={i}>{part}</span>
     })
   }
 
@@ -787,16 +820,18 @@ export function TaskDetailSheet({
               </h4>
 
               {/* Add Comment */}
-              <div className="flex gap-2 mb-4">
-                <Textarea
+              <div className="flex items-start gap-2 mb-4">
+                <MentionTextarea
                   value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
+                  onChange={setNewComment}
                   placeholder={t('writeComment')}
                   rows={2}
-                  className="flex-1"
+                  wrapperClassName="flex-1 min-w-0"
+                  users={users}
                 />
                 <Button
                   size="icon"
+                  className="shrink-0 mt-1"
                   disabled={!newComment.trim() || submittingComment}
                   onClick={handleAddComment}
                 >
@@ -807,7 +842,7 @@ export function TaskDetailSheet({
               {/* Comments List */}
               <div className="space-y-4">
                 {task.comments?.map((comment: any) => (
-                  <div key={comment.id} className="flex gap-3">
+                  <div key={comment.id} className="flex gap-3 group">
                     <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage src={comment.author.image || undefined} />
                       <AvatarFallback className="text-xs">
@@ -822,10 +857,50 @@ export function TaskDetailSheet({
                         <span className="text-xs text-muted-foreground">
                           {formatDateTime(comment.createdAt)}
                         </span>
+                        {comment.authorId === currentUserId && editingCommentId !== comment.id && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => {
+                              setEditingCommentId(comment.id)
+                              setEditingCommentContent(comment.content)
+                            }}
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {comment.content}
-                      </p>
+                      {editingCommentId === comment.id ? (
+                        <div className="space-y-2">
+                          <MentionTextarea
+                            value={editingCommentContent}
+                            onChange={setEditingCommentContent}
+                            users={users}
+                            rows={2}
+                          />
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              disabled={!editingCommentContent.trim()}
+                              onClick={() => handleEditComment(comment.id)}
+                            >
+                              {t('save')}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setEditingCommentId(null)}
+                            >
+                              {t('cancel')}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                          {renderCommentContent(comment.content)}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}

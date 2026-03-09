@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/modules/shared/ui/ta
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/modules/shared/ui/card";
 import { getMeasureUnits, getCategories, getSuppliers } from "@/modules/sherlock/actions/settings";
 import { getGstockSyncInfo } from "@/modules/sherlock/actions/gstock-sync";
+import { getAgoraLastSync, getAgoraProductStats } from "@/modules/sherlock/actions/agora-sync";
 import { UnitsTable } from "./_components/units-table";
 import { CategoriesList } from "./_components/categories-list";
 import { SuppliersTable } from "./_components/suppliers-table";
@@ -10,6 +11,7 @@ import { CreateUnitDialog } from "./_components/create-unit-dialog";
 import { CreateCategoryDialog } from "./_components/create-category-dialog";
 import { CreateSupplierDialog } from "./_components/create-supplier-dialog";
 import { GstockSyncCard } from "./_components/gstock-sync-card";
+import { AgoraSyncCard } from "./_components/agora-sync-card";
 import { Header } from "@/components/layout/header";
 import { getSession } from "@/lib/auth";
 import { getRestaurantLocations } from "@/modules/sherlock/actions/cover-analytics";
@@ -19,13 +21,15 @@ export default async function SherlockSettingsPage() {
   const t = await getTranslations("sherlock.settings");
 
   // Fetch data in parallel
-  const [units, categories, suppliers, syncInfo, session, locations] = await Promise.all([
+  const [units, categories, suppliers, syncInfo, session, locations, agoraLastSync, agoraStats] = await Promise.all([
     getMeasureUnits(),
     getCategories(),
     getSuppliers(),
     getGstockSyncInfo(),
     getSession(),
     getRestaurantLocations(),
+    getAgoraLastSync(),
+    getAgoraProductStats(),
   ]);
 
   return (
@@ -43,6 +47,13 @@ export default async function SherlockSettingsPage() {
           <GstockSyncCard
             lastSync={syncInfo.lastSync}
             totalEntries={syncInfo.totalEntries}
+            isSuperAdmin={session?.user?.role === "SUPER_ADMIN"}
+          />
+
+          {/* Card de sincronización Agora TPV */}
+          <AgoraSyncCard
+            lastSync={agoraLastSync}
+            stats={agoraStats}
             isSuperAdmin={session?.user?.role === "SUPER_ADMIN"}
           />
 

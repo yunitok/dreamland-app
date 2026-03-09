@@ -1,15 +1,20 @@
 "use client"
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/modules/shared/ui/tabs"
-import { Database, Package, CalendarRange } from "lucide-react"
+import { Database, Package, CalendarRange, ShoppingCart } from "lucide-react"
 import { YurestSandbox } from "./yurest-sandbox"
 import { GstockSandbox } from "./gstock-sandbox"
 import { CoverManagerSandbox } from "./covermanager-sandbox"
+import { AgoraSandbox } from "./agora-sandbox"
 
 export function SandboxTabs() {
   return (
-    <Tabs defaultValue="yurest" className="w-full">
+    <Tabs defaultValue="agora" className="w-full">
       <TabsList>
+        <TabsTrigger value="agora">
+          <ShoppingCart className="h-3.5 w-3.5 mr-1.5" />
+          Agora
+        </TabsTrigger>
         <TabsTrigger value="yurest">
           <Database className="h-3.5 w-3.5 mr-1.5" />
           Yurest
@@ -23,6 +28,9 @@ export function SandboxTabs() {
           CoverManager
         </TabsTrigger>
       </TabsList>
+      <TabsContent value="agora" className="mt-4">
+        <AgoraSandbox />
+      </TabsContent>
       <TabsContent value="yurest" className="mt-4">
         <YurestSandbox />
       </TabsContent>

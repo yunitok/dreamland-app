@@ -449,8 +449,12 @@
     "blockedBy": "Blocked by",
     "blocks": "Blocks",
     "addDependency": "Добавить зависимость",
-    "comments": "Comments",
-    "writeComment": "Write a comment...",
+    "comments": "Комментарии",
+    "writeComment": "Написать комментарий...",
+    "editComment": "Редактировать комментарий",
+    "commentUpdated": "Комментарий обновлён",
+    "errorUpdatingComment": "Ошибка обновления комментария",
+    "noUsersFound": "Пользователи не найдены",
     "attachments": "Attachments",
     "creating": "Создание...",
     "delete": "Удалить",
@@ -588,6 +592,10 @@
         "month": "Месяц"
       }
     },
+    "sales": {
+      "title": "Продажи Agora",
+      "description": "Выручка, средний чек, товарные группы и продукты POS."
+    },
     "ingredients": {
       "title": "Ингредиенты",
       "description": "Управление техническими картами, ценами и аллергенами.",
@@ -661,6 +669,8 @@
   "atc": {
     "title": "Служба клиентов",
     "description": "Управление бронями, запросами, инцидентами и бэк-офисом",
+    "dailyManagement": "Ежедневное управление",
+    "administration": "Администрирование",
     "reservationsTitle": "Управление бронями",
     "reservationsDescription": "Лист ожидания, подтверждения, изменения и опоздавшие",
     "queriesTitle": "Запросы ИИ & RAG",
@@ -669,6 +679,8 @@
     "operationsDescription": "Восстановление платежей, погодные предупреждения и групповые бронирования",
     "backofficeTitle": "Бэк-Офис",
     "backofficeDescription": "Сортировка эл. почты, счета и подарочные сертификаты",
+    "analyticsTitle": "Аналитика",
+    "analyticsDescription": "Операционные KPI: непрочитанные письма, время ответа и инциденты",
     "addReservation": "Новая бронь",
     "addIncident": "Новый инцидент",
     "editReservation": "Редактировать бронь",

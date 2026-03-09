@@ -449,8 +449,12 @@
     "blockedBy": "Blocked by",
     "blocks": "Blocks",
     "addDependency": "Aggiungi dipendenza",
-    "comments": "Comments",
-    "writeComment": "Write a comment...",
+    "comments": "Commenti",
+    "writeComment": "Scrivi un commento...",
+    "editComment": "Modifica commento",
+    "commentUpdated": "Commento aggiornato",
+    "errorUpdatingComment": "Errore nell'aggiornamento del commento",
+    "noUsersFound": "Nessun utente trovato",
     "attachments": "Attachments",
     "creating": "Creazione...",
     "delete": "Elimina",
@@ -588,6 +592,10 @@
         "month": "Mese"
       }
     },
+    "sales": {
+      "title": "Vendite Agora",
+      "description": "Fatturato, scontrino medio, famiglie di prodotto e articoli POS."
+    },
     "ingredients": {
       "title": "Ingredienti",
       "description": "Gestione di schede tecniche, prezzi e allergeni.",
@@ -661,6 +669,8 @@
   "atc": {
     "title": "Servizio Clienti",
     "description": "Prenotazioni, richieste, incidenti e gestione back-office",
+    "dailyManagement": "Gestione Quotidiana",
+    "administration": "Amministrazione",
     "reservationsTitle": "Gestione Prenotazioni",
     "reservationsDescription": "Lista d'attesa, conferme, modifiche e ritardatari",
     "queriesTitle": "Richieste IA & RAG",
@@ -669,6 +679,8 @@
     "operationsDescription": "Recupero pagamenti, avvisi meteo e prenotazioni di gruppo",
     "backofficeTitle": "Back-Office",
     "backofficeDescription": "Smistamento e-mail, fatture e buoni regalo",
+    "analyticsTitle": "Analisi",
+    "analyticsDescription": "KPI operativi: e-mail non lette, tempi di risposta e incidenti",
     "addReservation": "Nuova prenotazione",
     "addIncident": "Nuovo incidente",
     "editReservation": "Modifica prenotazione",

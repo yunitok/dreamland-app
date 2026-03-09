@@ -438,6 +438,10 @@
     "addDependency": "Añadir dependencia",
     "comments": "Comentarios",
     "writeComment": "Escribe un comentario...",
+    "editComment": "Editar comentario",
+    "commentUpdated": "Comentario actualizado",
+    "errorUpdatingComment": "Error al actualizar comentario",
+    "noUsersFound": "No se encontraron usuarios",
     "attachments": "Adjuntos",
     "creating": "Creando...",
     "delete": "Eliminar",
@@ -577,6 +581,10 @@
         "month": "Mes"
       }
     },
+    "sales": {
+      "title": "Ventas Agora",
+      "description": "Facturación, ticket medio, familias y productos del TPV."
+    },
     "ingredients": {
       "title": "Ingredientes",
       "description": "Gestión de fichas técnicas, precios y alérgenos.",
@@ -650,6 +658,8 @@
   "atc": {
     "title": "Atención al Cliente",
     "description": "Gestión de reservas, consultas, incidencias y back-office",
+    "dailyManagement": "Gestión Diaria",
+    "administration": "Administración",
     "reservationsTitle": "Gestión de Reservas",
     "reservationsDescription": "Lista de espera, confirmaciones, modificaciones y late arrivals",
     "queriesTitle": "Consultas IA & RAG",
@@ -658,6 +668,8 @@
     "operationsDescription": "Recuperación de pagos, alertas meteorológicas y reservas de grupo",
     "backofficeTitle": "Back-Office",
     "backofficeDescription": "Clasificación de email, facturas y bonos regalo",
+    "analyticsTitle": "Análisis",
+    "analyticsDescription": "KPIs operativos: emails no leídos, tiempos de respuesta e incidencias",
     "addReservation": "Nueva reserva",
     "addIncident": "Nueva incidencia",
     "editReservation": "Editar reserva",

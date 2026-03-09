@@ -449,8 +449,12 @@
     "blockedBy": "Blocked by",
     "blocks": "Blocks",
     "addDependency": "Abhängigkeit hinzufügen",
-    "comments": "Comments",
-    "writeComment": "Write a comment...",
+    "comments": "Kommentare",
+    "writeComment": "Kommentar schreiben...",
+    "editComment": "Kommentar bearbeiten",
+    "commentUpdated": "Kommentar aktualisiert",
+    "errorUpdatingComment": "Fehler beim Aktualisieren des Kommentars",
+    "noUsersFound": "Keine Benutzer gefunden",
     "attachments": "Attachments",
     "creating": "Erstellen...",
     "delete": "Löschen",
@@ -589,6 +593,10 @@
         "month": "Monat"
       }
     },
+    "sales": {
+      "title": "Agora Verkäufe",
+      "description": "Umsatz, Durchschnittsbon, Produktfamilien und POS-Produkte."
+    },
     "ingredients": {
       "title": "Zutaten",
       "description": "Verwaltung von technischen Datenblättern, Preisen und Allergenen.",
@@ -662,6 +670,8 @@
   "atc": {
     "title": "Kundenservice",
     "description": "Reservierungen, Anfragen, Vorfälle und Back-Office-Management",
+    "dailyManagement": "Tägliche Verwaltung",
+    "administration": "Verwaltung",
     "reservationsTitle": "Reservierungsverwaltung",
     "reservationsDescription": "Warteliste, Bestätigungen, Änderungen und Spätkommer",
     "queriesTitle": "KI & RAG-Anfragen",
@@ -670,6 +680,8 @@
     "operationsDescription": "Zahlungswiederherstellung, Wetterwarnungen und Gruppenreservierungen",
     "backofficeTitle": "Back-Office",
     "backofficeDescription": "E-Mail-Triage, Rechnungen und Geschenkgutscheine",
+    "analyticsTitle": "Analyse",
+    "analyticsDescription": "Operative KPIs: ungelesene E-Mails, Antwortzeiten und Vorfälle",
     "addReservation": "Neue Reservierung",
     "addIncident": "Neuer Vorfall",
     "editReservation": "Reservierung bearbeiten",

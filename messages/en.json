@@ -437,6 +437,10 @@
     "addDependency": "Add dependency",
     "comments": "Comments",
     "writeComment": "Write a comment...",
+    "editComment": "Edit comment",
+    "commentUpdated": "Comment updated",
+    "errorUpdatingComment": "Error updating comment",
+    "noUsersFound": "No users found",
     "attachments": "Attachments",
     "creating": "Creating...",
     "delete": "Delete",
@@ -576,6 +580,10 @@
         "month": "Month"
       }
     },
+    "sales": {
+      "title": "Agora Sales",
+      "description": "Revenue, average ticket, product families and POS products."
+    },
     "ingredients": {
       "title": "Ingredients",
       "description": "Management of technical sheets, prices, and allergens.",
@@ -649,6 +657,8 @@
   "atc": {
     "title": "Customer Service",
     "description": "Reservations, queries, incidents and back-office management",
+    "dailyManagement": "Daily Management",
+    "administration": "Administration",
     "reservationsTitle": "Reservation Management",
     "reservationsDescription": "Waiting list, confirmations, modifications and late arrivals",
     "queriesTitle": "AI & RAG Queries",
@@ -657,6 +667,8 @@
     "operationsDescription": "Payment recovery, weather alerts and group reservations",
     "backofficeTitle": "Back-Office",
     "backofficeDescription": "Email triage, invoices and gift vouchers",
+    "analyticsTitle": "Analytics",
+    "analyticsDescription": "Operational KPIs: unread emails, response times and incidents",
     "addReservation": "New reservation",
     "addIncident": "New incident",
     "editReservation": "Edit reservation",

@@ -449,8 +449,12 @@
     "blockedBy": "Blocked by",
     "blocks": "Blocks",
     "addDependency": "Ajouter une dépendance",
-    "comments": "Comments",
-    "writeComment": "Write a comment...",
+    "comments": "Commentaires",
+    "writeComment": "Écrire un commentaire...",
+    "editComment": "Modifier le commentaire",
+    "commentUpdated": "Commentaire mis à jour",
+    "errorUpdatingComment": "Erreur lors de la mise à jour du commentaire",
+    "noUsersFound": "Aucun utilisateur trouvé",
     "attachments": "Attachments",
     "creating": "Création...",
     "delete": "Supprimer",
@@ -588,6 +592,10 @@
         "month": "Mois"
       }
     },
+    "sales": {
+      "title": "Ventes Agora",
+      "description": "Chiffre d'affaires, ticket moyen, familles de produits et articles TPV."
+    },
     "ingredients": {
       "title": "Ingrédients",
       "description": "Gestion des fiches techniques, des prix et des allergènes.",
@@ -661,6 +669,8 @@
   "atc": {
     "title": "Service Client",
     "description": "Gestion des réservations, requêtes, incidents et back-office",
+    "dailyManagement": "Gestion Quotidienne",
+    "administration": "Administration",
     "reservationsTitle": "Gestion des Réservations",
     "reservationsDescription": "Liste d'attente, confirmations, modifications et retardataires",
     "queriesTitle": "Requêtes IA & RAG",
@@ -669,6 +679,8 @@
     "operationsDescription": "Récupération des paiements, alertes météo et réservations de groupe",
     "backofficeTitle": "Back-Office",
     "backofficeDescription": "Tri des e-mails, factures et bons cadeaux",
+    "analyticsTitle": "Analyse",
+    "analyticsDescription": "KPIs opérationnels : e-mails non lus, temps de réponse et incidents",
     "addReservation": "Nouvelle réservation",
     "addIncident": "Nouvel incident",
     "editReservation": "Modifier la réservation",
