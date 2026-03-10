@@ -1,0 +1,73 @@
+"use server"
+
+import { prisma } from "@/lib/prisma"
+import { revalidatePath } from "next/cache"
+import { UnitType } from "@prisma/client"
+import { requirePermission } from "@/lib/actions/rbac"
+
+// --- Measure Units ---
+
+export async function getMeasureUnits() {
+  await requirePermission("gastrolab", "read")
+  return await prisma.measureUnit.findMany({
+    orderBy: { name: 'asc' }
+  })
+}
+
+export async function createMeasureUnit(data: { name: string; abbreviation: string; type: UnitType; conversionFactor?: number; isBase?: boolean }) {
+  await requirePermission("gastrolab", "manage")
+  await prisma.measureUnit.create({ data })
+  revalidatePath('/gastrolab/settings')
+}
+
+// --- Categories ---
+
+export async function getCategories() {
+  await requirePermission("gastrolab", "read")
+  return await prisma.category.findMany({
+    include: { parent: true, children: true },
+    orderBy: { name: 'asc' }
+  })
+}
+
+export async function createCategory(data: { name: string; description?: string; parentId?: string }) {
+  await requirePermission("gastrolab", "manage")
+  await prisma.category.create({ data })
+  revalidatePath('/gastrolab/settings')
+}
+
+// --- Suppliers ---
+
+export async function getSuppliers() {
+  await requirePermission("gastrolab", "read")
+  return await prisma.supplier.findMany({
+    orderBy: { name: 'asc' }
+  })
+}
+
+export async function createSupplier(data: {
+  name: string;
+  commercialName?: string;
+  code?: string;
+  email?: string;
+  phone?: string;
+  mobile?: string;
+  contactPerson?: string;
+  web?: string;
+  address?: string;
+  city?: string;
+  postalCode?: string;
+  province?: string;
+  country?: string;
+  taxId?: string;
+  paymentTerms?: string;
+  minOrder?: number;
+  discount?: number;
+  deliveryDays?: string;
+  notes?: string;
+  active?: boolean;
+}) {
+  await requirePermission("gastrolab", "manage")
+  await prisma.supplier.create({ data })
+  revalidatePath('/gastrolab/settings')
+}
