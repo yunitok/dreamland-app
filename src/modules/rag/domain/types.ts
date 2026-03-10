@@ -6,13 +6,13 @@ import type { Tool } from "ai"
 type AnyTool = Tool<any, any>
 
 export interface KBDomain {
-  /** Identificador unico del dominio (ej: "atc", "sherlock-recipes", "finance") */
+  /** Identificador unico del dominio (ej: "atc", "gastrolab-recipes", "finance") */
   id: string
   /** Nombre visible en la UI */
   label: string
   /** Namespace de Pinecone para este dominio */
   namespace: string
-  /** Recurso RBAC que controla el acceso (ej: "atc", "sherlock", "knowledge-base") */
+  /** Recurso RBAC que controla el acceso (ej: "atc", "gastrolab", "knowledge-base") */
   rbacResource: string
   /** System prompt del chat para este dominio */
   systemPrompt: string

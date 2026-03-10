@@ -29,7 +29,10 @@ export function classifyAvailability(
   cmAvailability: CMAvailabilityResponse,
   cmTableAvailability: CMTableAvailabilityResponse
 ): ServiceAvailability[] {
-  const { hours } = cmAvailability.availability
+  const hours = (cmAvailability.availability?.hours ?? {}) as Record<
+    string,
+    Record<string, { discount: boolean | number }>
+  >
 
   // Get all available hours sorted
   const allHours = Object.keys(hours).sort()

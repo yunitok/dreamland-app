@@ -25,7 +25,7 @@ model Project {
   chatSessions   ChatSession[]
   risks          ProjectRisk[]
   reports        Report[]
-  sherlockAudits SherlockAudit[]
+  gastrolabAudits GastrolabAudit[]
   tags           Tag[]
   lists          TaskList[]
   members        ProjectMember[]
@@ -192,7 +192,7 @@ model User {
   mustChangePassword Boolean          @default(false)
   chatSessions       ChatSession[]
   reports            Report[]
-  sherlockAudits     SherlockAudit[]  @relation("SherlockAudits")
+  gastrolabAudits    GastrolabAudit[] @relation("GastrolabAudits")
   assignedTasks      Task[]           @relation("AssignedTasks")
   attachments        TaskAttachment[] @relation("TaskAttachments")
   comments           TaskComment[]    @relation("TaskComments")
@@ -273,7 +273,7 @@ model ChatMessage {
   @@index([sessionId])
 }
 
-model SherlockAudit {
+model GastrolabAudit {
   id          String   @id @default(cuid())
   title       String
   description String?
@@ -282,11 +282,12 @@ model SherlockAudit {
   authorId    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  author      User     @relation("SherlockAudits", fields: [authorId], references: [id])
+  author      User     @relation("GastrolabAudits", fields: [authorId], references: [id])
   project     Project? @relation(fields: [projectId], references: [id])
 
   @@index([projectId])
   @@index([authorId])
+  @@map("sherlock_audits")
 }
 
 model MeasureUnit {
@@ -1297,7 +1298,7 @@ model ProcessRun {
   @@map("process_runs")
 }
 
-// ─── Sherlock: Analytics de Comensales ──────────────────────────
+// ─── GastroLab: Analytics de Comensales ─────────────────────────
 
 model CoverSnapshot {
   id                   String   @id @default(cuid())

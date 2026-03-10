@@ -20,7 +20,7 @@ async function main() {
   // is governed by ProjectMember roles (OWNER/MANAGER/EDITOR/VIEWER).
   const resources = [
     'projects', 'users', 'roles', 'departments', 'sentiment', 'admin',
-    'sherlock', 'reports', 'atc'
+    'gastrolab', 'reports', 'atc'
   ];
   const actions = ['read', 'create', 'update', 'delete', 'manage'];
 
@@ -80,7 +80,7 @@ async function main() {
           ...getPerms('departments', ['read']),
           ...getPerms('sentiment', ['read']),
           ...getPerms('admin', ['read']),
-          ...getPerms('sherlock', ['read', 'create']),
+          ...getPerms('gastrolab', ['read', 'create']),
           ...getPerms('reports', ['read', 'create', 'manage'])
         ]
       }
@@ -102,7 +102,7 @@ async function main() {
           ...getPerms('departments', ['read']),
           ...getPerms('sentiment', ['read']),
           ...getPerms('admin', ['read']),
-          ...getPerms('sherlock', ['read']),
+          ...getPerms('gastrolab', ['read']),
           ...getPerms('reports', ['read'])
         ]
       }

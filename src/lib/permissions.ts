@@ -5,7 +5,7 @@
  */
 
 export type PermissionAction = 'read' | 'create' | 'update' | 'delete' | 'manage'
-export type PermissionResource = 'admin' | 'users' | 'roles' | 'projects' | 'settings' | 'departments' | 'sentiment' | 'tasks' | 'lists' | 'comments' | 'attachments' | 'tags' | 'sherlock' | 'reports' | 'atc' | 'knowledge-base'
+export type PermissionResource = 'admin' | 'users' | 'roles' | 'projects' | 'settings' | 'departments' | 'sentiment' | 'tasks' | 'lists' | 'comments' | 'attachments' | 'tags' | 'gastrolab' | 'reports' | 'atc' | 'knowledge-base'
 
 export interface UserPermission {
   action: string

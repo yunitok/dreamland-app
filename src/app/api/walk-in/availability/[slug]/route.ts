@@ -157,8 +157,7 @@ export async function GET(
 
     // Build response
     const hasAvailabilityData =
-      availabilityRes?.resp === 1 &&
-      availabilityRes.availability?.hours &&
+      availabilityRes?.availability?.hours != null &&
       Object.keys(availabilityRes.availability.hours).length > 0
 
     const services = hasAvailabilityData

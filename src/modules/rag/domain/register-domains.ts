@@ -46,14 +46,14 @@ REGLAS ESTRICTAS:
   enableTracking: true,
 })
 
-// ─── Dominio Sherlock ────────────────────────────────────────────
+// ─── Dominio GastroLab ──────────────────────────────────────────
 
 registerKBDomain({
-  id: "sherlock",
-  label: "Sherlock - Cocina & Stock",
-  namespace: "sherlock",
-  rbacResource: "sherlock",
-  systemPrompt: `Eres el asistente de cocina Sherlock de Dreamland Restaurant.
+  id: "gastrolab",
+  label: "GastroLab - Cocina & Stock",
+  namespace: "gastrolab",
+  rbacResource: "gastrolab",
+  systemPrompt: `Eres el asistente de cocina GastroLab de Dreamland Restaurant.
 Ayudas al equipo de cocina con información sobre recetas, ingredientes, alérgenos y stock.
 
 CAPACIDADES:
@@ -75,6 +75,6 @@ REGLAS:
     "¿Qué ingredientes lleva la salsa Dreamland?",
     "¿Qué recetas usan langostinos?",
   ],
-  revalidatePath: "/sherlock/knowledge-base",
+  revalidatePath: "/gastrolab/knowledge-base",
   enableTracking: false,
 })

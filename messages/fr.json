@@ -237,7 +237,7 @@
         "departments": "Departments",
         "sentiment": "Sentiment",
         "admin": "Admin",
-        "sherlock": "Sherlock",
+        "gastrolab": "GastroLab",
         "reports": "Rapports"
       },
       "actions": {
@@ -579,8 +579,8 @@
     "executed": "Exécuté : {actions}",
     "didNotUnderstand": "Je n'ai pas compris cela."
   },
-  "sherlock": {
-    "title": "Sherlock IA",
+  "gastrolab": {
+    "title": "GastroLab IA",
     "description": "Gestion complète de la cuisine, des coûts et système d'audit intelligent.",
     "analytics": {
       "title": "Analytics des Convives",
@@ -629,7 +629,7 @@
       "description": "Vérification des processus vocaux et détection des anomalies."
     },
     "settings": {
-      "title": "Paramètres Sherlock",
+      "title": "Paramètres GastroLab",
       "description": "Unités, catégories, fournisseurs et paramètres globaux."
     },
     "sandbox": {

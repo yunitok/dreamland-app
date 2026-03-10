@@ -384,7 +384,7 @@ async function executeInternalProcess(
     case "kb-sync": {
       // Importar dinámicamente para evitar cargar todo el módulo en el bundle
       const { syncKnowledgeBaseOnly } = await import(
-        "@/modules/sherlock/domain/gstock-sync/sync-orchestrator"
+        "@/modules/gastrolab/domain/gstock-sync/sync-orchestrator"
       )
       const result = await syncKnowledgeBaseOnly()
       return result

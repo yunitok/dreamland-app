@@ -90,7 +90,7 @@ async function executeInternalProcess(
 
     case "kb-sync": {
       const { syncKnowledgeBaseOnly } = await import(
-        "@/modules/sherlock/domain/gstock-sync/sync-orchestrator"
+        "@/modules/gastrolab/domain/gstock-sync/sync-orchestrator"
       )
       return await syncKnowledgeBaseOnly()
     }

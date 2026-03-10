@@ -1010,6 +1010,56 @@ export const COVERMANAGER_ENDPOINT_GROUPS: CoverManagerEndpointGroup[] = [
 
 const COVERMANAGER_BASE_URL = "https://www.covermanager.com"
 
+// ─── Rate Limiting Config ─────────────────────────────────────
+
+export const COVERMANAGER_RATE_CONFIG = {
+  /** Máximo de peticiones por minuto permitidas por la API */
+  requestsPerMinute: parseInt(process.env.COVERMANAGER_RATE_RPM ?? "50"),
+  /** Timeout para peticiones (ms) */
+  defaultTimeout: parseInt(process.env.COVERMANAGER_TIMEOUT_MS ?? "15000"),
+  /** Máximo reintentos por petición */
+  maxRetries: parseInt(process.env.COVERMANAGER_MAX_RETRIES ?? "3"),
+  /** Delay base para backoff exponencial (ms) */
+  retryBaseDelay: 2000,
+}
+
+/** Timestamp de la última petición (throttle de intervalo mínimo) */
+let _cmLastCall = 0
+
+/** Espera el tiempo necesario para respetar el límite de RPM */
+async function coverManagerThrottle(): Promise<void> {
+  const minInterval = Math.ceil(60_000 / COVERMANAGER_RATE_CONFIG.requestsPerMinute)
+  const wait = minInterval - (Date.now() - _cmLastCall)
+  if (wait > 0) await new Promise((r) => setTimeout(r, wait))
+  _cmLastCall = Date.now()
+}
+
+function isCmRetryable(status: number): boolean {
+  return status === 429 || status >= 500
+}
+
+async function cmFetchWithRetry(url: string, init: RequestInit): Promise<Response> {
+  const { maxRetries, retryBaseDelay, defaultTimeout } = COVERMANAGER_RATE_CONFIG
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    await coverManagerThrottle()
+    try {
+      const response = await fetch(url, {
+        ...init,
+        signal: AbortSignal.timeout(defaultTimeout),
+      })
+      if (isCmRetryable(response.status) && attempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, retryBaseDelay * 2 ** attempt))
+        continue
+      }
+      return response
+    } catch (err) {
+      if (attempt === maxRetries) throw err
+    }
+  }
+  throw new Error("CoverManager: max retries exceeded")
+}
+
 function getCoverManagerConfig() {
   const apiKey = process.env.COVERMANAGER_API_KEY
 
@@ -1042,10 +1092,9 @@ export async function fetchCoverManagerGet<T = unknown>(
 
   const url = `${baseUrl}/api/${path}`
 
-  const response = await fetch(url, {
+  const response = await cmFetchWithRetry(url, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
-    signal: AbortSignal.timeout(15000),
   })
 
   if (!response.ok) {
@@ -1072,14 +1121,13 @@ export async function fetchCoverManagerPost<T = unknown>(
   const isV2 = path.startsWith("apiV2/")
   const url = isV2 ? `${baseUrl}/${path}` : `${baseUrl}/api/${path}`
 
-  const response = await fetch(url, {
+  const response = await cmFetchWithRetry(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       apikey: apiKey,
     },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(15000),
   })
 
   if (!response.ok) {

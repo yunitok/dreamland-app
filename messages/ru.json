@@ -237,7 +237,7 @@
         "departments": "Departments",
         "sentiment": "Sentiment",
         "admin": "Admin",
-        "sherlock": "Sherlock",
+        "gastrolab": "GastroLab",
         "reports": "Отчёты"
       },
       "actions": {
@@ -579,8 +579,8 @@
     "executed": "Выполнено: {actions}",
     "didNotUnderstand": "Я не понял этого."
   },
-  "sherlock": {
-    "title": "Sherlock AI",
+  "gastrolab": {
+    "title": "GastroLab AI",
     "description": "Комплексное управление кухней, расходами и интеллектуальная система аудита.",
     "analytics": {
       "title": "Аналитика посетителей",
@@ -629,7 +629,7 @@
       "description": "Голосовая проверка процессов и обнаружение аномалий."
     },
     "settings": {
-      "title": "Настройки Sherlock",
+      "title": "Настройки GastroLab",
       "description": "Единицы измерения, категории, поставщики и глобальные параметры."
     },
     "sandbox": {

@@ -5,7 +5,7 @@ import { ProcessRunStatus, ProcessTriggerType } from "@prisma/client"
 export const maxDuration = 60
 
 /**
- * Inicia la sincronización GStock → Sherlock → RAG.
+ * Inicia la sincronización GStock → GastroLab → RAG.
  * Protegido con CRON_SECRET. Ejecutable desde Vercel Cron diariamente.
  *
  * La ruta crea un ProcessRun y dispara run-phase via fire-and-forget.

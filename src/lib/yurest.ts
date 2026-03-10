@@ -3,7 +3,7 @@ export interface YurestEndpoint {
   label: string
   description: string
   method: "GET" | "POST"
-  sherlockMapping?: string
+  gastrolabMapping?: string
 }
 
 export interface YurestEndpointGroup {
@@ -22,35 +22,35 @@ export const YUREST_ENDPOINT_GROUPS: YurestEndpointGroup[] = [
         label: "Productos",
         description: "Listado completo de productos/ingredientes con precios, IVA, unidades y proveedores.",
         method: "GET",
-        sherlockMapping: "Ingredient",
+        gastrolabMapping: "Ingredient",
       },
       {
         path: "product-data-sheets",
         label: "Fichas de Producto",
         description: "Fichas técnicas detalladas con información nutricional y trazabilidad.",
         method: "GET",
-        sherlockMapping: "Ingredient (campos extendidos)",
+        gastrolabMapping: "Ingredient (campos extendidos)",
       },
       {
         path: "unities",
         label: "Unidades de Medida",
         description: "Unidades disponibles en el sistema (Kg, L, Unidad, etc.).",
         method: "GET",
-        sherlockMapping: "MeasureUnit",
+        gastrolabMapping: "MeasureUnit",
       },
       {
         path: "family_buys",
         label: "Familias de Producto",
         description: "Categorías/familias para agrupar productos.",
         method: "GET",
-        sherlockMapping: "Category",
+        gastrolabMapping: "Category",
       },
       {
         path: "providers",
         label: "Proveedores",
         description: "Listado de proveedores con datos de contacto.",
         method: "GET",
-        sherlockMapping: "Supplier",
+        gastrolabMapping: "Supplier",
       },
       {
         path: "provider_products",
@@ -69,14 +69,14 @@ export const YUREST_ENDPOINT_GROUPS: YurestEndpointGroup[] = [
         label: "Stock Actual",
         description: "Niveles de stock en tiempo real por producto.",
         method: "GET",
-        sherlockMapping: "Ingredient.currentStock",
+        gastrolabMapping: "Ingredient.currentStock",
       },
       {
         path: "stock_details",
         label: "Movimientos de Stock",
         description: "Historial detallado de entradas, salidas y ajustes de inventario.",
         method: "GET",
-        sherlockMapping: "InventoryRecord",
+        gastrolabMapping: "InventoryRecord",
       },
       {
         path: "storage_location",
@@ -89,7 +89,7 @@ export const YUREST_ENDPOINT_GROUPS: YurestEndpointGroup[] = [
         label: "Inventarios",
         description: "Registros de conteo de inventario por ubicación.",
         method: "GET",
-        sherlockMapping: "InventoryRecord",
+        gastrolabMapping: "InventoryRecord",
       },
     ],
   },
@@ -102,7 +102,7 @@ export const YUREST_ENDPOINT_GROUPS: YurestEndpointGroup[] = [
         label: "Recetas",
         description: "Recetario completo con ingredientes, pasos, tiempos y costes.",
         method: "GET",
-        sherlockMapping: "Recipe + RecipeIngredient",
+        gastrolabMapping: "Recipe + RecipeIngredient",
       },
       {
         path: "menus",
@@ -262,6 +262,55 @@ export interface YurestRecipeDetail extends Omit<YurestRecipeListItem, "media"> 
   results: { id: number; recipe_id: number; product_id: number; product_name: string; amount: number; unit: { id: number; symbol: string }; shelf_life: { days: number; seconds: number } }[]
 }
 
+// ─── Rate Limiting Config ─────────────────────────────────────
+
+export const YUREST_RATE_CONFIG = {
+  /** Máximo de peticiones por minuto (Yurest no publica límite; valor conservador) */
+  requestsPerMinute: parseInt(process.env.YUREST_RATE_RPM ?? "60"),
+  /** Timeout para peticiones (ms) */
+  defaultTimeout: parseInt(process.env.YUREST_TIMEOUT_MS ?? "15000"),
+  /** Máximo reintentos por petición */
+  maxRetries: parseInt(process.env.YUREST_MAX_RETRIES ?? "3"),
+  /** Delay base para backoff exponencial (ms) */
+  retryBaseDelay: 2000,
+}
+
+/** Timestamp de la última petición (throttle de intervalo mínimo) */
+let _yrLastCall = 0
+
+async function yurestThrottle(): Promise<void> {
+  const minInterval = Math.ceil(60_000 / YUREST_RATE_CONFIG.requestsPerMinute)
+  const wait = minInterval - (Date.now() - _yrLastCall)
+  if (wait > 0) await new Promise((r) => setTimeout(r, wait))
+  _yrLastCall = Date.now()
+}
+
+function isYrRetryable(status: number): boolean {
+  return status === 429 || status >= 500
+}
+
+async function yrFetchWithRetry(url: string, init: RequestInit): Promise<Response> {
+  const { maxRetries, retryBaseDelay, defaultTimeout } = YUREST_RATE_CONFIG
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    await yurestThrottle()
+    try {
+      const response = await fetch(url, {
+        ...init,
+        signal: AbortSignal.timeout(defaultTimeout),
+      })
+      if (isYrRetryable(response.status) && attempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, retryBaseDelay * 2 ** attempt))
+        continue
+      }
+      return response
+    } catch (err) {
+      if (attempt === maxRetries) throw err
+    }
+  }
+  throw new Error("Yurest: max retries exceeded")
+}
+
 // ─── Funciones de fetch ──────────────────────────────────────────
 
 function getYurestConfig() {
@@ -279,10 +328,9 @@ export async function fetchYurest<T = unknown>(endpoint: string): Promise<Yurest
   const { baseUrl, token } = getYurestConfig()
   const url = `${baseUrl}/${token}/${endpoint}`
 
-  const response = await fetch(url, {
+  const response = await yrFetchWithRetry(url, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
-    signal: AbortSignal.timeout(15000),
   })
 
   if (!response.ok) {
@@ -297,10 +345,9 @@ export async function fetchYurestRecipeDetail(id: number): Promise<YurestRecipeD
   const { baseUrl, token } = getYurestConfig()
   const url = `${baseUrl}/${token}/recipes/${id}`
 
-  const response = await fetch(url, {
+  const response = await yrFetchWithRetry(url, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
-    signal: AbortSignal.timeout(15000),
   })
 
   if (!response.ok) {

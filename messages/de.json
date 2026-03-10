@@ -237,7 +237,7 @@
         "departments": "Departments",
         "sentiment": "Sentiment",
         "admin": "Admin",
-        "sherlock": "Sherlock",
+        "gastrolab": "GastroLab",
         "reports": "Berichte"
       },
       "actions": {
@@ -580,8 +580,8 @@
     "executed": "Ausgeführt: {actions}",
     "didNotUnderstand": "Ich habe das nicht verstanden."
   },
-  "sherlock": {
-    "title": "Sherlock KI",
+  "gastrolab": {
+    "title": "GastroLab KI",
     "description": "Umfassende Küchenverwaltung, Kosten und intelligentes Auditsystem.",
     "analytics": {
       "title": "Gäste-Analytics",
@@ -630,7 +630,7 @@
       "description": "Sprachprozessverifizierung und Anomalieerkennung."
     },
     "settings": {
-      "title": "Sherlock-Einstellungen",
+      "title": "GastroLab-Einstellungen",
       "description": "Einheiten, Kategorien, Lieferanten und globale Parameter."
     },
     "sandbox": {

@@ -11,7 +11,7 @@ export interface GstockEndpoint {
   label: string
   description: string
   method: "GET" | "POST"
-  sherlockMapping?: string
+  gastrolabMapping?: string
   requiredParams?: GstockEndpointParam[]
   /** JSON template editable en el sandbox para endpoints POST */
   bodyTemplate?: string
@@ -42,14 +42,14 @@ export const GSTOCK_ENDPOINT_GROUPS: GstockEndpointGroup[] = [
         label: "Productos de Compra",
         description: "Listado completo de productos de compra con precios, stock y proveedores.",
         method: "GET",
-        sherlockMapping: "Ingredient",
+        gastrolabMapping: "Ingredient",
       },
       {
         path: "v1/product/purchases/categories",
         label: "Categorías",
         description: "Categorías de productos de compra.",
         method: "GET",
-        sherlockMapping: "Category",
+        gastrolabMapping: "Category",
       },
       {
         path: "v1/product/purchases/families",
@@ -74,7 +74,7 @@ export const GSTOCK_ENDPOINT_GROUPS: GstockEndpointGroup[] = [
         label: "Unidades de Medida",
         description: "Unidades de medida (Kg, L, Ud, etc.) con factores de conversión.",
         method: "GET",
-        sherlockMapping: "MeasureUnit",
+        gastrolabMapping: "MeasureUnit",
       },
       {
         path: "v1/product/purchases/units/display",
@@ -99,7 +99,7 @@ export const GSTOCK_ENDPOINT_GROUPS: GstockEndpointGroup[] = [
         label: "Proveedores",
         description: "Listado de proveedores con datos de contacto.",
         method: "GET",
-        sherlockMapping: "Supplier",
+        gastrolabMapping: "Supplier",
       },
       {
         path: "v1/suppliers/accounting",
@@ -172,7 +172,7 @@ export const GSTOCK_ENDPOINT_GROUPS: GstockEndpointGroup[] = [
         label: "Inventarios",
         description: "Registros de inventario.",
         method: "GET",
-        sherlockMapping: "InventoryRecord",
+        gastrolabMapping: "InventoryRecord",
         requiredParams: [START_DATE_PARAM, END_DATE_PARAM],
       },
     ],
@@ -186,7 +186,7 @@ export const GSTOCK_ENDPOINT_GROUPS: GstockEndpointGroup[] = [
         label: "Recetas",
         description: "Listado de recetas con ingredientes, subrecetas, costes y alérgenos.",
         method: "GET",
-        sherlockMapping: "Recipe + RecipeIngredient",
+        gastrolabMapping: "Recipe + RecipeIngredient",
       },
       {
         path: "v1/recipes/categories",
@@ -504,6 +504,55 @@ export const GSTOCK_ENDPOINT_GROUPS: GstockEndpointGroup[] = [
   },
 ]
 
+// ─── Rate Limiting Config ─────────────────────────────────────
+
+export const GSTOCK_RATE_CONFIG = {
+  /** Máximo de peticiones por minuto (GStock no publica límite; valor conservador) */
+  requestsPerMinute: parseInt(process.env.GSTOCK_RATE_RPM ?? "60"),
+  /** Timeout para peticiones (ms) */
+  defaultTimeout: parseInt(process.env.GSTOCK_TIMEOUT_MS ?? "15000"),
+  /** Máximo reintentos por petición */
+  maxRetries: parseInt(process.env.GSTOCK_MAX_RETRIES ?? "3"),
+  /** Delay base para backoff exponencial (ms) */
+  retryBaseDelay: 2000,
+}
+
+/** Timestamp de la última petición (throttle de intervalo mínimo) */
+let _gsLastCall = 0
+
+async function gstockThrottle(): Promise<void> {
+  const minInterval = Math.ceil(60_000 / GSTOCK_RATE_CONFIG.requestsPerMinute)
+  const wait = minInterval - (Date.now() - _gsLastCall)
+  if (wait > 0) await new Promise((r) => setTimeout(r, wait))
+  _gsLastCall = Date.now()
+}
+
+function isGsRetryable(status: number): boolean {
+  return status === 429 || status >= 500
+}
+
+async function gsFetchWithRetry(url: string, init: RequestInit): Promise<Response> {
+  const { maxRetries, retryBaseDelay, defaultTimeout } = GSTOCK_RATE_CONFIG
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    await gstockThrottle()
+    try {
+      const response = await fetch(url, {
+        ...init,
+        signal: AbortSignal.timeout(defaultTimeout),
+      })
+      if (isGsRetryable(response.status) && attempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, retryBaseDelay * 2 ** attempt))
+        continue
+      }
+      return response
+    } catch (err) {
+      if (attempt === maxRetries) throw err
+    }
+  }
+  throw new Error("GStock: max retries exceeded")
+}
+
 // --- OAuth2 Token Cache ---
 
 interface GstockToken {
@@ -566,13 +615,12 @@ export async function fetchGstock<T = unknown>(endpoint: string): Promise<Gstock
   const token = await getGstockToken()
   const url = `${baseUrl}/${endpoint}`
 
-  const response = await fetch(url, {
+  const response = await gsFetchWithRetry(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    signal: AbortSignal.timeout(15000),
   })
 
   if (!response.ok) {

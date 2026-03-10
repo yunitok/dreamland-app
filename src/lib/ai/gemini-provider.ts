@@ -42,8 +42,8 @@ export class GeminiProvider implements AIProvider {
           Tasks: ${tasks.map((t) => t.title).join(', ')}
 
           RULES:
-          1. FOR REPORTS: If the user names a project (e.g. "Sherlock", "Biblia"), find it in the PROJECT LIST above and use its ID.
-          2. FUZZY MATCHING IS REQUIRED: "Sherlock" matches "Sherlock: Desviación de Costes".
+          1. FOR REPORTS: If the user names a project (e.g. "GastroLab", "Biblia"), find it in the PROJECT LIST above and use its ID.
+          2. FUZZY MATCHING IS REQUIRED: "GastroLab" matches "GastroLab: Desviación de Costes".
           3. TOOL USAGE: Always use 'generateReport' with the correct 'projectId' from the list.
           4. TASK LISTS: If adding a task to a newly created list (in this turn), use "LATEST_CREATED".
         `

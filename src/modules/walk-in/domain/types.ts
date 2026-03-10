@@ -3,11 +3,11 @@
 /** Response from POST reserv/availability */
 export interface CMAvailabilityResponse {
   resp: number
-  availability: {
+  availability?: {
     /** Keyed by party size ("2", "3", ...), each containing hours with discount info */
-    people: Record<string, Record<string, { discount: boolean | number }>>
+    people?: Record<string, Record<string, { discount: boolean | number }>>
     /** Keyed by hour ("14:30", "20:00", ...), each containing party sizes with discount info */
-    hours: Record<string, Record<string, { discount: boolean | number }>>
+    hours?: Record<string, Record<string, { discount: boolean | number }>>
   }
 }
 

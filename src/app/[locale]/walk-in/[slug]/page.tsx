@@ -39,7 +39,7 @@ export default async function WalkInPage({ params }: Props) {
       slug={location.cmSlug}
       restaurantName={location.name}
       restaurantAddress={location.address ?? ""}
-      restaurantCity={location.city}
+      restaurantCity={location.city ?? ""}
     />
   )
 }

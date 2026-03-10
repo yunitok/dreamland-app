@@ -14,8 +14,8 @@
         "src/lib/permissions.ts",
         "src/lib/session.ts",
         "src/modules/admin/**/*",
-        "src/modules/sherlock/actions/**/*",
-        "src/modules/sherlock/domain/**/*",
+        "src/modules/gastrolab/actions/**/*",
+        "src/modules/gastrolab/domain/**/*",
         "src/app/[locale]/(modules)/admin/**/*",
         "middleware.ts"
     ],

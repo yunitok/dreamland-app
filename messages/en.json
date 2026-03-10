@@ -237,7 +237,7 @@
         "departments": "Departments",
         "sentiment": "Sentiment",
         "admin": "Admin",
-        "sherlock": "Sherlock",
+        "gastrolab": "GastroLab",
         "reports": "Reports"
       },
       "actions": {
@@ -567,8 +567,8 @@
     "unauthorized": "Unauthorized access",
     "footer": "Dreamland v2.0 • Secure Access"
   },
-  "sherlock": {
-    "title": "Sherlock AI",
+  "gastrolab": {
+    "title": "GastroLab AI",
     "description": "Comprehensive kitchen management, costs, and intelligent audit system.",
     "analytics": {
       "title": "Diner Analytics",
@@ -617,12 +617,12 @@
       "description": "Voice process verification and anomaly detection."
     },
     "settings": {
-      "title": "Sherlock Settings",
+      "title": "GastroLab Settings",
       "description": "Units, categories, suppliers, and global parameters."
     },
     "sandbox": {
       "title": "Integrations Sandbox",
-      "description": "Explore and test external APIs connected to Sherlock.",
+      "description": "Explore and test external APIs connected to GastroLab.",
       "selectEndpoint": "Select an endpoint to explore",
       "selectEndpointHint": "Select an endpoint from the left panel and click Execute",
       "execute": "Execute",

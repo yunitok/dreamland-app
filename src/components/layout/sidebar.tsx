@@ -57,10 +57,10 @@ export function SidebarContent({ user }: SidebarContentProps) {
       permission: { action: "read", resource: "projects" }
     },
     {
-      href: "/sherlock",
-      label: "Sherlock",
+      href: "/gastrolab",
+      label: "GastroLab",
       icon: Shield,
-      permission: { action: "read", resource: "sherlock" }
+      permission: { action: "read", resource: "gastrolab" }
     },
     {
       href: "/atc",

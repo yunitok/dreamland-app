@@ -100,12 +100,12 @@ ${statusesContext || '(sin estados)'}
 REGLAS PARA OPERACIONES CROSS-PROJECT:
 1. El usuario puede pedir acciones sobre CUALQUIER proyecto, no solo el activo.
 2. Si el usuario nombra un proyecto diferente al activo (ej: "hazme un informe de Atención al Cliente"), BUSCA en la LISTA COMPLETA DE PROYECTOS el que mejor coincida por nombre.
-3. USA FUZZY MATCHING: "atención al cliente" coincide con "Atención al Cliente: Mejora del Servicio", "sherlock" coincide con "Sherlock: Desviación de Costes", etc.
+3. USA FUZZY MATCHING: "atención al cliente" coincide con "Atención al Cliente: Mejora del Servicio", "gastrolab" coincide con "GastroLab: Desviación de Costes", etc.
 4. Para generate_report: usa SIEMPRE el projectId del proyecto que el usuario ha nombrado, NO el del proyecto activo (a menos que no especifique otro).
 5. Si no encuentras coincidencia clara, pregunta al usuario cuál proyecto se refiere.
 
 EJEMPLOS:
-- Usuario en Sherlock dice "genera un informe de atención al cliente" -> Buscar en la lista el proyecto que contenga "atención al cliente" y usar su ID.
+- Usuario en GastroLab dice "genera un informe de atención al cliente" -> Buscar en la lista el proyecto que contenga "atención al cliente" y usar su ID.
 - Usuario dice "genera un informe" (sin especificar proyecto) -> Usar el proyecto activo (${projectId}).
 - "Crea una lista llamada Tareas" -> createlist({ name: "Tareas" }) (se crea en el proyecto activo)`,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

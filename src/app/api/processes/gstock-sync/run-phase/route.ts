@@ -3,9 +3,9 @@ import { prisma } from "@/lib/prisma"
 import { ProcessRunStatus, Prisma } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { createNotificationsForPermission } from "@/lib/notification-service"
-import type { SyncOptions } from "@/modules/sherlock/domain/gstock-sync/sync-orchestrator"
-import type { SyncPhaseResult } from "@/modules/sherlock/domain/gstock-sync/types"
-import type { GstockIdMap } from "@/modules/sherlock/domain/gstock-sync/mappers"
+import type { SyncOptions } from "@/modules/gastrolab/domain/gstock-sync/sync-orchestrator"
+import type { SyncPhaseResult } from "@/modules/gastrolab/domain/gstock-sync/types"
+import type { GstockIdMap } from "@/modules/gastrolab/domain/gstock-sync/mappers"
 
 export const maxDuration = 300
 
@@ -57,7 +57,7 @@ async function executePhase(
     syncIngredients,
     syncRecipes,
     syncKnowledgeBase,
-  } = await import("@/modules/sherlock/domain/gstock-sync/sync-orchestrator")
+  } = await import("@/modules/gastrolab/domain/gstock-sync/sync-orchestrator")
 
   const newMaps: Record<string, Record<string, string>> = {}
 
