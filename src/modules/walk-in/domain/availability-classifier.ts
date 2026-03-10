@@ -71,7 +71,7 @@ export function classifyAvailability(
 function buildServiceAvailability(
   service: "lunch" | "dinner",
   availableHours: string[],
-  hoursData: CMAvailabilityResponse["availability"]["hours"],
+  hoursData: NonNullable<NonNullable<CMAvailabilityResponse["availability"]>["hours"]>,
   occupancy: CMTableAvailabilityResponse["availability"]["lunch"]
 ): ServiceAvailability {
   const slots: TimeSlot[] = availableHours.map((time, index) => {
