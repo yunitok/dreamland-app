@@ -52,7 +52,11 @@ ai-debug.log
 .agent/rules
 .claude
 
+# data exports (contiene datos de clientes)
+/data/
+
 # repomix
 repomix-context-*.txt
 repomix-output.txt
 scripts/output/
+.env*.local
