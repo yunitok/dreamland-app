@@ -54,6 +54,7 @@ GastroLab es el **módulo de gestión integral de restaurantes** para Dreamland 
 - **[Yurest Integration](./integrations/yurest.md)**: Endpoints, autenticación, mapeo de campos
 - **[Gstock Integration](./integrations/gstock.md)**: OAuth2, webhooks, sincronización (diseño)
 - **[GStock Sync Pipeline](./integrations/gstock-sync-pipeline.md)**: Implementación real del pipeline de 8 fases, idempotencia, RAG y reset de datos
+- **[Agora TPV](./integrations/agora-tpv.md)**: Sincronización de ventas, maestros y analytics desde Agora TPV
 - **[CoverManager Analytics](./analytics-de-comensales.md)**: Sincronización de comensales, snapshots diarios, dashboard ejecutivo con KPIs y gráficos
 - **[n8n Workflows](./integrations/n8n-workflows.md)**: Automatizaciones de importación/exportación
 
@@ -187,6 +188,7 @@ Ver [Schema Documentation](./schema/prisma-schema.md) para detalles completos.
 - [x] UI de sincronización en GastroLab › Settings (con reset SUPER_ADMIN)
 - [x] Auditoría de calidad de datos GStock (`gastrolab/data-quality`)
 - [x] **[Analytics de Comensales](./analytics-de-comensales.md)**: Dashboard ejecutivo con KPIs, gráficos de tendencia, comparativa multi-local, distribución semanal y split comida/cena. Sincronización de 3 años desde CoverManager (6.012 snapshots, 8 restaurantes)
+- [x] **[Agora TPV](./integrations/agora-tpv.md)**: Sincronización de ventas desde Agora TPV. Rate limiting, retry con backoff, normalización de datos anidados, dashboard de ventas con KPIs y gráficos. 8 restaurantes, ~1.766 snapshots (Jul 2025 – Mar 2026)
 
 ### 📋 Planificado
 - [ ] Integración Yurest (importación de ventas/TPV)

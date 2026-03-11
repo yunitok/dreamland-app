@@ -325,12 +325,12 @@ export async function getServiceSplit(
 }
 
 export async function getRestaurantLocations(): Promise<
-  { id: string; name: string; city: string; cmSlug: string | null }[]
+  { id: string; name: string; city: string; cmSlug: string | null; walkInToken: string | null }[]
 > {
   await requirePermission("gastrolab", "read")
   return prisma.restaurantLocation.findMany({
     where: { isActive: true, cmSlug: { not: null } },
-    select: { id: true, name: true, city: true, cmSlug: true },
+    select: { id: true, name: true, city: true, cmSlug: true, walkInToken: true },
     orderBy: { name: "asc" },
   })
 }
