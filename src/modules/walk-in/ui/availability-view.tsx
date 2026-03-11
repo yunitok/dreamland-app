@@ -1,18 +1,21 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { useTranslations } from "next-intl"
-import { MapPin, RefreshCw, Info, CalendarDays } from "lucide-react"
+import { MapPin, RefreshCw, Info, CalendarDays, Search } from "lucide-react"
 import type { WalkInAvailability } from "../domain/types"
 import { ServiceSection } from "./service-section"
+import { PartySizePicker } from "./party-size-picker"
 
-const AUTO_REFRESH_MS = 45_000
+const AUTO_REFRESH_SECONDS = 120
 
 interface AvailabilityViewProps {
   slug: string
   restaurantName: string
   restaurantAddress: string
   restaurantCity: string
+  token: string
+  isAdmin?: boolean
 }
 
 export function AvailabilityView({
@@ -20,12 +23,17 @@ export function AvailabilityView({
   restaurantName,
   restaurantAddress,
   restaurantCity,
+  token,
+  isAdmin,
 }: AvailabilityViewProps) {
   const t = useTranslations("walkIn")
   const [data, setData] = useState<WalkInAvailability | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [selectedDate, setSelectedDate] = useState<"today" | "tomorrow">("today")
+  const [partySize, setPartySize] = useState<number | null>(null)
+  const [countdown, setCountdown] = useState(AUTO_REFRESH_SECONDS)
+  const lastFetchRef = useRef(0)
 
   const getDateString = useCallback((which: "today" | "tomorrow") => {
     const d = new Date()
@@ -37,7 +45,11 @@ export function AvailabilityView({
     try {
       setError(false)
       const date = getDateString(selectedDate)
-      const res = await fetch(`/api/walk-in/availability/${slug}?date=${date}`)
+      const params = new URLSearchParams({ date })
+      if (partySize) params.set("people", String(partySize))
+      const res = await fetch(`/api/walk-in/availability/${slug}?${params}`, {
+        headers: { "X-WalkIn-Token": token },
+      })
       if (!res.ok) throw new Error("fetch failed")
       const json: WalkInAvailability = await res.json()
       setData(json)
@@ -45,14 +57,27 @@ export function AvailabilityView({
       setError(true)
     } finally {
       setLoading(false)
+      lastFetchRef.current = Date.now()
+      setCountdown(AUTO_REFRESH_SECONDS)
     }
-  }, [slug, selectedDate, getDateString])
+  }, [slug, selectedDate, partySize, getDateString, token])
 
-  // Initial fetch + auto-refresh
+  // Initial fetch when dependencies change
   useEffect(() => {
     setLoading(true)
     fetchAvailability()
-    const interval = setInterval(fetchAvailability, AUTO_REFRESH_MS)
+  }, [fetchAvailability])
+
+  // Countdown timer: ticks every second, fetches at 0
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - lastFetchRef.current) / 1000)
+      const remaining = Math.max(0, AUTO_REFRESH_SECONDS - elapsed)
+      setCountdown(remaining)
+      if (remaining === 0) {
+        fetchAvailability()
+      }
+    }, 1000)
     return () => clearInterval(interval)
   }, [fetchAvailability])
 
@@ -83,6 +108,16 @@ export function AvailabilityView({
           </div>
         )}
       </div>
+
+      {/* Admin debug banner */}
+      {isAdmin && (
+        <div className="flex items-center justify-center gap-1.5 border-b bg-violet-500/10 px-5 py-1.5">
+          <Search className="h-3 w-3 text-violet-600 dark:text-violet-400" />
+          <span className="text-xs font-medium text-violet-600 dark:text-violet-400">
+            Modo Debug — Toca cada franja para ver detalles
+          </span>
+        </div>
+      )}
 
       {/* Date selector */}
       <div className="flex items-center gap-2 border-b bg-card px-5 py-3">
@@ -116,6 +151,16 @@ export function AvailabilityView({
         )}
       </div>
 
+      {/* Party size filter */}
+      <div className="flex items-center border-b bg-card px-5 py-2.5">
+        <PartySizePicker value={partySize} onChange={setPartySize} />
+        {partySize && data && (
+          <span className="ml-auto text-xs text-muted-foreground">
+            {t("partySizeFor", { count: partySize })}
+          </span>
+        )}
+      </div>
+
       {/* Content */}
       <div className="space-y-4 p-4">
         {loading && !data ? (
@@ -134,7 +179,7 @@ export function AvailabilityView({
         ) : data ? (
           <>
             {data.services.map((service) => (
-              <ServiceSection key={service.service} service={service} />
+              <ServiceSection key={service.service} service={service} isAdmin={isAdmin} />
             ))}
 
             {/* Short table hint */}
@@ -153,14 +198,19 @@ export function AvailabilityView({
               <p className="text-xs text-muted-foreground">{t("disclaimer")}</p>
             </div>
 
-            {/* Last updated */}
+            {/* Last updated + countdown */}
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-              <RefreshCw className="h-3 w-3" />
+              <RefreshCw className={`h-3 w-3 ${countdown === 0 ? "animate-spin" : ""}`} />
               <span>
-                {t("autoRefresh")} &middot; {t("lastUpdated")}{" "}
+                {t("lastUpdated")}{" "}
                 {new Date(data.lastUpdated).toLocaleTimeString(undefined, {
                   hour: "2-digit",
                   minute: "2-digit",
+                })}
+                {" · "}
+                {t("refreshIn", {
+                  minutes: String(Math.floor(countdown / 60)),
+                  seconds: String(countdown % 60).padStart(2, "0"),
                 })}
               </span>
             </div>

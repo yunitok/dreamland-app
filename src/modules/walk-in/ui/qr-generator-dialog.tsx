@@ -25,6 +25,7 @@ interface Restaurant {
   id: string
   name: string
   cmSlug: string
+  walkInToken: string | null
   city: string
 }
 
@@ -41,12 +42,15 @@ export function QrGeneratorDialog({ restaurants }: QrGeneratorDialogProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : ""
-  const walkInUrl = selectedSlug ? `${baseUrl}/es/walk-in/${selectedSlug}` : ""
+  const selectedRestaurant = restaurants.find((r) => r.cmSlug === selectedSlug)
+  // Use walkInToken for new QRs (opaque, non-enumerable). Fallback to cmSlug for legacy.
+  const urlSlug = selectedRestaurant?.walkInToken ?? selectedSlug
+  const walkInUrl = selectedSlug ? `${baseUrl}/es/walk-in/${urlSlug}` : ""
 
   useEffect(() => {
     if (!selectedSlug || !canvasRef.current) return
 
-    const url = `${baseUrl}/es/walk-in/${selectedSlug}`
+    const url = `${baseUrl}/es/walk-in/${urlSlug}`
 
     // Generate canvas QR
     QRCode.toCanvas(canvasRef.current, url, {
@@ -60,7 +64,7 @@ export function QrGeneratorDialog({ restaurants }: QrGeneratorDialogProps) {
 
     // Generate SVG for SVG download
     QRCode.toString(url, { type: "svg", margin: 2 }).then(setQrSvg)
-  }, [selectedSlug, baseUrl])
+  }, [selectedSlug, baseUrl, urlSlug])
 
   const downloadPng = () => {
     if (!qrDataUrl || !selectedSlug) return

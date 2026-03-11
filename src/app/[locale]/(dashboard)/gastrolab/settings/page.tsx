@@ -65,7 +65,7 @@ export default async function GastrolabSettingsPage() {
                 <CardDescription>Genera códigos QR para que los clientes consulten disponibilidad en tiempo real.</CardDescription>
               </div>
               <QrGeneratorDialog
-                restaurants={locations.filter((l): l is typeof l & { cmSlug: string } => l.cmSlug !== null)}
+                restaurants={locations.filter((l): l is typeof l & { cmSlug: string; walkInToken: string | null } => l.cmSlug !== null)}
               />
             </CardHeader>
           </Card>
