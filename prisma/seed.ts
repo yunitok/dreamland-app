@@ -20,7 +20,7 @@ async function main() {
   // is governed by ProjectMember roles (OWNER/MANAGER/EDITOR/VIEWER).
   const resources = [
     'projects', 'users', 'roles', 'departments', 'sentiment', 'admin',
-    'gastrolab', 'reports', 'atc'
+    'gastrolab', 'sherlock', 'calidad', 'analytics', 'reports', 'atc'
   ];
   const actions = ['read', 'create', 'update', 'delete', 'manage'];
 
@@ -81,6 +81,9 @@ async function main() {
           ...getPerms('sentiment', ['read']),
           ...getPerms('admin', ['read']),
           ...getPerms('gastrolab', ['read', 'create']),
+          ...getPerms('sherlock', ['read', 'create']),
+          ...getPerms('calidad', ['read', 'create']),
+          ...getPerms('analytics', ['read', 'create']),
           ...getPerms('reports', ['read', 'create', 'manage'])
         ]
       }
@@ -103,6 +106,9 @@ async function main() {
           ...getPerms('sentiment', ['read']),
           ...getPerms('admin', ['read']),
           ...getPerms('gastrolab', ['read']),
+          ...getPerms('sherlock', ['read']),
+          ...getPerms('calidad', ['read']),
+          ...getPerms('analytics', ['read']),
           ...getPerms('reports', ['read'])
         ]
       }

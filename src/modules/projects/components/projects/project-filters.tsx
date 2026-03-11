@@ -2,8 +2,6 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Input } from "@/modules/shared/ui/input"
-import { Button } from "@/modules/shared/ui/button"
 import {
   Select,
   SelectContent,
@@ -11,9 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/modules/shared/ui/select"
-import { Search, X, SlidersHorizontal, Tags } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
+import { Filter } from "@/modules/shared/ui/filter-toolbar"
 
 interface FilterState {
   search: string
@@ -34,7 +32,6 @@ interface ProjectFiltersProps {
 export function ProjectFilters({ departments, onFiltersChange, totalCount, filteredCount, className }: ProjectFiltersProps) {
   const t = useTranslations("projects")
 
-  // Define options using translations
   const priorities = [
     { value: "High", label: t("high") },
     { value: "Medium", label: t("medium") },
@@ -90,103 +87,72 @@ export function ProjectFilters({ departments, onFiltersChange, totalCount, filte
   }, [filters])
 
   return (
-    <div className={cn("space-y-4", className)}>
-      {/* Filter Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-primary/10 rounded-full">
-            <SlidersHorizontal className="h-4 w-4 text-primary" />
-          </div>
-          <span className="text-sm font-semibold">{t("filters")}</span>
-          <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-            {filteredCount} {t("of")} {totalCount}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearFilters}
-              className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-            >
-              <X className="h-3 w-3 mr-1" />
-              <span>{t("clearFilters")}</span>
-            </Button>
-          )}
-        </div>
-      </div>
+    <Filter className={cn(className)}>
+      <Filter.Header
+        filteredCount={filteredCount}
+        totalCount={totalCount}
+        hasActiveFilters={hasActiveFilters}
+        onClear={clearFilters}
+      />
+      <Filter.Body>
+        <Filter.Search
+          value={filters.search}
+          onChange={(v) => updateFilter("search", v)}
+          placeholder={t("searchPlaceholder")}
+        />
 
-      {/* Search and Filters */}
-      <div className="flex flex-col gap-4">
-        {/* Search Bar */}
-        <div className="w-full">
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-            <Input
-              placeholder={t("searchPlaceholder")}
-              value={filters.search}
-              onChange={(e) => updateFilter("search", e.target.value)}
-              className="pl-9 h-11 bg-background/50 border-muted-foreground/20 focus:border-primary transition-colors text-base md:text-sm"
-            />
-          </div>
-        </div>
+        {/* Department */}
+        <Select value={filters.department} onValueChange={(v) => updateFilter("department", v)}>
+          <SelectTrigger className="w-full sm:w-auto sm:min-w-[150px]">
+            <SelectValue placeholder={t("allDepartments")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("allDepartments")}</SelectItem>
+            {departments.map((dept) => (
+              <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-        {/* Filters Group */}
-        <div className="grid grid-cols-1 xs:grid-cols-2 md:flex md:flex-wrap items-center gap-3">
-          {/* Department */}
-          <Select value={filters.department} onValueChange={(v) => updateFilter("department", v)}>
-            <SelectTrigger className="h-10 w-full md:w-[180px] bg-background/50 text-sm">
-              <SelectValue placeholder={t("allDepartments")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("allDepartments")}</SelectItem>
-              {departments.map((dept) => (
-                <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Priority */}
+        <Select value={filters.priority} onValueChange={(v) => updateFilter("priority", v)}>
+          <SelectTrigger className="w-full sm:w-auto sm:min-w-[150px]">
+            <SelectValue placeholder={t("allPriorities")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("allPriorities")}</SelectItem>
+            {priorities.map((p) => (
+              <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-          {/* Priority */}
-          <Select value={filters.priority} onValueChange={(v) => updateFilter("priority", v)}>
-            <SelectTrigger className="h-10 w-full md:w-[150px] bg-background/50 text-sm">
-              <SelectValue placeholder={t("allPriorities")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("allPriorities")}</SelectItem>
-              {priorities.map((p) => (
-                <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Type */}
+        <Select value={filters.type} onValueChange={(v) => updateFilter("type", v)}>
+          <SelectTrigger className="w-full sm:w-auto sm:min-w-[150px]">
+            <SelectValue placeholder={t("allTypes")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("allTypes")}</SelectItem>
+            {types.map((type) => (
+              <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-          {/* Type */}
-          <Select value={filters.type} onValueChange={(v) => updateFilter("type", v)}>
-            <SelectTrigger className="h-10 w-full md:w-[150px] bg-background/50 text-sm">
-              <SelectValue placeholder={t("allTypes")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("allTypes")}</SelectItem>
-              {types.map((type) => (
-                <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Status */}
-          <Select value={filters.status} onValueChange={(v) => updateFilter("status", v)}>
-            <SelectTrigger className="h-10 w-full md:w-[150px] bg-background/50 text-sm">
-              <SelectValue placeholder={t("allStatuses")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("allStatuses")}</SelectItem>
-              {statuses.map((status) => (
-                <SelectItem key={status.value} value={status.value}>{status.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-    </div>
+        {/* Status */}
+        <Select value={filters.status} onValueChange={(v) => updateFilter("status", v)}>
+          <SelectTrigger className="w-full sm:w-auto sm:min-w-[150px]">
+            <SelectValue placeholder={t("allStatuses")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("allStatuses")}</SelectItem>
+            {statuses.map((status) => (
+              <SelectItem key={status.value} value={status.value}>{status.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Filter.Body>
+    </Filter>
   )
 }

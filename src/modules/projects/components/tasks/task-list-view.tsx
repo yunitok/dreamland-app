@@ -470,140 +470,126 @@ export function TaskListView({ project, statuses, tags, users, currentUserId }: 
 
   return (
     <div className="p-6 space-y-4 pb-24">
-      {/* Toolfoo */}
-      <div className="flex flex-col gap-4">
-        {/* Search - Full width on mobile */}
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Search */}
+        <div className="relative w-full sm:w-auto sm:min-w-[220px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             placeholder={t('searchTasks')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-10"
+            className="pl-9"
           />
         </div>
 
-        {/* Filters Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex items-center gap-4">
-          {/* Group By Selector */}
-          <div className="col-span-1 md:w-auto">
-            <Select value={groupBy} onValueChange={(v: 'list' | 'status') => setGroupBy(v)}>
-              <SelectTrigger className="w-full lg:w-[200px] !h-10">
-                <FolderKanban className="h-4 w-4 mr-2 flex-shrink-0" />
-                <SelectValue placeholder={t('groupBy')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="list">{t('groupByList')}</SelectItem>
-                <SelectItem value="status">{t('groupByStatus')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        {/* Group By */}
+        <Select value={groupBy} onValueChange={(v: 'list' | 'status') => setGroupBy(v)}>
+          <SelectTrigger className="w-full sm:w-auto sm:min-w-[150px]">
+            <FolderKanban className="h-4 w-4 mr-2 shrink-0" />
+            <SelectValue placeholder={t('groupBy')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="list">{t('groupByList')}</SelectItem>
+            <SelectItem value="status">{t('groupByStatus')}</SelectItem>
+          </SelectContent>
+        </Select>
 
-          <Button
-            variant="outline"
-            className="h-10 w-10 p-0 shrink-0 cursor-pointer"
-            onClick={toggleAllLists}
-            title={allListsExpanded ? t('collapseAll') || 'Collapse All' : t('expandAll') || 'Expand All'}
-          >
-            {allListsExpanded ? (
-              <ChevronsDownUp className="h-4 w-4" />
-            ) : (
-              <ChevronsUpDown className="h-4 w-4" />
-            )}
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-9 w-9 shrink-0 cursor-pointer"
+          onClick={toggleAllLists}
+          title={allListsExpanded ? t('collapseAll') || 'Collapse All' : t('expandAll') || 'Expand All'}
+        >
+          {allListsExpanded ? (
+            <ChevronsDownUp className="h-4 w-4" />
+          ) : (
+            <ChevronsUpDown className="h-4 w-4" />
+          )}
+        </Button>
+
+        {/* Status Filter */}
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full sm:w-auto sm:min-w-[150px]">
+            <Filter className="h-4 w-4 mr-2 shrink-0" />
+            <SelectValue placeholder={t('status')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('allStatuses')}</SelectItem>
+            {statuses.map(status => (
+              <SelectItem key={status.id} value={status.id}>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: status.color }}
+                  />
+                  {t(`statuses.${status.name}`)}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Tag Filter */}
+        <Select value={selectedTag} onValueChange={setSelectedTag}>
+          <SelectTrigger className="w-full sm:w-auto sm:min-w-[150px]">
+            <Tags className="w-4 h-4 text-muted-foreground shrink-0" />
+            <SelectValue placeholder={t('filterByTag')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('allTags')}</SelectItem>
+            {tags.map((tag) => (
+              <SelectItem key={tag.id} value={tag.id}>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: tag.color }}
+                  />
+                  {tag.name}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Assignee Filter */}
+        <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
+          <SelectTrigger className="w-full sm:w-auto sm:min-w-[150px]">
+            <SelectValue placeholder={t('assignee')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('allAssignees')}</SelectItem>
+            <SelectItem value="unassigned">{t('unassigned')}</SelectItem>
+            {users.map(user => (
+              <SelectItem key={user.id} value={user.id}>
+                {user.name || user.username}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Action Buttons */}
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setIsTagsOpen(true)}>
+            <Tags className="w-4 h-4 mr-2" />
+            {t('manageTags') || 'Manage Tags'}
           </Button>
 
-
-
-          {/* Status Filter */}
-          <div className="col-span-1 md:w-auto">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full lg:w-[200px] !h-10">
-                <Filter className="h-4 w-4 mr-2 flex-shrink-0" />
-                <SelectValue placeholder={t('status')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('allStatuses')}</SelectItem>
-                {statuses.map(status => (
-                  <SelectItem key={status.id} value={status.id}>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: status.color }}
-                      />
-                      {t(`statuses.${status.name}`)}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Tag Filter */}
-          <div className="col-span-1 md:w-auto">
-            <Select value={selectedTag} onValueChange={setSelectedTag}>
-              <SelectTrigger className="w-full lg:w-[200px] !h-10">
-                <div className="flex items-center gap-2 truncate">
-                  <Tags className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  <SelectValue placeholder={t('filterByTag')} />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('allTags')}</SelectItem>
-                {tags.map((tag) => (
-                  <SelectItem key={tag.id} value={tag.id}>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: tag.color }}
-                      />
-                      {tag.name}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Assignee Filter */}
-          <div className="col-span-1 md:w-auto">
-            <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
-              <SelectTrigger className="w-full lg:w-[200px] !h-10">
-                <SelectValue placeholder={t('assignee')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('allAssignees')}</SelectItem>
-                <SelectItem value="unassigned">{t('unassigned')}</SelectItem>
-                {users.map(user => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.name || user.username}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="col-span-1 sm:col-span-2 lg:ml-auto flex flex-wrap items-center justify-between lg:justify-end gap-2 mt-2 lg:mt-0">
-            <Button variant="outline" size="sm" onClick={() => setIsTagsOpen(true)} className="h-10">
-              <Tags className="w-4 h-4 mr-2" />
-              {t('manageTags') || 'Manage Tags'}
-            </Button>
-
-            <span className="text-xs text-muted-foreground mr-2 hidden xl:inline">
-              {totalTasks} {t('tasks')}
-            </span>
-            <div className="flex items-center gap-2">
-              {groupBy === 'list' && (
-                <Button variant="outline" size="sm" onClick={() => setIsCreateListOpen(true)} className="h-10">
-                  <Plus className="h-4 w-4 mr-2" />
-                  <span>{t('newList')}</span>
-                </Button>
-              )}
-              <Button size="sm" onClick={() => handleCreateTask()} className="h-10">
+          <span className="text-xs text-muted-foreground mr-2 hidden xl:inline">
+            {totalTasks} {t('tasks')}
+          </span>
+          <div className="flex items-center gap-2">
+            {groupBy === 'list' && (
+              <Button variant="outline" size="sm" onClick={() => setIsCreateListOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                <span>{t('newTask')}</span>
+                <span>{t('newList')}</span>
               </Button>
-            </div>
+            )}
+            <Button size="sm" onClick={() => handleCreateTask()}>
+              <Plus className="h-4 w-4 mr-2" />
+              <span>{t('newTask')}</span>
+            </Button>
           </div>
         </div>
       </div>

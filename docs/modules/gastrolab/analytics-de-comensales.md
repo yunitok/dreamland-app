@@ -538,7 +538,7 @@ getLastSyncInfo(): Promise<CoverSyncLog | null>
 
 **Query Prisma**: `findFirst` ordenado por `startedAt DESC`. Selecciona `status`, `startedAt`, `finishedAt`, `snapshotsCreated`, `snapshotsUpdated`, `errors`.
 
-**Componente destino**: `SyncStatusCard`
+**Componente destino**: `SyncStatusInline` (texto inline en la barra de filtros, inyectado como prop `trailing`)
 
 ---
 
@@ -556,7 +556,7 @@ page.tsx (Server Component)
     ├── useTransition + Promise.all → 5 server actions en paralelo
     ├── useEffect → auto-fetch cuando cambian filtros
     │
-    ├── AnalyticsFilters + SyncStatusCard
+    ├── AnalyticsFilters (trailing={<SyncStatusInline />})
     ├── KpiCards (5 cards)
     ├── Grid 2 columnas:
     │   ├── CoversTrendChart (full width, col-span-2)
@@ -567,14 +567,19 @@ page.tsx (Server Component)
 
 ### Componente: Filtros (`analytics-filters.tsx`)
 
-Controles interactivos que determinan qué datos se consultan:
+Barra de filtros unificada usando el componente `Filter` (compound component de `filter-toolbar.tsx`). Layout en una sola fila con todos los controles:
 
 | Control | Tipo | Valores | Efecto |
 |---------|------|---------|--------|
-| **Rango de fechas** | 2 inputs `date` | Fechas ISO | Filtra snapshots por `date BETWEEN` |
-| **Presets** | 4 botones | 1 mes, 3 meses, 1 año, 3 años | Recalcula `dateStart` restando al día actual |
+| **Rango de fechas** | Popover con `Calendar` (react-day-picker v9) | Fechas ISO | Filtra snapshots por `date BETWEEN` |
+| **Presets** | 4 botones dentro del Popover | 1 mes, 3 meses, 1 año, 3 años | Recalcula `dateStart` restando al día actual |
 | **Locales** | Popover con checkboxes | Lista de restaurantes | Filtra por `restaurantLocationId IN` |
 | **Granularidad** | Select | Día / Semana / Mes | Cambia agrupación en tendencia y comparativa |
+| **Sync status** | Texto inline (`trailing` slot) | Estado + fecha + snapshots | Informativo, no filtra |
+
+**Date range Popover**: Trigger button muestra fechas formateadas con locale (`dd MMM yyyy`). Al abrir, tabs "Desde"/"Hasta" permiten seleccionar cada fecha en un calendario visual. Al seleccionar "Desde", cambia automáticamente a "Hasta". Los presets (1 mes, 3 meses, 1 año, 3 años) están en la parte inferior del Popover.
+
+**Sync status inline**: Antes era un `<Card>` separado (`SyncStatusCard`). Ahora es un `<div>` inline (`SyncStatusInline`) inyectado como prop `trailing` en `AnalyticsFilters`, con `ml-auto` para alinearse a la derecha.
 
 **Comportamiento**: Cada cambio de filtro actualiza el estado en `AnalyticsDashboard`, que dispara `fetchData()` vía `useEffect`. La carga usa `useTransition` para no bloquear la UI (muestra spinner mientras carga).
 

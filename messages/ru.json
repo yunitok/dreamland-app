@@ -13,7 +13,12 @@
     "language": "Language",
     "backToApp": "Back to App",
     "viewProfile": "Просмотреть профиль",
-    "reports": "Отчеты"
+    "reports": "Отчеты",
+    "sidebarProductCosts": "Продукт и Затраты",
+    "sidebarBusiness": "Бизнес",
+    "sidebarOrganization": "Организация",
+    "quality": "Качество",
+    "sidebarQuality": "Качество"
   },
   "dashboard": {
     "title": "Strategic Intelligence",
@@ -406,7 +411,7 @@
     "backToProjects": "Назад к проектам",
     "searchTasks": "Search tasks...",
     "searchUsers": "Поиск пользователей...",
-    "noUsersFound": "Пользователи не найдены.",
+    "noUsersFound": "Пользователи не найдены",
     "status": "Статус",
     "assignee": "Исполнитель",
     "statuses": {
@@ -454,7 +459,6 @@
     "editComment": "Редактировать комментарий",
     "commentUpdated": "Комментарий обновлён",
     "errorUpdatingComment": "Ошибка обновления комментария",
-    "noUsersFound": "Пользователи не найдены",
     "attachments": "Attachments",
     "creating": "Создание...",
     "delete": "Удалить",
@@ -589,7 +593,11 @@
         "allLocations": "Все заведения",
         "day": "День",
         "week": "Неделя",
-        "month": "Месяц"
+        "month": "Месяц",
+        "from": "С",
+        "to": "По",
+        "lastSync": "Посл. синхр.",
+        "snapshots": "snapshots"
       }
     },
     "sales": {
@@ -835,5 +843,94 @@
     "urlCopied": "URL скопирована",
     "selectRestaurant": "Выбрать ресторан",
     "of": "из"
+  },
+  "sherlock": {
+    "title": "Sherlock",
+    "description": "Контроль затрат: инвентарь, потери и теоретический vs фактический анализ.",
+    "costControl": "Контроль Затрат",
+    "inventory": {
+      "title": "Инвентаризация и запасы",
+      "description": "Учет запасов, партий и сроков годности.",
+      "new": {
+        "title": "Новая запись инвентаризации",
+        "description": "Добавить запас ингредиентов на склад."
+      },
+      "edit": {
+        "title": "Редактировать запись инвентаризации",
+        "description": "Изменить данные записи инвентаризации."
+      }
+    },
+    "waste": {
+      "title": "Контроль Потерь",
+      "description": "Учет отходов и анализ причин."
+    },
+    "theoreticalVsReal": "Теоретическая vs Фактическая Рентабельность",
+    "theoreticalVsRealDesc": "Ежемесячное сравнение затрат",
+    "stockAlerts": "Уведомления о Запасах",
+    "stockAlertsDesc": "Ингредиенты ниже минимума или с истекающим сроком",
+    "comingSoon": "Скоро"
+  },
+  "analytics": {
+    "title": "Аналитика",
+    "description": "Анализ продаж, гостей и эффективности бизнеса.",
+    "covers": {
+      "title": "Аналитика посетителей",
+      "description": "Тренды, сравнения и паттерны загрузки по заведениям.",
+      "filters": {
+        "allLocations": "Все заведения",
+        "day": "День",
+        "week": "Неделя",
+        "month": "Месяц",
+        "from": "С",
+        "to": "По",
+        "lastSync": "Посл. синхр.",
+        "snapshots": "snapshots"
+      }
+    },
+    "sales": {
+      "title": "Продажи Agora",
+      "description": "Выручка, средний чек, товарные группы и продукты POS."
+    },
+    "sandbox": {
+      "title": "Песочница интеграций",
+      "description": "Исследование и тестирование внешних API",
+      "selectEndpoint": "Выберите endpoint",
+      "selectEndpointHint": "Выберите доступный endpoint API",
+      "execute": "Выполнить",
+      "rawResponse": "Сырой ответ",
+      "mappedView": "Сопоставленный вид",
+      "info": "Информация",
+      "noData": "Данные не доступны",
+      "loading": "Загрузка...",
+      "error": "Ошибка"
+    }
+  },
+  "calidad": {
+    "title": "Качество",
+    "description": "Аудиты, контроль аллергенов и качество данных.",
+    "audits": {
+      "title": "ИИ Аудит",
+      "description": "Голосовая проверка процессов и обнаружение аномалий."
+    },
+    "dataQuality": {
+      "title": "Качество данных",
+      "description": "Аудит нормализации и согласованности данных API GStock.",
+      "runAudit": "Запустить аудит",
+      "running": "Анализ данных...",
+      "healthScore": "Оценка качества",
+      "criticalIssues": "Критические проблемы",
+      "warnings": "Предупреждения",
+      "time": "Время",
+      "noResults": "Нажмите «Запустить аудит» для анализа данных GStock",
+      "issueTypes": {
+        "potential_duplicate": "Потенциальный дубликат",
+        "mixed_case": "Непоследовательный регистр",
+        "leading_trailing_whitespace": "Пробелы в начале/конце",
+        "double_spaces": "Двойные пробелы",
+        "inconsistent_diacritics": "Непоследовательные диакритики",
+        "empty_vs_null": "Пустая строка вместо null",
+        "special_characters": "Специальные символы"
+      }
+    }
   }
 }

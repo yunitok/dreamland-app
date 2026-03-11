@@ -13,7 +13,12 @@
     "theme": "Theme",
     "language": "Language",
     "backToApp": "Back to App",
-    "viewProfile": "View profile"
+    "viewProfile": "View profile",
+    "sidebarProductCosts": "Product & Costs",
+    "sidebarBusiness": "Business",
+    "sidebarOrganization": "Organization",
+    "quality": "Quality",
+    "sidebarQuality": "Quality"
   },
   "dashboard": {
     "title": "Strategic Intelligence",
@@ -385,7 +390,7 @@
     "backToProjects": "Back to Projects",
     "searchTasks": "Search tasks...",
     "searchUsers": "Search users...",
-    "noUsersFound": "No users found.",
+    "noUsersFound": "No users found",
     "status": "Status",
     "assignee": "Assignee",
     "startDate": "Start Date",
@@ -440,7 +445,6 @@
     "editComment": "Edit comment",
     "commentUpdated": "Comment updated",
     "errorUpdatingComment": "Error updating comment",
-    "noUsersFound": "No users found",
     "attachments": "Attachments",
     "creating": "Creating...",
     "delete": "Delete",
@@ -577,7 +581,11 @@
         "allLocations": "All locations",
         "day": "Day",
         "week": "Week",
-        "month": "Month"
+        "month": "Month",
+        "from": "From",
+        "to": "To",
+        "lastSync": "Last sync",
+        "snapshots": "snapshots"
       }
     },
     "sales": {
@@ -823,5 +831,94 @@
     "urlCopied": "URL copied",
     "selectRestaurant": "Select restaurant",
     "of": "of"
+  },
+  "sherlock": {
+    "title": "Sherlock",
+    "description": "Cost control: inventory, waste and theoretical vs actual analysis.",
+    "costControl": "Cost Control",
+    "inventory": {
+      "title": "Inventory & Stock",
+      "description": "Stock control, batches, and expiration dates.",
+      "new": {
+        "title": "New Inventory Record",
+        "description": "Add ingredient stock to the warehouse."
+      },
+      "edit": {
+        "title": "Edit Inventory Record",
+        "description": "Modify the inventory record data."
+      }
+    },
+    "waste": {
+      "title": "Waste Control",
+      "description": "Waste recording and cause analysis."
+    },
+    "theoreticalVsReal": "Theoretical vs Actual Profitability",
+    "theoreticalVsRealDesc": "Monthly cost comparison",
+    "stockAlerts": "Stock Alerts",
+    "stockAlertsDesc": "Ingredients below minimum or expiring soon",
+    "comingSoon": "Coming Soon"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "description": "Sales analysis, covers and business performance.",
+    "covers": {
+      "title": "Diner Analytics",
+      "description": "Trends, comparisons, and occupancy patterns by location.",
+      "filters": {
+        "allLocations": "All locations",
+        "day": "Day",
+        "week": "Week",
+        "month": "Month",
+        "from": "From",
+        "to": "To",
+        "lastSync": "Last sync",
+        "snapshots": "snapshots"
+      }
+    },
+    "sales": {
+      "title": "Agora Sales",
+      "description": "Revenue, average ticket, product families and POS products."
+    },
+    "sandbox": {
+      "title": "Integrations Sandbox",
+      "description": "Explore and test external APIs connected to GastroLab.",
+      "selectEndpoint": "Select an endpoint to explore",
+      "selectEndpointHint": "Select an endpoint from the left panel and click Execute",
+      "execute": "Execute",
+      "rawResponse": "Raw Response",
+      "mappedView": "Mapped View",
+      "info": "Info",
+      "noData": "Execute a request to see results",
+      "loading": "Loading...",
+      "error": "Connection error"
+    }
+  },
+  "calidad": {
+    "title": "Quality",
+    "description": "Audits, allergen control and data quality.",
+    "audits": {
+      "title": "AI Audit",
+      "description": "Voice process verification and anomaly detection."
+    },
+    "dataQuality": {
+      "title": "Data Quality",
+      "description": "Normalization and consistency audit of GStock API data.",
+      "runAudit": "Run Audit",
+      "running": "Analyzing data...",
+      "healthScore": "Health Score",
+      "criticalIssues": "Critical Issues",
+      "warnings": "Warnings",
+      "time": "Time",
+      "noResults": "Click \"Run Audit\" to analyze GStock data",
+      "issueTypes": {
+        "potential_duplicate": "Potential duplicate",
+        "mixed_case": "Inconsistent case",
+        "leading_trailing_whitespace": "Leading/trailing whitespace",
+        "double_spaces": "Double spaces",
+        "inconsistent_diacritics": "Inconsistent diacritics",
+        "empty_vs_null": "Empty string instead of null",
+        "special_characters": "Special characters"
+      }
+    }
   }
 }

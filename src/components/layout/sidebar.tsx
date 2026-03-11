@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl"
 import {
   Users,
   Shield,
+  ShieldCheck,
   LayoutDashboard,
   FolderKanban,
   Heart,
@@ -15,6 +16,9 @@ import {
   FileText,
   Building2,
   Headphones,
+  ChefHat,
+  BarChart3,
+  type LucideIcon,
 } from "lucide-react"
 import { logout } from "@/lib/auth"
 import { Button } from "@/modules/shared/ui/button"
@@ -42,45 +46,89 @@ export function SidebarContent({ user }: SidebarContentProps) {
   const tFooter = useTranslations("footer")
   const router = useRouter()
 
-  // Navigation definition
-  const allNavItems = [
+  // Navigation definition with separator support
+  type NavLink = {
+    type: 'link'
+    href: string
+    label: string
+    icon: LucideIcon
+    permission: { action: string; resource: string } | null
+  }
+  type NavSeparator = {
+    type: 'separator'
+    label: string
+  }
+  type NavItem = NavLink | NavSeparator
+
+  const allNavItems: NavItem[] = [
     {
+      type: 'link',
       href: "/",
       label: t("dashboard"),
       icon: LayoutDashboard,
-      permission: null // Always visible
+      permission: null
     },
+    { type: 'separator', label: t("sidebarProductCosts") },
     {
-      href: "/projects",
-      label: t("projects"),
-      icon: FolderKanban,
-      permission: { action: "read", resource: "projects" }
-    },
-    {
+      type: 'link',
       href: "/gastrolab",
       label: "GastroLab",
-      icon: Shield,
+      icon: ChefHat,
       permission: { action: "read", resource: "gastrolab" }
     },
     {
+      type: 'link',
+      href: "/sherlock",
+      label: "Sherlock",
+      icon: Shield,
+      permission: { action: "read", resource: "sherlock" }
+    },
+    {
+      type: 'link',
+      href: "/calidad",
+      label: t("sidebarQuality"),
+      icon: ShieldCheck,
+      permission: { action: "read", resource: "calidad" }
+    },
+    { type: 'separator', label: t("sidebarBusiness") },
+    {
+      type: 'link',
+      href: "/analytics",
+      label: "Analytics",
+      icon: BarChart3,
+      permission: { action: "read", resource: "analytics" }
+    },
+    {
+      type: 'link',
       href: "/atc",
       label: "ATC",
       icon: Headphones,
       permission: { action: "read", resource: "atc" }
     },
     {
+      type: 'link',
       href: "/reports",
       label: t("reports"),
       icon: FileText,
       permission: { action: "read", resource: "reports" }
     },
+    { type: 'separator', label: t("sidebarOrganization") },
     {
+      type: 'link',
+      href: "/projects",
+      label: t("projects"),
+      icon: FolderKanban,
+      permission: { action: "read", resource: "projects" }
+    },
+    {
+      type: 'link',
       href: "/departments",
       label: t("departments"),
       icon: Building2,
       permission: { action: "read", resource: "departments" }
     },
     {
+      type: 'link',
       href: "/sentiment",
       label: t("teamPulse"),
       icon: Heart,
@@ -88,11 +136,23 @@ export function SidebarContent({ user }: SidebarContentProps) {
     },
   ]
 
-  // Filter items based on permissions
-  const visibleNavItems = allNavItems.filter(item =>
-    item.permission === null ||
-    hasPermission(user, item.permission.action, item.permission.resource)
-  )
+  // Filter: keep separators only if the next link group has visible items
+  const visibleNavItems = allNavItems.filter((item, index) => {
+    if (item.type === 'separator') {
+      // Show separator only if at least one link after it (before next separator) is visible
+      const nextItems = allNavItems.slice(index + 1)
+      for (const next of nextItems) {
+        if (next.type === 'separator') break
+        if (next.type === 'link' && (
+          next.permission === null ||
+          hasPermission(user, next.permission.action, next.permission.resource)
+        )) return true
+      }
+      return false
+    }
+    return item.permission === null ||
+      hasPermission(user, item.permission.action, item.permission.resource)
+  })
 
   const canSeeAdmin = hasPermission(user, 'read', 'admin')
 
@@ -116,8 +176,18 @@ export function SidebarContent({ user }: SidebarContentProps) {
       </Link>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-4 bg-sidebar">
-        {visibleNavItems.map((item) => {
+      <nav className="flex-1 space-y-1 p-4 bg-sidebar overflow-y-auto">
+        {visibleNavItems.map((item, index) => {
+          if (item.type === 'separator') {
+            return (
+              <div key={`sep-${item.label}`} className={cn("px-3 pt-4 pb-1", index === 0 && "pt-0")}>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
+                  {item.label}
+                </span>
+              </div>
+            )
+          }
+
           const isActive = pathname === item.href ||
             (item.href !== "/" && pathname.startsWith(item.href))
 
@@ -126,13 +196,13 @@ export function SidebarContent({ user }: SidebarContentProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
               )}
             >
-              <item.icon className="h-5 w-5 shrink-0" />
+              <item.icon className="h-4.5 w-4.5 shrink-0" />
               <span className="truncate">{item.label}</span>
             </Link>
           )

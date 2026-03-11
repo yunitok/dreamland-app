@@ -8,8 +8,7 @@ import { DataTable } from "@/modules/shared/ui/data-table"
 import { ActionCell } from "./action-cell"
 import { useTranslations } from "next-intl"
 import { useState, useMemo } from "react"
-import { Input } from "@/modules/shared/ui/input"
-import { Search, SlidersHorizontal, X } from "lucide-react"
+import { Filter } from "@/modules/shared/ui/filter-toolbar"
 import { Link } from "@/i18n/navigation"
 import {
   Select,
@@ -142,62 +141,33 @@ export function UsersTable({ data, roles }: { data: UserWithRole[], roles: Role[
   ]
 
   return (
-    <div className="space-y-4">
-      {/* Filter Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-            <div className="p-2 bg-primary/10 rounded-full">
-                <SlidersHorizontal className="h-4 w-4 text-primary" />
-            </div>
-            <span className="text-sm font-semibold">{t("filters")}</span>
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                {filteredData.length} {t("of")} {data.length}
-            </span>
-        </div>
-        <div className="flex items-center gap-2">
-            {hasActiveFilters && (
-                <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={clearFilters}
-                    className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive transition-colors"
-                >
-                    <X className="h-3 w-3 mr-1" />
-                    {t("clearFilters")}
-                </Button>
-            )}
-        </div>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="grid grid-cols-2 md:flex md:flex-wrap items-center gap-3">
-        <div className="col-span-2 md:w-auto md:min-w-[250px] flex-grow-0">
-            <div className="relative group">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                <Input
-                    placeholder={t("searchPlaceholder")}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9 h-9 bg-background/50 border-muted-foreground/20 focus:border-primary transition-colors"
-                />
-            </div>
-        </div>
-        <div className="col-span-2 md:col-span-1 flex flex-wrap items-center gap-2">
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="h-10 w-full md:w-[180px] bg-background/50 text-sm">
-                    <SelectValue placeholder={t("allRoles")} />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">{t("allRoles")}</SelectItem>
-                    {roles.map((r) => (
-                        <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
-                    ))}
-                    <SelectItem value="no_role">{t("noRole")}</SelectItem>
-                </SelectContent>
-            </Select>
-        </div>
-      </div>
+    <Filter>
+      <Filter.Header
+        filteredCount={filteredData.length}
+        totalCount={data.length}
+        hasActiveFilters={hasActiveFilters}
+        onClear={clearFilters}
+      />
+      <Filter.Body>
+        <Filter.Search
+          value={search}
+          onChange={setSearch}
+          placeholder={t("searchPlaceholder")}
+        />
+        <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <SelectTrigger className="w-full sm:w-auto sm:min-w-[150px]">
+            <SelectValue placeholder={t("allRoles")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("allRoles")}</SelectItem>
+            {roles.map((r) => (
+              <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+            ))}
+            <SelectItem value="no_role">{t("noRole")}</SelectItem>
+          </SelectContent>
+        </Select>
+      </Filter.Body>
       <DataTable data={filteredData} columns={columns} />
-    </div>
+    </Filter>
   )
 }

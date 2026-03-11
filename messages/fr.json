@@ -13,7 +13,12 @@
     "language": "Language",
     "backToApp": "Back to App",
     "viewProfile": "Voir le profil",
-    "reports": "Rapports"
+    "reports": "Rapports",
+    "sidebarProductCosts": "Produit & Coûts",
+    "sidebarBusiness": "Business",
+    "sidebarOrganization": "Organisation",
+    "quality": "Qualité",
+    "sidebarQuality": "Qualité"
   },
   "dashboard": {
     "title": "Strategic Intelligence",
@@ -406,7 +411,7 @@
     "backToProjects": "Retour aux projets",
     "searchTasks": "Search tasks...",
     "searchUsers": "Rechercher des utilisateurs...",
-    "noUsersFound": "Aucun utilisateur trouvé.",
+    "noUsersFound": "Aucun utilisateur trouvé",
     "status": "Statut",
     "assignee": "Assigné",
     "statuses": {
@@ -454,7 +459,6 @@
     "editComment": "Modifier le commentaire",
     "commentUpdated": "Commentaire mis à jour",
     "errorUpdatingComment": "Erreur lors de la mise à jour du commentaire",
-    "noUsersFound": "Aucun utilisateur trouvé",
     "attachments": "Attachments",
     "creating": "Création...",
     "delete": "Supprimer",
@@ -589,7 +593,11 @@
         "allLocations": "Tous les établissements",
         "day": "Jour",
         "week": "Semaine",
-        "month": "Mois"
+        "month": "Mois",
+        "from": "Du",
+        "to": "Au",
+        "lastSync": "Dernière sync",
+        "snapshots": "snapshots"
       }
     },
     "sales": {
@@ -835,5 +843,94 @@
     "urlCopied": "URL copiée",
     "selectRestaurant": "Choisir un restaurant",
     "of": "de"
+  },
+  "sherlock": {
+    "title": "Sherlock",
+    "description": "Contrôle des coûts : inventaire, pertes et analyse théorique vs réel.",
+    "costControl": "Contrôle des Coûts",
+    "inventory": {
+      "title": "Inventaire & Stock",
+      "description": "Contrôle des stocks, lots et dates d'expiration.",
+      "new": {
+        "title": "Nouvel enregistrement d'inventaire",
+        "description": "Ajouter du stock d'ingrédients à l'entrepôt."
+      },
+      "edit": {
+        "title": "Modifier l'enregistrement d'inventaire",
+        "description": "Modifier les données de l'enregistrement d'inventaire."
+      }
+    },
+    "waste": {
+      "title": "Contrôle des Pertes",
+      "description": "Enregistrement des déchets et analyse des causes."
+    },
+    "theoreticalVsReal": "Rentabilité Théorique vs Réelle",
+    "theoreticalVsRealDesc": "Comparaison mensuelle des coûts",
+    "stockAlerts": "Alertes de Stock",
+    "stockAlertsDesc": "Ingrédients en dessous du minimum ou bientôt périmés",
+    "comingSoon": "Bientôt disponible"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "description": "Analyse des ventes, couverts et performance commerciale.",
+    "covers": {
+      "title": "Analytics des Convives",
+      "description": "Tendances, comparaisons et modèles d'occupation par établissement.",
+      "filters": {
+        "allLocations": "Tous les établissements",
+        "day": "Jour",
+        "week": "Semaine",
+        "month": "Mois",
+        "from": "Du",
+        "to": "Au",
+        "lastSync": "Dernière sync",
+        "snapshots": "snapshots"
+      }
+    },
+    "sales": {
+      "title": "Ventes Agora",
+      "description": "Chiffre d'affaires, ticket moyen, familles de produits et articles TPV."
+    },
+    "sandbox": {
+      "title": "Sandbox d'Intégrations",
+      "description": "Explorer et tester les APIs externes",
+      "selectEndpoint": "Sélectionner un endpoint",
+      "selectEndpointHint": "Choisissez un endpoint API disponible",
+      "execute": "Exécuter",
+      "rawResponse": "Réponse brute",
+      "mappedView": "Vue mappée",
+      "info": "Infos",
+      "noData": "Aucune donnée disponible",
+      "loading": "Chargement...",
+      "error": "Erreur"
+    }
+  },
+  "calidad": {
+    "title": "Qualité",
+    "description": "Audits, contrôle des allergènes et qualité des données.",
+    "audits": {
+      "title": "Audit IA",
+      "description": "Vérification des processus vocaux et détection des anomalies."
+    },
+    "dataQuality": {
+      "title": "Qualité des Données",
+      "description": "Audit de normalisation et cohérence des données de l'API GStock.",
+      "runAudit": "Lancer l'audit",
+      "running": "Analyse en cours...",
+      "healthScore": "Score de santé",
+      "criticalIssues": "Problèmes critiques",
+      "warnings": "Avertissements",
+      "time": "Temps",
+      "noResults": "Cliquez \"Lancer l'audit\" pour analyser les données GStock",
+      "issueTypes": {
+        "potential_duplicate": "Doublon potentiel",
+        "mixed_case": "Casse incohérente",
+        "leading_trailing_whitespace": "Espaces en début/fin",
+        "double_spaces": "Doubles espaces",
+        "inconsistent_diacritics": "Diacritiques incohérents",
+        "empty_vs_null": "Chaîne vide au lieu de null",
+        "special_characters": "Caractères spéciaux"
+      }
+    }
   }
 }

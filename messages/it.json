@@ -13,7 +13,12 @@
     "language": "Language",
     "backToApp": "Back to App",
     "viewProfile": "Visualizza profilo",
-    "reports": "Rapporti"
+    "reports": "Rapporti",
+    "sidebarProductCosts": "Prodotto & Costi",
+    "sidebarBusiness": "Business",
+    "sidebarOrganization": "Organizzazione",
+    "quality": "Qualità",
+    "sidebarQuality": "Qualità"
   },
   "dashboard": {
     "title": "Strategic Intelligence",
@@ -406,7 +411,7 @@
     "backToProjects": "Torna ai progetti",
     "searchTasks": "Search tasks...",
     "searchUsers": "Cerca utenti...",
-    "noUsersFound": "Nessun utente trovato.",
+    "noUsersFound": "Nessun utente trovato",
     "status": "Stato",
     "assignee": "Assegnatario",
     "statuses": {
@@ -454,7 +459,6 @@
     "editComment": "Modifica commento",
     "commentUpdated": "Commento aggiornato",
     "errorUpdatingComment": "Errore nell'aggiornamento del commento",
-    "noUsersFound": "Nessun utente trovato",
     "attachments": "Attachments",
     "creating": "Creazione...",
     "delete": "Elimina",
@@ -589,7 +593,11 @@
         "allLocations": "Tutti i locali",
         "day": "Giorno",
         "week": "Settimana",
-        "month": "Mese"
+        "month": "Mese",
+        "from": "Da",
+        "to": "A",
+        "lastSync": "Ultima sync",
+        "snapshots": "snapshots"
       }
     },
     "sales": {
@@ -835,5 +843,94 @@
     "urlCopied": "URL copiato",
     "selectRestaurant": "Seleziona ristorante",
     "of": "di"
+  },
+  "sherlock": {
+    "title": "Sherlock",
+    "description": "Controllo costi: inventario, scarti e analisi teorico vs reale.",
+    "costControl": "Controllo Costi",
+    "inventory": {
+      "title": "Inventario e Stock",
+      "description": "Controllo delle giacenze, lotti e scadenze.",
+      "new": {
+        "title": "Nuovo record di inventario",
+        "description": "Aggiungi scorte di ingredienti al magazzino."
+      },
+      "edit": {
+        "title": "Modifica record di inventario",
+        "description": "Modifica i dati del record di inventario."
+      }
+    },
+    "waste": {
+      "title": "Controllo Scarti",
+      "description": "Registrazione degli scarti e analisi delle cause."
+    },
+    "theoreticalVsReal": "Redditività Teorica vs Reale",
+    "theoreticalVsRealDesc": "Confronto mensile dei costi",
+    "stockAlerts": "Avvisi di Stock",
+    "stockAlertsDesc": "Ingredienti sotto il minimo o in scadenza",
+    "comingSoon": "Prossimamente"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "description": "Analisi vendite, coperti e performance aziendale.",
+    "covers": {
+      "title": "Analytics dei Commensali",
+      "description": "Tendenze, confronti e modelli di occupazione per locale.",
+      "filters": {
+        "allLocations": "Tutti i locali",
+        "day": "Giorno",
+        "week": "Settimana",
+        "month": "Mese",
+        "from": "Da",
+        "to": "A",
+        "lastSync": "Ultima sync",
+        "snapshots": "snapshots"
+      }
+    },
+    "sales": {
+      "title": "Vendite Agora",
+      "description": "Fatturato, scontrino medio, famiglie di prodotto e articoli POS."
+    },
+    "sandbox": {
+      "title": "Sandbox Integrazioni",
+      "description": "Esplora e testa le API esterne",
+      "selectEndpoint": "Seleziona un endpoint",
+      "selectEndpointHint": "Scegli un endpoint API disponibile",
+      "execute": "Esegui",
+      "rawResponse": "Risposta grezza",
+      "mappedView": "Vista mappata",
+      "info": "Info",
+      "noData": "Nessun dato disponibile",
+      "loading": "Caricamento...",
+      "error": "Errore"
+    }
+  },
+  "calidad": {
+    "title": "Qualità",
+    "description": "Audit, controllo allergeni e qualità dei dati.",
+    "audits": {
+      "title": "Audit IA",
+      "description": "Verifica dei processi vocali e rilevamento delle anomalie."
+    },
+    "dataQuality": {
+      "title": "Qualità dei Dati",
+      "description": "Audit di normalizzazione e coerenza dei dati dell'API GStock.",
+      "runAudit": "Esegui Audit",
+      "running": "Analisi in corso...",
+      "healthScore": "Punteggio salute",
+      "criticalIssues": "Problemi critici",
+      "warnings": "Avvisi",
+      "time": "Tempo",
+      "noResults": "Clicca \"Esegui Audit\" per analizzare i dati GStock",
+      "issueTypes": {
+        "potential_duplicate": "Duplicato potenziale",
+        "mixed_case": "Maiuscole/minuscole inconsistenti",
+        "leading_trailing_whitespace": "Spazi iniziali/finali",
+        "double_spaces": "Spazi doppi",
+        "inconsistent_diacritics": "Diacritici inconsistenti",
+        "empty_vs_null": "Stringa vuota invece di null",
+        "special_characters": "Caratteri speciali"
+      }
+    }
   }
 }

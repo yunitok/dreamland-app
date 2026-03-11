@@ -13,7 +13,12 @@
     "theme": "Tema",
     "language": "Idioma",
     "backToApp": "Volver a la App",
-    "viewProfile": "Ver perfil"
+    "viewProfile": "Ver perfil",
+    "sidebarProductCosts": "Producto y Costes",
+    "sidebarBusiness": "Negocio",
+    "sidebarOrganization": "Organización",
+    "quality": "Calidad",
+    "sidebarQuality": "Calidad"
   },
   "dashboard": {
     "title": "Inteligencia Estratégica",
@@ -386,7 +391,7 @@
     "backToProjects": "Volver a Proyectos",
     "searchTasks": "Buscar tareas...",
     "searchUsers": "Buscar usuarios...",
-    "noUsersFound": "No se encontraron usuarios.",
+    "noUsersFound": "No se encontraron usuarios",
     "status": "Estado",
     "assignee": "Asignado",
     "startDate": "Fecha de inicio",
@@ -441,7 +446,6 @@
     "editComment": "Editar comentario",
     "commentUpdated": "Comentario actualizado",
     "errorUpdatingComment": "Error al actualizar comentario",
-    "noUsersFound": "No se encontraron usuarios",
     "attachments": "Adjuntos",
     "creating": "Creando...",
     "delete": "Eliminar",
@@ -578,7 +582,11 @@
         "allLocations": "Todos los locales",
         "day": "Día",
         "week": "Semana",
-        "month": "Mes"
+        "month": "Mes",
+        "from": "Desde",
+        "to": "Hasta",
+        "lastSync": "Última sync",
+        "snapshots": "snapshots"
       }
     },
     "sales": {
@@ -824,5 +832,94 @@
     "urlCopied": "URL copiada",
     "selectRestaurant": "Seleccionar restaurante",
     "of": "de"
+  },
+  "sherlock": {
+    "title": "Sherlock",
+    "description": "Control de costes: inventario, mermas y análisis teórico vs real.",
+    "costControl": "Control de Costes",
+    "inventory": {
+      "title": "Inventario & Stock",
+      "description": "Control de existencias y caducidades.",
+      "new": {
+        "title": "Nuevo Registro de Inventario",
+        "description": "Añade existencias de un ingrediente al almacén."
+      },
+      "edit": {
+        "title": "Editar Registro de Inventario",
+        "description": "Modifica los datos del registro de inventario."
+      }
+    },
+    "waste": {
+      "title": "Control de Mermas",
+      "description": "Registro de desperdicios y análisis."
+    },
+    "theoreticalVsReal": "Rentabilidad Teórica vs Real",
+    "theoreticalVsRealDesc": "Comparativa mensual de costes",
+    "stockAlerts": "Alertas de Stock",
+    "stockAlertsDesc": "Ingredientes bajo mínimo o próximos a caducar",
+    "comingSoon": "Próximamente"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "description": "Análisis de ventas, comensales y rendimiento del negocio.",
+    "covers": {
+      "title": "Analytics de Comensales",
+      "description": "Tendencias, comparativas y patrones de ocupación por local.",
+      "filters": {
+        "allLocations": "Todos los locales",
+        "day": "Día",
+        "week": "Semana",
+        "month": "Mes",
+        "from": "Desde",
+        "to": "Hasta",
+        "lastSync": "Última sync",
+        "snapshots": "snapshots"
+      }
+    },
+    "sales": {
+      "title": "Ventas Agora",
+      "description": "Facturación, ticket medio, familias y productos del TPV."
+    },
+    "sandbox": {
+      "title": "Sandbox de Integraciones",
+      "description": "Explora y prueba las APIs externas conectadas a GastroLab.",
+      "selectEndpoint": "Selecciona un endpoint para explorar",
+      "selectEndpointHint": "Selecciona un endpoint del panel izquierdo y pulsa Ejecutar",
+      "execute": "Ejecutar",
+      "rawResponse": "Respuesta Raw",
+      "mappedView": "Vista Mapeada",
+      "info": "Info",
+      "noData": "Ejecuta una petición para ver los resultados",
+      "loading": "Cargando...",
+      "error": "Error de conexión"
+    }
+  },
+  "calidad": {
+    "title": "Calidad",
+    "description": "Auditorías, control de alérgenos y calidad de datos.",
+    "audits": {
+      "title": "Auditoría IA",
+      "description": "Verificación por voz y detección de anomalías."
+    },
+    "dataQuality": {
+      "title": "Calidad de Datos",
+      "description": "Auditoría de normalización y consistencia de datos del API GStock.",
+      "runAudit": "Ejecutar Auditoría",
+      "running": "Analizando datos...",
+      "healthScore": "Health Score",
+      "criticalIssues": "Issues Críticas",
+      "warnings": "Warnings",
+      "time": "Tiempo",
+      "noResults": "Pulsa \"Ejecutar Auditoría\" para analizar los datos de GStock",
+      "issueTypes": {
+        "potential_duplicate": "Duplicado potencial",
+        "mixed_case": "Case inconsistente",
+        "leading_trailing_whitespace": "Espacios inicio/fin",
+        "double_spaces": "Espacios dobles",
+        "inconsistent_diacritics": "Tildes inconsistentes",
+        "empty_vs_null": "Vacío en vez de null",
+        "special_characters": "Caracteres especiales"
+      }
+    }
   }
 }
