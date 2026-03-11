@@ -895,6 +895,8 @@ model RestaurantLocation {
   longitude         Float
   isActive          Boolean  @default(true)
   cmSlug            String?  @unique                // Slug CoverManager (ej: "restaurante-voltereta")
+  walkInToken       String?  @unique                // Token opaco para URL walk-in (anti-enumeracion)
+  lunchDinnerCutoff String   @default("17:00")     // Hora corte lunch/dinner para walk-in
   createdAt         DateTime @default(now())
 
   agoraPosId        Int?     @unique              // ID del punto de venta en Ágora
