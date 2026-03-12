@@ -864,6 +864,21 @@
       "expiringSoon": "Expiring soon"
     },
     "viewDashboard": "View dashboard →",
+    "summary": {
+      "revenue": "Total Revenue",
+      "revenueMonths": "{months} months synced",
+      "theoreticalFoodCost": "Theoretical Food Cost",
+      "theoretical": "theoretical",
+      "syncStatus": "GStock Sync",
+      "locationsConnected": "locations connected",
+      "wasteImpact": "Waste Impact",
+      "wasteRecords": "{count} records",
+      "dataReliabilityTitle": "Data Status",
+      "noRealCost": "Real cost unavailable: GStock requires purchase delivery notes to calculate real cost. Currently using theoretical cost as reference.",
+      "partialTheoreticalData": "Only some months have theoretical cost data. GStock generates weekly reports on demand — months without a generated report show 0€.",
+      "notAllLocationsMapped": "Not all locations are linked to GStock. One Burger Laundry has no assigned center.",
+      "moreDetailsInDocs": "See docs/modules/sherlock/ for more technical details"
+    },
     "foodCost": {
       "title": "Real vs Theoretical Cost",
       "description": "Comparative cost analysis by location and category.",

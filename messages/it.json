@@ -876,6 +876,21 @@
       "expiringSoon": "In scadenza"
     },
     "viewDashboard": "Vedi dashboard →",
+    "summary": {
+      "revenue": "Fatturato Totale",
+      "revenueMonths": "{months} mesi sincronizzati",
+      "theoreticalFoodCost": "Food Cost Teorico",
+      "theoretical": "teorico",
+      "syncStatus": "Sync GStock",
+      "locationsConnected": "locali collegati",
+      "wasteImpact": "Impatto Scarti",
+      "wasteRecords": "{count} registrazioni",
+      "dataReliabilityTitle": "Stato dei dati",
+      "noRealCost": "Costo reale non disponibile: GStock necessita di bolle di consegna per calcolare il costo reale. Attualmente si utilizza il costo teorico come riferimento.",
+      "partialTheoreticalData": "Solo alcuni mesi hanno dati sui costi teorici. GStock genera report settimanali su richiesta — i mesi senza report mostrano 0€.",
+      "notAllLocationsMapped": "Non tutti i locali sono collegati a GStock. One Burger Laundry non ha un centro assegnato.",
+      "moreDetailsInDocs": "Vedi docs/modules/sherlock/ per dettagli tecnici"
+    },
     "foodCost": {
       "title": "Costo Reale vs Teorico",
       "description": "Analisi comparativa dei costi per locale e categoria.",

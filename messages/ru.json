@@ -876,6 +876,21 @@
       "expiringSoon": "Скоро истекает"
     },
     "viewDashboard": "Открыть панель →",
+    "summary": {
+      "revenue": "Общая выручка",
+      "revenueMonths": "{months} мес. синхронизировано",
+      "theoreticalFoodCost": "Теоретич. Food Cost",
+      "theoretical": "теоретич.",
+      "syncStatus": "Синхр. GStock",
+      "locationsConnected": "точек подключено",
+      "wasteImpact": "Потери от списаний",
+      "wasteRecords": "{count} записей",
+      "dataReliabilityTitle": "Статус данных",
+      "noRealCost": "Реальная стоимость недоступна: GStock требует загрузки накладных для расчёта реальной стоимости. Сейчас используется теоретическая стоимость.",
+      "partialTheoreticalData": "Данные о теоретической стоимости есть только за некоторые месяцы. GStock генерирует еженедельные отчёты по запросу — месяцы без отчёта показывают 0€.",
+      "notAllLocationsMapped": "Не все точки подключены к GStock. One Burger Laundry не привязана к центру.",
+      "moreDetailsInDocs": "См. docs/modules/sherlock/ для технических деталей"
+    },
     "foodCost": {
       "title": "Реальная vs Теоретическая Стоимость",
       "description": "Сравнительный анализ затрат по локациям и категориям.",

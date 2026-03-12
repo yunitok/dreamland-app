@@ -877,6 +877,21 @@
       "expiringSoon": "Bald ablaufend"
     },
     "viewDashboard": "Dashboard ansehen →",
+    "summary": {
+      "revenue": "Gesamtumsatz",
+      "revenueMonths": "{months} Monate synchronisiert",
+      "theoreticalFoodCost": "Theoretische Lebensmittelkosten",
+      "theoretical": "theoretisch",
+      "syncStatus": "GStock Sync",
+      "locationsConnected": "Standorte verbunden",
+      "wasteImpact": "Verlust-Auswirkung",
+      "wasteRecords": "{count} Einträge",
+      "dataReliabilityTitle": "Datenstatus",
+      "noRealCost": "Istkosten nicht verfügbar: GStock benötigt Lieferscheine zur Berechnung der Istkosten. Derzeit werden theoretische Kosten als Referenz verwendet.",
+      "partialTheoreticalData": "Nur einige Monate haben Daten zu theoretischen Kosten. GStock generiert Wochenberichte auf Anfrage — Monate ohne Bericht zeigen 0€.",
+      "notAllLocationsMapped": "Nicht alle Standorte sind mit GStock verknüpft. One Burger Laundry hat kein zugewiesenes Zentrum.",
+      "moreDetailsInDocs": "Siehe docs/modules/sherlock/ für technische Details"
+    },
     "foodCost": {
       "title": "Ist- vs Sollkosten",
       "description": "Vergleichende Kostenanalyse nach Standort und Kategorie.",

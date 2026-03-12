@@ -5,10 +5,12 @@ import {
   Refrigerator,
   Trash2,
   TrendingUp,
+  BarChart3,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/modules/shared/ui/card";
 import { Header } from "@/components/layout/header";
 import { StockAlertsCard } from "./_components/stock-alerts-card";
+import { SherlockSummary } from "./_components/sherlock-summary";
 
 export default async function SherlockDashboard() {
   await requirePermission('sherlock', 'read')
@@ -32,6 +34,22 @@ export default async function SherlockDashboard() {
       color: "text-red-500",
       bg: "bg-red-500/10",
     },
+    {
+      title: t("theoreticalVsReal"),
+      description: t("theoreticalVsRealDesc"),
+      href: "/sherlock/food-cost",
+      icon: TrendingUp,
+      color: "text-green-500",
+      bg: "bg-green-500/10",
+    },
+    {
+      title: t("wasteAnalytics.title"),
+      description: t("wasteAnalytics.description"),
+      href: "/sherlock/waste-analytics",
+      icon: BarChart3,
+      color: "text-amber-500",
+      bg: "bg-amber-500/10",
+    },
   ];
 
   return (
@@ -42,12 +60,16 @@ export default async function SherlockDashboard() {
       />
 
       <div className="flex-1 p-6 overflow-y-auto">
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-6">
+          {/* KPIs de resumen + banner de fiabilidad de datos */}
+          <SherlockSummary />
+
+          {/* Módulos operativos */}
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide border-l-[3px] border-emerald-500 pl-2">
               {t("costControl")}
             </h3>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {modules.map((module) => (
                 <Link key={module.href} href={module.href}>
                   <Card className="h-full py-4 gap-3 transition-all hover:bg-accent/50 hover:shadow-md cursor-pointer">
@@ -68,27 +90,11 @@ export default async function SherlockDashboard() {
             </div>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <Link href="/sherlock/food-cost">
-              <Card className="h-full transition-all hover:bg-accent/50 hover:shadow-md cursor-pointer">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-green-500" />
-                    {t("theoreticalVsReal")}
-                  </CardTitle>
-                  <CardDescription>{t("theoreticalVsRealDesc")}</CardDescription>
-                </CardHeader>
-                <CardContent className="h-50 flex items-center justify-center text-sm text-muted-foreground">
-                  {t("viewDashboard")}
-                </CardContent>
-              </Card>
-            </Link>
-
-            <StockAlertsCard
-              title={t("stockAlerts")}
-              description={t("stockAlertsDesc")}
-            />
-          </div>
+          {/* Alertas de Stock */}
+          <StockAlertsCard
+            title={t("stockAlerts")}
+            description={t("stockAlertsDesc")}
+          />
         </div>
       </div>
     </div>
