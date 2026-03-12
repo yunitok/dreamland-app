@@ -5,10 +5,10 @@ import {
   Refrigerator,
   Trash2,
   TrendingUp,
-  AlertTriangle,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/modules/shared/ui/card";
 import { Header } from "@/components/layout/header";
+import { StockAlertsCard } from "./_components/stock-alerts-card";
 
 export default async function SherlockDashboard() {
   await requirePermission('sherlock', 'read')
@@ -69,31 +69,25 @@ export default async function SherlockDashboard() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-green-500" />
-                  {t("theoreticalVsReal")}
-                </CardTitle>
-                <CardDescription>{t("theoreticalVsRealDesc")}</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[200px] flex items-center justify-center text-muted-foreground bg-muted/20 rounded-md border border-dashed">
-                {t("comingSoon")}
-              </CardContent>
-            </Card>
+            <Link href="/sherlock/food-cost">
+              <Card className="h-full transition-all hover:bg-accent/50 hover:shadow-md cursor-pointer">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-green-500" />
+                    {t("theoreticalVsReal")}
+                  </CardTitle>
+                  <CardDescription>{t("theoreticalVsRealDesc")}</CardDescription>
+                </CardHeader>
+                <CardContent className="h-50 flex items-center justify-center text-sm text-muted-foreground">
+                  {t("viewDashboard")}
+                </CardContent>
+              </Card>
+            </Link>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                  {t("stockAlerts")}
-                </CardTitle>
-                <CardDescription>{t("stockAlertsDesc")}</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[200px] flex items-center justify-center text-muted-foreground bg-muted/20 rounded-md border border-dashed">
-                {t("comingSoon")}
-              </CardContent>
-            </Card>
+            <StockAlertsCard
+              title={t("stockAlerts")}
+              description={t("stockAlertsDesc")}
+            />
           </div>
         </div>
       </div>

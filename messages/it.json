@@ -868,7 +868,52 @@
     "theoreticalVsRealDesc": "Confronto mensile dei costi",
     "stockAlerts": "Avvisi di Stock",
     "stockAlertsDesc": "Ingredienti sotto il minimo o in scadenza",
-    "comingSoon": "Prossimamente"
+    "comingSoon": "Prossimamente",
+    "alerts": {
+      "noAlerts": "Nessun avviso attivo",
+      "outOfStock": "Esaurito",
+      "lowStock": "Sotto il minimo",
+      "expiringSoon": "In scadenza"
+    },
+    "viewDashboard": "Vedi dashboard →",
+    "foodCost": {
+      "title": "Costo Reale vs Teorico",
+      "description": "Analisi comparativa dei costi per locale e categoria.",
+      "realCost": "Costo Reale",
+      "theoreticalCost": "Costo Teorico",
+      "foodCostPercent": "Food Cost %",
+      "variance": "Scostamento",
+      "trendTitle": "Tendenza dei Costi",
+      "trendDesc": "Evoluzione mensile del costo reale vs teorico",
+      "byCategory": "Per Categoria",
+      "byCategoryDesc": "Distribuzione del costo reale per categoria prodotto",
+      "byLocation": "Per Locale",
+      "byLocationDesc": "Confronto dei costi tra locali",
+      "location": "Locale",
+      "noData": "Nessun dato per il periodo selezionato"
+    },
+    "wasteAnalytics": {
+      "title": "Analisi degli Sprechi",
+      "description": "Impatto economico degli sprechi per motivo, ingrediente e tendenza.",
+      "totalCost": "Costo Totale",
+      "totalQuantity": "Quantità Totale",
+      "totalRecords": "Registri",
+      "avgPerRecord": "Media per Registro",
+      "trendTitle": "Tendenza Sprechi",
+      "trendDesc": "Evoluzione mensile dell'impatto economico",
+      "byReason": "Per Motivo",
+      "byReasonDesc": "Distribuzione del costo per motivo di spreco",
+      "topIngredients": "Top Ingredienti",
+      "topIngredientsDesc": "Ingredienti con il maggiore impatto economico",
+      "ingredient": "Ingrediente",
+      "quantity": "Quantità",
+      "cost": "Costo",
+      "noData": "Nessun dato per il periodo selezionato"
+    },
+    "settings": {
+      "centerMappingDesc": "Collega ogni locale al suo centro GStock per sincronizzare i costi.",
+      "notMapped": "Non assegnato"
+    }
   },
   "analytics": {
     "title": "Analytics",

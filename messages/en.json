@@ -856,7 +856,52 @@
     "theoreticalVsRealDesc": "Monthly cost comparison",
     "stockAlerts": "Stock Alerts",
     "stockAlertsDesc": "Ingredients below minimum or expiring soon",
-    "comingSoon": "Coming Soon"
+    "comingSoon": "Coming Soon",
+    "alerts": {
+      "noAlerts": "No active alerts",
+      "outOfStock": "Out of stock",
+      "lowStock": "Below minimum",
+      "expiringSoon": "Expiring soon"
+    },
+    "viewDashboard": "View dashboard →",
+    "foodCost": {
+      "title": "Real vs Theoretical Cost",
+      "description": "Comparative cost analysis by location and category.",
+      "realCost": "Real Cost",
+      "theoreticalCost": "Theoretical Cost",
+      "foodCostPercent": "Food Cost %",
+      "variance": "Variance",
+      "trendTitle": "Cost Trend",
+      "trendDesc": "Monthly real vs theoretical cost evolution",
+      "byCategory": "By Category",
+      "byCategoryDesc": "Real cost breakdown by product category",
+      "byLocation": "By Location",
+      "byLocationDesc": "Cost comparison across locations",
+      "location": "Location",
+      "noData": "No data for the selected period"
+    },
+    "wasteAnalytics": {
+      "title": "Waste Analytics",
+      "description": "Economic impact of waste by reason, ingredient and trend.",
+      "totalCost": "Total Cost",
+      "totalQuantity": "Total Quantity",
+      "totalRecords": "Records",
+      "avgPerRecord": "Avg per Record",
+      "trendTitle": "Waste Trend",
+      "trendDesc": "Monthly economic impact evolution",
+      "byReason": "By Reason",
+      "byReasonDesc": "Cost breakdown by waste reason",
+      "topIngredients": "Top Ingredients",
+      "topIngredientsDesc": "Ingredients with highest economic impact",
+      "ingredient": "Ingredient",
+      "quantity": "Quantity",
+      "cost": "Cost",
+      "noData": "No data for the selected period"
+    },
+    "settings": {
+      "centerMappingDesc": "Link each location with its GStock center to sync costs.",
+      "notMapped": "Not mapped"
+    }
   },
   "analytics": {
     "title": "Analytics",

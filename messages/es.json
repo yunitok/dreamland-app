@@ -857,7 +857,52 @@
     "theoreticalVsRealDesc": "Comparativa mensual de costes",
     "stockAlerts": "Alertas de Stock",
     "stockAlertsDesc": "Ingredientes bajo mínimo o próximos a caducar",
-    "comingSoon": "Próximamente"
+    "comingSoon": "Próximamente",
+    "alerts": {
+      "noAlerts": "Sin alertas activas",
+      "outOfStock": "Sin stock",
+      "lowStock": "Bajo mínimo",
+      "expiringSoon": "Próximo a caducar"
+    },
+    "viewDashboard": "Ver dashboard →",
+    "foodCost": {
+      "title": "Coste Real vs Teórico",
+      "description": "Análisis comparativo de costes por local y categoría.",
+      "realCost": "Coste Real",
+      "theoreticalCost": "Coste Teórico",
+      "foodCostPercent": "Food Cost %",
+      "variance": "Desviación",
+      "trendTitle": "Tendencia de Costes",
+      "trendDesc": "Evolución mensual de coste real vs teórico",
+      "byCategory": "Por Categoría",
+      "byCategoryDesc": "Distribución de coste real por categoría de producto",
+      "byLocation": "Por Local",
+      "byLocationDesc": "Comparativa de costes entre locales",
+      "location": "Local",
+      "noData": "Sin datos para el periodo seleccionado"
+    },
+    "wasteAnalytics": {
+      "title": "Análisis de Mermas",
+      "description": "Impacto económico de mermas por motivo, ingrediente y tendencia.",
+      "totalCost": "Coste Total",
+      "totalQuantity": "Cantidad Total",
+      "totalRecords": "Registros",
+      "avgPerRecord": "Media por Registro",
+      "trendTitle": "Tendencia de Mermas",
+      "trendDesc": "Evolución mensual del impacto económico",
+      "byReason": "Por Motivo",
+      "byReasonDesc": "Distribución del coste por motivo de merma",
+      "topIngredients": "Top Ingredientes",
+      "topIngredientsDesc": "Ingredientes con mayor impacto económico",
+      "ingredient": "Ingrediente",
+      "quantity": "Cantidad",
+      "cost": "Coste",
+      "noData": "Sin datos para el periodo seleccionado"
+    },
+    "settings": {
+      "centerMappingDesc": "Vincula cada local con su centro en GStock para sincronizar costes.",
+      "notMapped": "Sin asignar"
+    }
   },
   "analytics": {
     "title": "Analytics",

@@ -868,7 +868,52 @@
     "theoreticalVsRealDesc": "Comparaison mensuelle des coûts",
     "stockAlerts": "Alertes de Stock",
     "stockAlertsDesc": "Ingrédients en dessous du minimum ou bientôt périmés",
-    "comingSoon": "Bientôt disponible"
+    "comingSoon": "Bientôt disponible",
+    "alerts": {
+      "noAlerts": "Aucune alerte active",
+      "outOfStock": "Rupture de stock",
+      "lowStock": "En dessous du minimum",
+      "expiringSoon": "Péremption proche"
+    },
+    "viewDashboard": "Voir le tableau de bord →",
+    "foodCost": {
+      "title": "Coût Réel vs Théorique",
+      "description": "Analyse comparative des coûts par établissement et catégorie.",
+      "realCost": "Coût Réel",
+      "theoreticalCost": "Coût Théorique",
+      "foodCostPercent": "Food Cost %",
+      "variance": "Écart",
+      "trendTitle": "Tendance des Coûts",
+      "trendDesc": "Évolution mensuelle du coût réel vs théorique",
+      "byCategory": "Par Catégorie",
+      "byCategoryDesc": "Répartition du coût réel par catégorie de produit",
+      "byLocation": "Par Établissement",
+      "byLocationDesc": "Comparaison des coûts entre établissements",
+      "location": "Établissement",
+      "noData": "Aucune donnée pour la période sélectionnée"
+    },
+    "wasteAnalytics": {
+      "title": "Analyse des Pertes",
+      "description": "Impact économique des pertes par motif, ingrédient et tendance.",
+      "totalCost": "Coût Total",
+      "totalQuantity": "Quantité Totale",
+      "totalRecords": "Enregistrements",
+      "avgPerRecord": "Moyenne par Enregistrement",
+      "trendTitle": "Tendance des Pertes",
+      "trendDesc": "Évolution mensuelle de l'impact économique",
+      "byReason": "Par Motif",
+      "byReasonDesc": "Répartition du coût par motif de perte",
+      "topIngredients": "Top Ingrédients",
+      "topIngredientsDesc": "Ingrédients avec le plus grand impact économique",
+      "ingredient": "Ingrédient",
+      "quantity": "Quantité",
+      "cost": "Coût",
+      "noData": "Aucune donnée pour la période sélectionnée"
+    },
+    "settings": {
+      "centerMappingDesc": "Liez chaque établissement à son centre GStock pour synchroniser les coûts.",
+      "notMapped": "Non assigné"
+    }
   },
   "analytics": {
     "title": "Analytics",

@@ -28,6 +28,7 @@ import { WasteReason } from "@prisma/client"
 
 interface WasteFormProps {
     ingredients: any[]
+    locations: { id: string; name: string; city: string }[]
 }
 
 const reasons = [
@@ -40,7 +41,7 @@ const reasons = [
     { value: WasteReason.OTHER, label: "Otro" },
 ]
 
-export function WasteForm({ ingredients }: WasteFormProps) {
+export function WasteForm({ ingredients, locations }: WasteFormProps) {
     const router = useRouter()
     const form = useForm<WasteRecordFormValues>({
         resolver: zodResolver(wasteRecordSchema) as any,
@@ -49,6 +50,7 @@ export function WasteForm({ ingredients }: WasteFormProps) {
             quantity: 0,
             reason: WasteReason.OTHER,
             notes: "",
+            restaurantLocationId: "",
         },
     })
 
@@ -131,6 +133,37 @@ export function WasteForm({ ingredients }: WasteFormProps) {
                         )}
                     />
                 </div>
+
+                {locations.length > 0 && (
+                    <FormField
+                        control={form.control}
+                        name="restaurantLocationId"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Restaurante</FormLabel>
+                                <Select
+                                    onValueChange={(v) => field.onChange(v === "__none__" ? null : v)}
+                                    defaultValue={field.value || "__none__"}
+                                >
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Sin asignar" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="__none__">Sin asignar</SelectItem>
+                                        {locations.map((loc) => (
+                                            <SelectItem key={loc.id} value={loc.id}>
+                                                {loc.name} — {loc.city}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
 
                 <FormField
                     control={form.control}

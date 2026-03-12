@@ -1,9 +1,13 @@
 import { Header } from "@/components/layout/header"
 import { InventoryForm } from "../_components/inventory-form"
 import { getIngredients } from "@/modules/gastrolab/actions/ingredients"
+import { getLocationsForSelect } from "@/modules/sherlock/actions/inventory"
 
 export default async function NewInventoryPage() {
-    const ingredients = await getIngredients({})
+    const [ingredients, locations] = await Promise.all([
+        getIngredients({}),
+        getLocationsForSelect(),
+    ])
 
     return (
         <div className="flex flex-col h-screen overflow-hidden">
@@ -15,7 +19,7 @@ export default async function NewInventoryPage() {
 
             <div className="flex-1 overflow-y-auto p-4 md:p-8 pt-6">
                 <div className="max-w-4xl mx-auto">
-                    <InventoryForm ingredients={ingredients as any} />
+                    <InventoryForm ingredients={ingredients as any} locations={locations} />
                 </div>
             </div>
         </div>

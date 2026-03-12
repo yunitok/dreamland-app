@@ -869,7 +869,52 @@
     "theoreticalVsRealDesc": "Monatlicher Kostenvergleich",
     "stockAlerts": "Lagerbenachrichtigungen",
     "stockAlertsDesc": "Zutaten unter Minimum oder bald ablaufend",
-    "comingSoon": "Demnächst"
+    "comingSoon": "Demnächst",
+    "alerts": {
+      "noAlerts": "Keine aktiven Warnungen",
+      "outOfStock": "Nicht auf Lager",
+      "lowStock": "Unter Minimum",
+      "expiringSoon": "Bald ablaufend"
+    },
+    "viewDashboard": "Dashboard ansehen →",
+    "foodCost": {
+      "title": "Ist- vs Sollkosten",
+      "description": "Vergleichende Kostenanalyse nach Standort und Kategorie.",
+      "realCost": "Istkosten",
+      "theoreticalCost": "Sollkosten",
+      "foodCostPercent": "Food Cost %",
+      "variance": "Abweichung",
+      "trendTitle": "Kostentrend",
+      "trendDesc": "Monatliche Entwicklung Ist- vs Sollkosten",
+      "byCategory": "Nach Kategorie",
+      "byCategoryDesc": "Istkostenverteilung nach Produktkategorie",
+      "byLocation": "Nach Standort",
+      "byLocationDesc": "Kostenvergleich zwischen Standorten",
+      "location": "Standort",
+      "noData": "Keine Daten für den gewählten Zeitraum"
+    },
+    "wasteAnalytics": {
+      "title": "Abfallanalyse",
+      "description": "Wirtschaftliche Auswirkungen von Abfällen nach Grund, Zutat und Trend.",
+      "totalCost": "Gesamtkosten",
+      "totalQuantity": "Gesamtmenge",
+      "totalRecords": "Einträge",
+      "avgPerRecord": "Durchschnitt pro Eintrag",
+      "trendTitle": "Abfalltrend",
+      "trendDesc": "Monatliche Entwicklung der wirtschaftlichen Auswirkungen",
+      "byReason": "Nach Grund",
+      "byReasonDesc": "Kostenverteilung nach Abfallgrund",
+      "topIngredients": "Top Zutaten",
+      "topIngredientsDesc": "Zutaten mit den höchsten wirtschaftlichen Auswirkungen",
+      "ingredient": "Zutat",
+      "quantity": "Menge",
+      "cost": "Kosten",
+      "noData": "Keine Daten für den gewählten Zeitraum"
+    },
+    "settings": {
+      "centerMappingDesc": "Verknüpfen Sie jeden Standort mit seinem GStock-Center zur Kostensynchronisierung.",
+      "notMapped": "Nicht zugeordnet"
+    }
   },
   "analytics": {
     "title": "Analytics",

@@ -503,44 +503,50 @@ model RecipeSubrecipe {
 }
 
 model InventoryRecord {
-  id             String          @id @default(cuid())
-  ingredientId   String
-  quantity       Float
-  location       String?
-  expiryDate     DateTime?
-  productionDate DateTime?
-  freezeDate     DateTime?
-  openDate       DateTime?
-  lotNumber      String?
-  batchNumber    String?
-  status         InventoryStatus @default(AVAILABLE)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  ingredient     Ingredient      @relation(fields: [ingredientId], references: [id])
+  id                   String              @id @default(cuid())
+  ingredientId         String
+  quantity             Float
+  location             String?
+  expiryDate           DateTime?
+  productionDate       DateTime?
+  freezeDate           DateTime?
+  openDate             DateTime?
+  lotNumber            String?
+  batchNumber          String?
+  status               InventoryStatus     @default(AVAILABLE)
+  restaurantLocationId String?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  ingredient           Ingredient          @relation(fields: [ingredientId], references: [id])
+  restaurantLocation   RestaurantLocation? @relation(fields: [restaurantLocationId], references: [id])
 
   @@index([ingredientId])
   @@index([expiryDate])
   @@index([status])
+  @@index([restaurantLocationId])
   @@map("inventory_records")
 }
 
 model WasteRecord {
-  id                String      @id @default(cuid())
-  ingredientId      String
-  quantity          Float
-  reason            WasteReason
-  notes             String?
-  responsibleUserId String?
-  detectedByAI      Boolean     @default(false)
-  audioTranscript   String?
-  confidenceScore   Float?
-  createdAt         DateTime    @default(now())
-  ingredient        Ingredient  @relation(fields: [ingredientId], references: [id])
+  id                   String              @id @default(cuid())
+  ingredientId         String
+  quantity             Float
+  reason               WasteReason
+  notes                String?
+  responsibleUserId    String?
+  detectedByAI         Boolean             @default(false)
+  audioTranscript      String?
+  confidenceScore      Float?
+  restaurantLocationId String?
+  createdAt            DateTime            @default(now())
+  ingredient           Ingredient          @relation(fields: [ingredientId], references: [id])
+  restaurantLocation   RestaurantLocation? @relation(fields: [restaurantLocationId], references: [id])
 
   @@index([ingredientId])
   @@index([reason])
   @@index([detectedByAI])
   @@index([createdAt])
+  @@index([restaurantLocationId])
   @@map("waste_records")
 }
 
@@ -900,8 +906,12 @@ model RestaurantLocation {
   createdAt         DateTime @default(now())
 
   agoraPosId        Int?     @unique              // ID del punto de venta en Ágora
-  coverSnapshots    CoverSnapshot[]
+  gstockCenterId    Int?     @unique              // ID del centro en GStock
+  coverSnapshots      CoverSnapshot[]
   agoraSalesSnapshots AgoraSalesSnapshot[]
+  foodCostSnapshots   FoodCostSnapshot[]
+  inventoryRecords    InventoryRecord[]
+  wasteRecords        WasteRecord[]
 
   @@index([city])
   @@index([isActive])
@@ -1396,6 +1406,41 @@ model AgoraSalesSnapshot {
   @@index([businessDay])
   @@index([restaurantLocationId, businessDay])
   @@map("agora_sales_snapshots")
+}
+
+model FoodCostSnapshot {
+  id                   String   @id @default(cuid())
+  restaurantLocationId String
+  periodStart          DateTime @db.Date
+  periodEnd            DateTime @db.Date
+
+  // Coste Real (de GStock costReals)
+  realCostTotal        Float    @default(0)
+  realCostByCategory   Json?    // [{ name, amount }]
+
+  // Coste Teórico (de GStock costTheoreticals)
+  theoreticalCostTotal Float    @default(0)
+
+  // Variación calculada
+  variance             Float    @default(0)   // real - teórico
+  variancePercent      Float    @default(0)   // ((real-teórico)/teórico)*100
+
+  // Revenue del periodo (de AgoraSalesSnapshot)
+  periodRevenue        Float?
+  foodCostPercent      Float?   // (realCostTotal / periodRevenue) * 100
+
+  // Stock variation (de GStock stockVariations)
+  stockVariationTotal  Float?
+
+  syncedAt             DateTime @default(now())
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  restaurantLocation   RestaurantLocation @relation(fields: [restaurantLocationId], references: [id])
+
+  @@unique([restaurantLocationId, periodStart, periodEnd])
+  @@index([restaurantLocationId, periodStart])
+  @@map("food_cost_snapshots")
 }
 
 model AgoraProduct {

@@ -16,12 +16,14 @@ import { Header } from "@/components/layout/header";
 import { getSession } from "@/lib/auth";
 import { getRestaurantLocations } from "@/modules/analytics/actions/cover-analytics";
 import { QrGeneratorDialog } from "@/modules/walk-in/ui/qr-generator-dialog";
+import { GstockCenterMapping } from "./_components/gstock-center-mapping";
+import { getLocationsWithGstockMapping } from "@/modules/sherlock/actions/food-cost-sync";
 
 export default async function GastrolabSettingsPage() {
   const t = await getTranslations("gastrolab.settings");
 
   // Fetch data in parallel
-  const [units, categories, suppliers, syncInfo, session, locations, agoraLastSync, agoraStats] = await Promise.all([
+  const [units, categories, suppliers, syncInfo, session, locations, agoraLastSync, agoraStats, gstockLocations] = await Promise.all([
     getMeasureUnits(),
     getCategories(),
     getSuppliers(),
@@ -30,6 +32,7 @@ export default async function GastrolabSettingsPage() {
     getRestaurantLocations(),
     getAgoraLastSync(),
     getAgoraProductStats(),
+    getLocationsWithGstockMapping(),
   ]);
 
   return (
@@ -56,6 +59,17 @@ export default async function GastrolabSettingsPage() {
             stats={agoraStats}
             isSuperAdmin={session?.user?.role === "SUPER_ADMIN"}
           />
+
+          {/* Mapeo centros GStock → Locales */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Centros GStock</CardTitle>
+              <CardDescription>Vincula cada restaurante con su centro en GStock para sincronizar costes.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <GstockCenterMapping locations={gstockLocations} />
+            </CardContent>
+          </Card>
 
           {/* Walk-in QR Generator */}
           <Card>

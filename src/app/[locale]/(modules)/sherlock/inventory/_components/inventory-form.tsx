@@ -29,9 +29,10 @@ import { createInventoryRecord, updateInventoryRecord } from "@/modules/sherlock
 interface InventoryFormProps {
     initialData?: any // InventoryRecord with ingredient
     ingredients: (Ingredient & { unitType: { abbreviation: string } })[]
+    locations: { id: string; name: string; city: string }[]
 }
 
-export function InventoryForm({ initialData, ingredients }: InventoryFormProps) {
+export function InventoryForm({ initialData, ingredients, locations }: InventoryFormProps) {
     const router = useRouter()
 
     const form = useForm<InventoryRecordFormValues>({
@@ -40,6 +41,7 @@ export function InventoryForm({ initialData, ingredients }: InventoryFormProps) 
             ingredientId: initialData.ingredientId,
             quantity: initialData.quantity,
             location: initialData.location || "",
+            restaurantLocationId: initialData.restaurantLocationId || "",
             expiryDate: initialData.expiryDate ? new Date(initialData.expiryDate).toISOString().split('T')[0] : "",
             productionDate: initialData.productionDate ? new Date(initialData.productionDate).toISOString().split('T')[0] : "",
             freezeDate: initialData.freezeDate ? new Date(initialData.freezeDate).toISOString().split('T')[0] : "",
@@ -51,6 +53,7 @@ export function InventoryForm({ initialData, ingredients }: InventoryFormProps) 
             ingredientId: "",
             quantity: 0,
             location: "",
+            restaurantLocationId: "",
             expiryDate: "",
             productionDate: "",
             freezeDate: "",
@@ -172,6 +175,37 @@ export function InventoryForm({ initialData, ingredients }: InventoryFormProps) 
                             </FormItem>
                         )}
                     />
+
+                    {locations.length > 0 && (
+                        <FormField
+                            control={form.control}
+                            name="restaurantLocationId"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Restaurante</FormLabel>
+                                    <Select
+                                        onValueChange={(v) => field.onChange(v === "__none__" ? null : v)}
+                                        defaultValue={field.value || "__none__"}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Sin asignar" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="__none__">Sin asignar</SelectItem>
+                                            {locations.map((loc) => (
+                                                <SelectItem key={loc.id} value={loc.id}>
+                                                    {loc.name} — {loc.city}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted/30 rounded-lg">

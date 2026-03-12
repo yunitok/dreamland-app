@@ -91,6 +91,17 @@ export async function updateInventoryRecord(id: string, data: InventoryRecordFor
   return record
 }
 
+export async function getLocationsForSelect(): Promise<
+  { id: string; name: string; city: string }[]
+> {
+  await requirePermission("sherlock", "read")
+  return prisma.restaurantLocation.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true, city: true },
+    orderBy: { name: "asc" },
+  })
+}
+
 export async function deleteInventoryRecord(id: string) {
   await requirePermission("sherlock", "manage")
   const record = await prisma.inventoryRecord.delete({

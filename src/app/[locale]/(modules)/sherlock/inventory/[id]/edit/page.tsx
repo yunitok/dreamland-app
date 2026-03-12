@@ -1,7 +1,7 @@
 import { Header } from "@/components/layout/header"
 import { InventoryForm } from "../../_components/inventory-form"
 import { getIngredients } from "@/modules/gastrolab/actions/ingredients"
-import { getInventoryRecord } from "@/modules/sherlock/actions/inventory"
+import { getInventoryRecord, getLocationsForSelect } from "@/modules/sherlock/actions/inventory"
 import { notFound } from "next/navigation"
 
 interface EditInventoryPageProps {
@@ -11,9 +11,10 @@ interface EditInventoryPageProps {
 }
 
 export default async function EditInventoryPage({ params }: EditInventoryPageProps) {
-    const [record, ingredients] = await Promise.all([
+    const [record, ingredients, locations] = await Promise.all([
         getInventoryRecord(params.id),
-        getIngredients({})
+        getIngredients({}),
+        getLocationsForSelect(),
     ])
 
     if (!record) {
@@ -28,7 +29,7 @@ export default async function EditInventoryPage({ params }: EditInventoryPagePro
             />
 
             <div className="mx-auto">
-                <InventoryForm initialData={record} ingredients={ingredients as any} />
+                <InventoryForm initialData={record} ingredients={ingredients as any} locations={locations} />
             </div>
         </div>
     )
