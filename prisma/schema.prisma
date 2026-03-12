@@ -1148,6 +1148,8 @@ enum NotificationType {
   TASK_COMMENTED
   PROJECT_MEMBER_ADDED
   PROCESS_FAILED
+  AGENT_ESCALATION
+  AGENT_INSIGHT
 }
 
 model Notification {
@@ -1308,6 +1310,86 @@ model ProcessRun {
   @@index([processSlug, startedAt(sort: Desc)])
   @@index([status])
   @@map("process_runs")
+}
+
+// ─── Agentes Autónomos ─────────────────────────────────────────
+
+enum AgentStatus {
+  QUEUED
+  THINKING
+  ACTING
+  OBSERVING
+  COMPLETED
+  ESCALATED
+  FAILED
+  CANCELLED
+}
+
+model AgentRun {
+  id          String             @id @default(cuid())
+  agentId     String
+  status      AgentStatus        @default(QUEUED)
+  triggerType ProcessTriggerType @default(SYSTEM)
+  triggeredBy String?
+
+  // Estado del loop
+  currentStep Int          @default(0)
+  maxSteps    Int          @default(10)
+  state       Json?
+  steps       Json?
+
+  // Resultado
+  output      Json?
+  error       String?
+
+  // Tokens y coste
+  totalTokens Int          @default(0)
+  totalCost   Float        @default(0)
+
+  // Timing
+  startedAt   DateTime     @default(now())
+  finishedAt  DateTime?
+  durationMs  Int?
+
+  // Cadena de agentes
+  parentRunId String?
+  parentRun   AgentRun?    @relation("AgentRunChain", fields: [parentRunId], references: [id])
+  childRuns   AgentRun[]   @relation("AgentRunChain")
+
+  @@index([agentId, startedAt(sort: Desc)])
+  @@index([status])
+  @@index([parentRunId])
+  @@map("agent_runs")
+}
+
+model AgentMemory {
+  id        String    @id @default(cuid())
+  agentId   String
+  type      String
+  content   String    @db.Text
+  metadata  Json?
+  relevance Float     @default(1.0)
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([agentId, type])
+  @@index([agentId, createdAt(sort: Desc)])
+  @@map("agent_memories")
+}
+
+model AgentEvent {
+  id          String    @id @default(cuid())
+  eventType   String
+  sourceAgent String?
+  targetAgent String?
+  payload     Json
+  processed   Boolean   @default(false)
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([targetAgent, processed, createdAt])
+  @@index([eventType, processed])
+  @@map("agent_events")
 }
 
 // ─── GastroLab: Analytics de Comensales ─────────────────────────

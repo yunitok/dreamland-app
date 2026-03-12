@@ -2,6 +2,7 @@ import { NextResponse, after } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { createNotificationsForPermission } from "@/lib/notification-service"
 import { generateEmailDraft } from "@/modules/atc/domain/draft-generator"
+import { emitAgentEvent } from "@/lib/agents/agent-events"
 
 export const maxDuration = 300
 
@@ -147,6 +148,22 @@ export async function POST(req: Request) {
           console.error("[email/ingest] Error sending cross-department notifications:", notifError)
         }
       }
+      // Emitir evento para el ecosistema agéntico
+      after(async () => {
+        try {
+          await emitAgentEvent("email.ingested", {
+            emailInboxId: created.id,
+            fromEmail: email.fromEmail,
+            subject: email.subject,
+            category: email.category ?? null,
+            priority: priority ?? null,
+            actionRequired: email.actionRequired ?? true,
+          }, { targetAgent: "atc-agent" })
+        } catch (err) {
+          console.error("[email/ingest] Error emitting agent event:", err)
+        }
+      })
+
       // Auto-generate AI draft for emails that require action
       if (email.actionRequired !== false) {
         const emailInboxId = created.id

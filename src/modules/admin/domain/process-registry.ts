@@ -17,7 +17,7 @@ export interface ProcessDefinition {
   name: string
   description: string
   icon: string
-  category: "sync" | "cleanup" | "alert"
+  category: "sync" | "cleanup" | "alert" | "agent"
   schedule?: string
   estimatedDuration: string
   executor: "internal" | "n8n" | "external"
@@ -104,4 +104,5 @@ export const PROCESS_CATEGORIES = {
   sync: { label: "Sincronización", color: "text-blue-500" },
   cleanup: { label: "Limpieza", color: "text-orange-500" },
   alert: { label: "Alertas", color: "text-red-500" },
+  agent: { label: "Agentes IA", color: "text-violet-500" },
 } as const

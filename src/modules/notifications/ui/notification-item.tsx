@@ -17,6 +17,8 @@ import {
   Cog,
   Bell,
   X,
+  Bot,
+  Lightbulb,
 } from "lucide-react"
 
 const TYPE_ICONS: Record<NotificationType, React.ElementType> = {
@@ -32,6 +34,8 @@ const TYPE_ICONS: Record<NotificationType, React.ElementType> = {
   PROJECT_MEMBER_ADDED: UserPlus,
   PROCESS_FAILED: Cog,
   EMAIL_REPLY_RECEIVED: Mail,
+  AGENT_ESCALATION: Bot,
+  AGENT_INSIGHT: Lightbulb,
 }
 
 const TYPE_COLORS: Record<NotificationType, string> = {
@@ -47,6 +51,8 @@ const TYPE_COLORS: Record<NotificationType, string> = {
   PROJECT_MEMBER_ADDED: "text-indigo-500",
   PROCESS_FAILED: "text-red-600",
   EMAIL_REPLY_RECEIVED: "text-green-500",
+  AGENT_ESCALATION: "text-violet-500",
+  AGENT_INSIGHT: "text-amber-500",
 }
 
 interface NotificationItemProps {
